@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "project": "Royal Caribbean DAM — Foundation",
+  "project": "Royal Caribbean DAM \u2014 Foundation",
   "overview": "Scaffold the monorepo, set up SQLite with FTS5, and ingest all 49 existing AEM DAM assets from .content.xml files into the database. This PRD must complete and be committed before the API and Frontend PRDs run in parallel worktrees.",
   "goals": [
     "Scaffold Express backend + React Vite frontend in a single monorepo",
@@ -49,16 +49,20 @@
     ]
   },
   "routes": [
-    { "path": "GET /api/health", "name": "Health Check", "purpose": "Returns { status: 'ok' } — smoke test that server is running" }
+    {
+      "path": "GET /api/health",
+      "name": "Health Check",
+      "purpose": "Returns { status: 'ok' } \u2014 smoke test that server is running"
+    }
   ],
   "uiNotes": [
     "client/src/App.jsx renders a placeholder: <h1>Royal Caribbean DAM</h1>",
-    "No styling required in this PRD — layout and branding come in the Frontend PRD"
+    "No styling required in this PRD \u2014 layout and branding come in the Frontend PRD"
   ],
   "dataModel": [
     {
       "entity": "assets",
-      "description": "Main table — original XML metadata plus deterministic enrichment fields",
+      "description": "Main table \u2014 original XML metadata plus deterministic enrichment fields",
       "fields": [
         "id TEXT PRIMARY KEY",
         "filename TEXT NOT NULL",
@@ -123,15 +127,15 @@
     }
   ],
   "rules": [
-    "DATA_DIR env var points to the existing DAM export — default '../Data/royal' (relative to server/)",
+    "DATA_DIR env var points to the existing DAM export \u2014 default '../Data/royal' (relative to server/)",
     "On server startup: run DB migrations, then run XML ingest only if SELECT COUNT(*) FROM assets = 0",
-    "Creator normalization: map '[Royal Carribean]', 'Brand Team', 'Brand Team ', '[Brand Team]', '[Production Team ]', '[Production Team]' → 'Royal Caribbean Brand Team'",
-    "Rights reconciliation: if xmpRights:Owner or dc:rights contains 'royal caribbean' (case-insensitive, trimmed) → enriched_rights_status='owned'; if rights data present but has typo/inconsistency → 'unclear'; if no rights data → 'none'",
-    "Channel inference from filename + dimensions: 'hero' in name → hero; 'banner' in name → banner; portrait (height > width) or 'mobile' in name → mobile; landscape (width > height) or 'desktop' in name → desktop; square → square",
-    "Format from dimensions: width > height → landscape; height > width → portrait; width == height → square",
-    "Release placeholder: any field value containing 'Selecione' → set has_release_placeholder = 1",
-    "S7 sync error: if dam:lastS7SyncStatus starts with 'failed' → set s7_sync_error = 1",
-    "JCR type stripping: '{Long}1920' → 1920 (integer), '{Boolean}true' → true, '{Date}2021-...' → string without wrapper",
+    "Creator normalization: map '[Royal Carribean]', 'Brand Team', 'Brand Team ', '[Brand Team]', '[Production Team ]', '[Production Team]' \u2192 'Royal Caribbean Brand Team'",
+    "Rights reconciliation: if xmpRights:Owner or dc:rights contains 'royal caribbean' (case-insensitive, trimmed) \u2192 enriched_rights_status='owned'; if rights data present but has typo/inconsistency \u2192 'unclear'; if no rights data \u2192 'none'",
+    "Channel inference from filename + dimensions: 'hero' in name \u2192 hero; 'banner' in name \u2192 banner; portrait (height > width) or 'mobile' in name \u2192 mobile; landscape (width > height) or 'desktop' in name \u2192 desktop; square \u2192 square",
+    "Format from dimensions: width > height \u2192 landscape; height > width \u2192 portrait; width == height \u2192 square",
+    "Release placeholder: any field value containing 'Selecione' \u2192 set has_release_placeholder = 1",
+    "S7 sync error: if dam:lastS7SyncStatus starts with 'failed' \u2192 set s7_sync_error = 1",
+    "JCR type stripping: '{Long}1920' \u2192 1920 (integer), '{Boolean}true' \u2192 true, '{Date}2021-...' \u2192 string without wrapper",
     "FTS sync triggers fire automatically on INSERT/UPDATE/DELETE to assets table",
     "thumbnail_path and web_image_path are set only if those rendition files exist on disk"
   ],
@@ -143,18 +147,18 @@
   "stories": [
     {
       "id": "US-001",
-      "title": "Scaffold monorepo — Express + React Vite",
-      "status": "open",
+      "title": "Scaffold monorepo \u2014 Express + React Vite",
+      "status": "done",
       "dependsOn": [],
       "description": "As a developer, I want a working monorepo with Express backend and React Vite frontend so I can build and test both apps from a single root.",
       "acceptanceCriteria": [
         "Root package.json has workspaces: ['client', 'server'] and name: 'dam-search'",
         "npm install concurrently at root",
         "Root scripts: dev (concurrently runs server dev + client dev), test (cd server && npm test && cd ../client && npm test), lint (cd server && npm run lint && cd ../client && npm run lint), build (cd client && npm run build)",
-        "server/ package.json — install: npm install express better-sqlite3 multer cors dotenv openai uuid",
-        "server/ devDependencies — install: npm install --save-dev jest supertest nodemon eslint",
+        "server/ package.json \u2014 install: npm install express better-sqlite3 multer cors dotenv openai uuid",
+        "server/ devDependencies \u2014 install: npm install --save-dev jest supertest nodemon eslint",
         "server/ scripts: start (node src/index.js), dev (nodemon src/index.js), test (jest --runInBand --forceExit), lint (eslint src)",
-        "server/src/index.js: creates Express app, uses cors({ origin: 'http://localhost:5173' }), uses express.json(), mounts GET /api/health → res.json({ status: 'ok' }), listens on PORT env var defaulting to 3001, logs 'Server running on port 3001'",
+        "server/src/index.js: creates Express app, uses cors({ origin: 'http://localhost:5173' }), uses express.json(), mounts GET /api/health \u2192 res.json({ status: 'ok' }), listens on PORT env var defaulting to 3001, logs 'Server running on port 3001'",
         "client/ created with: npm create vite@latest client -- --template react",
         "client/ install: npm install axios",
         "client/ devDependencies: npm install --save-dev vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom eslint",
@@ -168,14 +172,19 @@
         "Jest test: GET /api/health returns 200 { status: 'ok' }",
         "Vitest test: App renders text 'Royal Caribbean DAM'",
         "Example: npm run dev starts both servers without error",
-        "Negative case: missing OPENAI_API_KEY does not crash server — logs warning 'AI enrichment disabled: OPENAI_API_KEY not set' and continues"
-      ]
+        "Negative case: missing OPENAI_API_KEY does not crash server \u2014 logs warning 'AI enrichment disabled: OPENAI_API_KEY not set' and continues"
+      ],
+      "startedAt": "2026-03-17T15:21:31.412785+00:00",
+      "completedAt": "2026-03-17T15:27:57.402495+00:00",
+      "updatedAt": "2026-03-17T15:27:57.401808+00:00"
     },
     {
       "id": "US-002",
       "title": "SQLite schema, migrations, and FTS5 triggers",
-      "status": "open",
-      "dependsOn": ["US-001"],
+      "status": "done",
+      "dependsOn": [
+        "US-001"
+      ],
       "description": "As a developer, I want SQLite tables and FTS triggers created automatically on startup so the app has persistent searchable storage without manual setup.",
       "acceptanceCriteria": [
         "server/src/db/schema.js exports runMigrations(db)",
@@ -185,27 +194,32 @@
         "server/src/db/index.js opens dam.sqlite at project root using better-sqlite3, calls runMigrations(db), exports db as default",
         "server/src/index.js imports db on startup (triggering migrations)",
         "Jest test: runMigrations on an in-memory DB (new Database(':memory:')) creates both tables without error",
-        "Jest test: INSERT a row into assets → SELECT from assets_fts WHERE assets_fts MATCH the inserted title returns that row",
-        "Jest test: UPDATE assets row title → FTS reflects new title",
-        "Jest test: DELETE assets row → FTS no longer returns it",
+        "Jest test: INSERT a row into assets \u2192 SELECT from assets_fts WHERE assets_fts MATCH the inserted title returns that row",
+        "Jest test: UPDATE assets row title \u2192 FTS reflects new title",
+        "Jest test: DELETE assets row \u2192 FTS no longer returns it",
         "Jest test: calling runMigrations twice does not throw",
         "Negative case: if dam.sqlite path is not writable, process logs the error and exits with code 1"
-      ]
+      ],
+      "startedAt": "2026-03-17T15:28:00.063916+00:00",
+      "completedAt": "2026-03-17T15:33:41.231091+00:00",
+      "updatedAt": "2026-03-17T15:33:41.230758+00:00"
     },
     {
       "id": "US-003",
-      "title": "XML ingest service — parse DAM export into SQLite",
-      "status": "open",
-      "dependsOn": ["US-002"],
+      "title": "XML ingest service \u2014 parse DAM export into SQLite",
+      "status": "done",
+      "dependsOn": [
+        "US-002"
+      ],
       "description": "As a developer, I want all 49 existing .content.xml files parsed and loaded into SQLite on first startup so assets are immediately available without a separate import step.",
       "acceptanceCriteria": [
         "server/src/services/ingest.js exports ingestAssets(db, dataDir)",
         "Recursively walks dataDir using Node fs/path, finds .content.xml files where: parent folder name ends in .jpg/.jpeg/.png/.JPG AND full path does not contain '_jcr_content'",
-        "Parses XML with Node's built-in DOMParser or the 'fast-xml-parser' package (npm install fast-xml-parser in server/) — reads all fields listed in dataModel",
-        "Namespace attribute mapping: dc:title → original_title, dc:description → original_description, dc:creator → original_creator, dc:rights → original_dc_rights, xmpRights:Owner → original_rights_owner, xmpRights:UsageTerms → original_usage_terms, Iptc4xmpExt:LocationShown → original_location, cq:tags → original_tags, tiff:ImageWidth → width, tiff:ImageLength → height, dam:size → file_size, dam:Fileformat → file_format, dam:MIMEtype → mime_type, dam:scene7File → scene7_file, dam:scene7Domain → scene7_domain, dam:scene7FileStatus → scene7_status",
-        "dam:lastS7SyncStatus is on the jcr:content element (not metadata child) — read it from there",
-        "Strip JCR type wrappers from all values: '{Long}1920' → 1920, '{Boolean}true' → 'true', '{Date}2021-...' → '2021-...'",
-        "Infer category/subcategory/subsubcategory from path segments relative to dataDir (last segment is the asset folder name itself — exclude it)",
+        "Parses XML with Node's built-in DOMParser or the 'fast-xml-parser' package (npm install fast-xml-parser in server/) \u2014 reads all fields listed in dataModel",
+        "Namespace attribute mapping: dc:title \u2192 original_title, dc:description \u2192 original_description, dc:creator \u2192 original_creator, dc:rights \u2192 original_dc_rights, xmpRights:Owner \u2192 original_rights_owner, xmpRights:UsageTerms \u2192 original_usage_terms, Iptc4xmpExt:LocationShown \u2192 original_location, cq:tags \u2192 original_tags, tiff:ImageWidth \u2192 width, tiff:ImageLength \u2192 height, dam:size \u2192 file_size, dam:Fileformat \u2192 file_format, dam:MIMEtype \u2192 mime_type, dam:scene7File \u2192 scene7_file, dam:scene7Domain \u2192 scene7_domain, dam:scene7FileStatus \u2192 scene7_status",
+        "dam:lastS7SyncStatus is on the jcr:content element (not metadata child) \u2014 read it from there",
+        "Strip JCR type wrappers from all values: '{Long}1920' \u2192 1920, '{Boolean}true' \u2192 'true', '{Date}2021-...' \u2192 '2021-...'",
+        "Infer category/subcategory/subsubcategory from path segments relative to dataDir (last segment is the asset folder name itself \u2014 exclude it)",
         "Apply all deterministic rules from the rules section: creator normalization, rights reconciliation, channel/format inference, release placeholder detection, s7 sync error flag",
         "Set thumbnail_path to relative path of _jcr_content/renditions/cq5dam.thumbnail.319.319.png if it exists",
         "Set web_image_path to relative path of _jcr_content/renditions/cq5dam.web.1280.1280.jpeg if it exists",
@@ -213,13 +227,16 @@
         "server/src/index.js: after DB init, if SELECT COUNT(*) FROM assets = 0, call ingestAssets(db, process.env.DATA_DIR || '../Data/royal') and log 'Ingested N assets'",
         "Jest test: ingestAssets against the real ../Data/royal directory inserts exactly 49 rows",
         "Jest test: asset with id 'anthem-of-the-seas-new-york-statue-liberty.jpg' has original_title 'Anthem of the Seas Sightseeing the Statue of Liberty, New York'",
-        "Jest test: creator '[Royal Carribean]' → enriched_creator_normalized = 'Royal Caribbean Brand Team'",
+        "Jest test: creator '[Royal Carribean]' \u2192 enriched_creator_normalized = 'Royal Caribbean Brand Team'",
         "Jest test: exactly 7 assets have has_release_placeholder = 1",
         "Jest test: exactly 6 assets have s7_sync_error = 1",
         "Jest test: exactly 27 assets have enriched_rights_status = 'none'",
         "Jest test: asset 'anthem-of-the-seas-new-york-statue-liberty.jpg' has enriched_rights_status = 'owned'",
-        "Negative case: a malformed XML file is skipped with console.warn — remaining files still ingest successfully"
-      ]
+        "Negative case: a malformed XML file is skipped with console.warn \u2014 remaining files still ingest successfully"
+      ],
+      "startedAt": "2026-03-17T15:33:43.868246+00:00",
+      "completedAt": "2026-03-17T15:44:36.747713+00:00",
+      "updatedAt": "2026-03-17T15:44:36.747107+00:00"
     }
   ]
 }

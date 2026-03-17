@@ -1,0 +1,5 @@
+node_modules/
+dam.sqlite
+uploads/
+.env
+client/dist/

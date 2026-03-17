@@ -1,0 +1,7 @@
+# Error Log
+
+> Failures and repeated issues. Use this to add guardrails.
+
+[2026-03-17 11:27:56] ITERATION 1 left uncommitted changes; review run summary at /Users/mbaggie/Dev/FDE/Royal Caribbean.foundation/app/.ralph/runs/run-20260317-112130-86970-iter-1.md
+[2026-03-17 11:33:40] ITERATION 2 left uncommitted changes; review run summary at /Users/mbaggie/Dev/FDE/Royal Caribbean.foundation/app/.ralph/runs/run-20260317-112130-86970-iter-2.md
+[2026-03-17 11:44:34] ITERATION 3 left uncommitted changes; review run summary at /Users/mbaggie/Dev/FDE/Royal Caribbean.foundation/app/.ralph/runs/run-20260317-112130-86970-iter-3.md

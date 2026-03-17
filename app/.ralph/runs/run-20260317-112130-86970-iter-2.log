@@ -1,0 +1,21 @@
+Working tree is clean. US-002 is complete.
+
+**Summary of what was implemented:**
+
+- **`server/src/db/schema.js`** — `runMigrations(db)` creates:
+  - `assets` table with all 44 columns from the data model
+  - `assets_fts` FTS5 virtual table (`content='assets'`, `content_rowid='rowid'`)
+  - Three sync triggers: `assets_ai` (AFTER INSERT), `assets_au` (AFTER UPDATE), `assets_ad` (AFTER DELETE)
+  - All statements use `IF NOT EXISTS` — safe to call multiple times
+
+- **`server/src/db/index.js`** — Opens `dam.sqlite` at project root, calls `runMigrations`, exits with code 1 on error
+
+- **`server/src/index.js`** — Added `require('./db')` to trigger migrations on startup
+
+- **`server/src/__tests__/db.test.js`** — 5 Jest tests covering both tables, idempotent migrations, INSERT/UPDATE/DELETE FTS sync
+
+- All quality gates pass: `npm run lint` ✓, `npm run build` ✓, `npm test` (7 Jest + 1 Vitest) ✓
+
+**Key gotcha:** FTS5 content tables (`content='assets'`) resolve column values from the content table at query time using FTS column names. Since assets has `enriched_title` but FTS has `title`, `SELECT *` fails. Tests correctly use `SELECT rowid FROM assets_fts WHERE MATCH` instead.
+
+<promise>COMPLETE</promise>

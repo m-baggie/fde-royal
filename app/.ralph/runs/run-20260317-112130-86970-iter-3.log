@@ -1,0 +1,19 @@
+All quality gates pass. US-003 is complete.
+
+**Summary of what was implemented:**
+
+- **`server/src/services/ingest.js`** — `ingestAssets(db, dataDir)` that:
+  - Recursively walks dataDir for `.content.xml` files (parent folder ends in image extension, no `_jcr_content` in path)
+  - Parses with `fast-xml-parser` (namespace-aware, `@_` attribute prefix)
+  - Strips JCR type wrappers (`{Long}`, `{Boolean}`, `{Date}`)
+  - Maps all 15 namespace attributes to DB fields
+  - Reads `dam:lastS7SyncStatus` from `jcr:content` (not metadata)
+  - Applies all deterministic rules: creator normalization, rights reconciliation, channel/format inference, Selecione placeholder detection, S7 sync error flag
+  - Sets thumbnail/web image paths if renditions exist on disk
+  - Uses `INSERT OR IGNORE` for idempotency
+
+- **`server/src/index.js`** — triggers ingest on startup if `assets` table is empty
+
+- **`server/src/__tests__/ingest.test.js`** — 9 Jest tests covering all acceptance criteria (49 rows, field values, normalization, placeholder count=7, sync errors=6, rights none=27, idempotency, malformed XML skip)
+
+<promise>COMPLETE</promise>
