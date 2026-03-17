@@ -1,0 +1,10 @@
+Clean working tree. All done.
+
+**US-002 complete:**
+- Added `const path = require('path')` import to `server/src/index.js`
+- Registered `app.use('/api/assets/media', express.static(...))` before all API routers (critical — must precede `/api/assets` routes to avoid `:id` capture)
+- Created `server/src/__tests__/media.test.js` with 2 tests: known path returns 200/404 (not 500), nonexistent path returns 404
+- All quality gates pass: lint ✓, build ✓, Jest 58/58 ✓, Vitest 32/32 ✓
+- Commits: `bea2b6b` (implementation) + `5477971` (run logs)
+
+<promise>COMPLETE</promise>

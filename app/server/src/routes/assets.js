@@ -34,10 +34,10 @@ router.get('/:id', (req, res) => {
     return res.status(404).json({ error: 'Asset not found' });
   }
 
-  // cdn_url
+  // cdn_url — strip trailing slashes from domain to avoid double-slash
   const cdn_url =
     row.scene7_domain && row.scene7_file
-      ? `${row.scene7_domain}/is/image/${row.scene7_file}`
+      ? row.scene7_domain.replace(/\/+$/, '') + '/is/image/' + row.scene7_file
       : null;
 
   // quality_issues

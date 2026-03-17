@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "total": 3,
+  "remaining": 3,
+  "quality_gates": [
+    "npm run lint",
+    "npm run build",
+    "npm test"
+  ],
+  "id": "US-001",
+  "title": "Fix CDN URL double slash in assets route"
+}

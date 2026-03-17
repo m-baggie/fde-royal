@@ -1,0 +1,10 @@
+Clean working tree. US-003 is complete.
+
+**Summary:**
+- `AssetCard.jsx` — builds `http://localhost:3001/api/assets/media/${thumbnail_path}` src when set; `onError` swaps broken img to grey placeholder div showing filename
+- `AssetCard.test.jsx` — 3 Vitest tests covering img src, null placeholder, and onError fallback
+- `server/src/index.js` — CORS updated from hardcoded port 5173 to regex (`/^http:\/\/localhost(:\d+)?$/`) to support any localhost port
+- All 93 tests pass (58 server + 35 client); lint clean; build clean
+- Browser verified: 49 asset cards rendered, 49 requests to `/api/assets/media/...` confirmed, placeholders shown (thumbnail PNGs absent from mock data — `onError` working correctly)
+
+<promise>COMPLETE</promise>

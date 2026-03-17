@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const OpenAI = require('openai');
@@ -11,12 +12,15 @@ const uploadRouter = require('./routes/upload');
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: /^http:\/\/localhost(:\d+)?$/ }));
 app.use(express.json());
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
+
+// Static DAM media files — registered before API routers
+app.use('/api/assets/media', express.static(path.resolve(__dirname, '..', '..', process.env.DATA_DIR || '../Data/royal')));
 
 // Upload router must be registered before assetsRouter to avoid /:id capturing /upload
 app.use('/api/assets', uploadRouter);

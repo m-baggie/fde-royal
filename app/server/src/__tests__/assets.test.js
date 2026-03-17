@@ -109,9 +109,46 @@ describe('GET /api/assets/:id', () => {
     }
     const detail = await request(app).get(`/api/assets/${encodeURIComponent(withS7.id)}`);
     expect(detail.status).toBe(200);
+    // cdn_url must not contain '//' (trailing slash stripped from domain)
+    expect(detail.body.cdn_url).not.toContain('//is/image/');
+    const expectedDomain = withS7.scene7_domain.replace(/\/+$/, '');
     expect(detail.body.cdn_url).toBe(
-      `${withS7.scene7_domain}/is/image/${withS7.scene7_file}`
+      `${expectedDomain}/is/image/${withS7.scene7_file}`
     );
+  });
+
+  it('cdn_url for dubai asset equals expected URL with single slash', async () => {
+    const res = await request(app).get(
+      '/api/assets/dubai-arabian-gulf-emirates-burj-al-arab-skyline.jpg'
+    );
+    if (res.status === 404) return; // asset not in DB — skip
+    expect(res.status).toBe(200);
+    if (res.body.scene7_domain && res.body.scene7_file) {
+      expect(res.body.cdn_url).toBe(
+        'https://assets.dm.rccl.com/is/image/RoyalCaribbeanCruises/dubai-arabian-gulf-emirates-burj-al-arab-skyline'
+      );
+    }
+  });
+
+  it('cdn_url for any asset with scene7_domain set does not contain "//"', async () => {
+    const list = await request(app).get('/api/assets?limit=200');
+    expect(list.status).toBe(200);
+    const withS7 = list.body.assets.filter((a) => a.scene7_file && a.scene7_domain);
+    for (const asset of withS7) {
+      const detail = await request(app).get(`/api/assets/${encodeURIComponent(asset.id)}`);
+      expect(detail.status).toBe(200);
+      expect(detail.body.cdn_url).not.toMatch(/\/\/is\/image\//);
+    }
+  });
+
+  it('cdn_url is null when scene7_file is not set', async () => {
+    // Find an asset without scene7_file
+    const list = await request(app).get('/api/assets?limit=200');
+    const noS7 = list.body.assets.find((a) => !a.scene7_file);
+    if (!noS7) return; // all assets have scene7_file — skip
+    const detail = await request(app).get(`/api/assets/${encodeURIComponent(noS7.id)}`);
+    expect(detail.status).toBe(200);
+    expect(detail.body.cdn_url).toBeNull();
   });
 
   it('returns 404 with error message for non-existent asset', async () => {

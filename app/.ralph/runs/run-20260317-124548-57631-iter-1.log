@@ -1,0 +1,14 @@
+Clean. Here's a summary of what was done:
+
+**US-001 complete.**
+
+- `server/src/routes/assets.js:38-41` — Changed `cdn_url` from `` `${row.scene7_domain}/is/image/${row.scene7_file}` `` to `row.scene7_domain.replace(/\/+$/, '') + '/is/image/' + row.scene7_file`. This strips any number of trailing slashes (including the DB value `https://assets.dm.rccl.com/`) before concatenating the path.
+
+- `server/src/__tests__/assets.test.js` — Updated the existing cdn_url test to strip the trailing slash from `scene7_domain` when building the expected value, and added three new tests:
+  1. Dubai asset returns `https://assets.dm.rccl.com/is/image/RoyalCaribbeanCruises/dubai-arabian-gulf-emirates-burj-al-arab-skyline` (single slash)
+  2. All assets with `scene7_domain` set have no `//is/image/` in `cdn_url`
+  3. `cdn_url` is `null` when `scene7_file` is absent
+
+All quality gates pass: lint ✓ · build ✓ · 56 Jest + 32 Vitest tests ✓
+
+<promise>COMPLETE</promise>

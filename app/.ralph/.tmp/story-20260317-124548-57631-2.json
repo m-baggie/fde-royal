@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "total": 3,
+  "remaining": 2,
+  "quality_gates": [
+    "npm run lint",
+    "npm run build",
+    "npm test"
+  ],
+  "id": "US-002",
+  "title": "Serve DAM media files via Express static route"
+}

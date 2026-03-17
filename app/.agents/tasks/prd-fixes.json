@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "project": "Royal Caribbean DAM — Bug Fixes",
+  "project": "Royal Caribbean DAM \u2014 Bug Fixes",
   "overview": "Fix two post-integration bugs: (1) CDN URLs have a double slash due to a trailing slash on scene7_domain, and (2) asset thumbnails are not visible because the Data/royal directory is not served as static files by Express.",
   "goals": [
     "Produce correct CDN URLs without double slashes",
@@ -18,13 +18,17 @@
   ],
   "openQuestions": [],
   "stack": {
-    "backend": "Express.js (Node 20) — server/src/",
-    "frontend": "React 18 + Vite — client/src/",
+    "backend": "Express.js (Node 20) \u2014 server/src/",
+    "frontend": "React 18 + Vite \u2014 client/src/",
     "database": "SQLite via better-sqlite3",
     "auth": "None"
   },
   "routes": [
-    { "path": "GET /api/assets/media/*", "name": "Serve DAM media files", "purpose": "Static file serving for thumbnail and web image renditions stored in DATA_DIR" }
+    {
+      "path": "GET /api/assets/media/*",
+      "name": "Serve DAM media files",
+      "purpose": "Static file serving for thumbnail and web image renditions stored in DATA_DIR"
+    }
   ],
   "uiNotes": [
     "AssetCard thumbnail src should be constructed as: http://localhost:3001/api/assets/media/<thumbnail_path>",
@@ -32,7 +36,7 @@
   ],
   "dataModel": [],
   "rules": [
-    "cdn_url construction: strip trailing slash from scene7_domain before concatenating — `scene7_domain.replace(/\\/+$/, '') + '/is/image/' + scene7_file`",
+    "cdn_url construction: strip trailing slash from scene7_domain before concatenating \u2014 `scene7_domain.replace(/\\/+$/, '') + '/is/image/' + scene7_file`",
     "Media route: resolve DATA_DIR relative to server/src/index.js (i.e. path.resolve(__dirname, '..', '..', process.env.DATA_DIR || '../Data/royal'))",
     "Media route must be registered BEFORE the catch-all 404 handler",
     "Media route should use express.static() with the resolved DATA_DIR as root",
@@ -47,7 +51,7 @@
     {
       "id": "US-001",
       "title": "Fix CDN URL double slash in assets route",
-      "status": "open",
+      "status": "done",
       "dependsOn": [],
       "description": "As a content author, I want the CDN URL in the asset detail to be a valid URL so I can copy and use it directly.",
       "acceptanceCriteria": [
@@ -56,36 +60,49 @@
         "Supertest test: cdn_url for any asset with scene7_domain set does not contain '//'",
         "Supertest test: cdn_url for an asset with no scene7_file is null",
         "Negative case: if scene7_domain has multiple trailing slashes (e.g. 'https://assets.dm.rccl.com///'), cdn_url still has exactly one slash before 'is/image'"
-      ]
+      ],
+      "startedAt": "2026-03-17T16:45:49.202700+00:00",
+      "completedAt": "2026-03-17T16:49:39.632727+00:00",
+      "updatedAt": "2026-03-17T16:49:39.632532+00:00"
     },
     {
       "id": "US-002",
       "title": "Serve DAM media files via Express static route",
-      "status": "open",
-      "dependsOn": ["US-001"],
+      "status": "done",
+      "dependsOn": [
+        "US-001"
+      ],
       "description": "As a content author, I want to see asset thumbnails in the browse grid so I can visually identify assets.",
       "acceptanceCriteria": [
         "In server/src/index.js, add a static file route: app.use('/api/assets/media', express.static(path.resolve(__dirname, '..', '..', process.env.DATA_DIR || '../Data/royal')))",
         "Import path from 'path' at the top of index.js if not already imported",
         "Route is registered before any error-handling or 404 middleware",
         "GET http://localhost:3001/api/assets/media/promotions/asia/arabian-gulf/dubai-arabian-gulf-emirates-burj-al-arab-skyline.jpg/_jcr_content/renditions/cq5dam.thumbnail.319.319.png returns 200 with image content-type",
-        "Supertest test: GET /api/assets/media/ships/allure/allure-of-the-seas-aerial-sailing-blue-sky.JPG/_jcr_content/renditions/cq5dam.thumbnail.319.319.png returns 200 or 404 (not 500) — verifies route is wired up",
+        "Supertest test: GET /api/assets/media/ships/allure/allure-of-the-seas-aerial-sailing-blue-sky.JPG/_jcr_content/renditions/cq5dam.thumbnail.319.319.png returns 200 or 404 (not 500) \u2014 verifies route is wired up",
         "Negative case: GET /api/assets/media/nonexistent/path.png returns 404, not 500"
-      ]
+      ],
+      "startedAt": "2026-03-17T16:49:42.492666+00:00",
+      "completedAt": "2026-03-17T16:52:02.027485+00:00",
+      "updatedAt": "2026-03-17T16:52:02.027024+00:00"
     },
     {
       "id": "US-003",
       "title": "Update AssetCard to load thumbnails from media route",
-      "status": "open",
-      "dependsOn": ["US-002"],
+      "status": "done",
+      "dependsOn": [
+        "US-002"
+      ],
       "description": "As a content author, I want asset cards in the browse grid to display the actual thumbnail image so I can visually identify assets.",
       "acceptanceCriteria": [
         "In client/src/components/AssetCard.jsx (or wherever the thumbnail img src is set), update src to: asset.thumbnail_path ? `http://localhost:3001/api/assets/media/${asset.thumbnail_path}` : null",
-        "If thumbnail_path is null, render a placeholder div (grey background with filename text) — do not render a broken <img>",
+        "If thumbnail_path is null, render a placeholder div (grey background with filename text) \u2014 do not render a broken <img>",
         "Vitest test: AssetCard with thumbnail_path renders an <img> with src containing '/api/assets/media/'",
         "Vitest test: AssetCard with thumbnail_path=null renders a placeholder element, not an <img>",
-        "Negative case: if the media URL returns a 404 (image not found on disk), the img onError handler swaps to the placeholder — no broken image icon shown"
-      ]
+        "Negative case: if the media URL returns a 404 (image not found on disk), the img onError handler swaps to the placeholder \u2014 no broken image icon shown"
+      ],
+      "startedAt": "2026-03-17T16:52:04.844077+00:00",
+      "completedAt": "2026-03-17T17:01:32.834428+00:00",
+      "updatedAt": "2026-03-17T17:01:32.833669+00:00"
     }
   ]
 }

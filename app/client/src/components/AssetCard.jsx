@@ -70,11 +70,35 @@ const styles = {
   },
 };
 
+const API_BASE = 'http://localhost:3001';
+
+const placeholderStyle = {
+  width: '100%',
+  height: '100%',
+  backgroundColor: '#E8E8E8',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '11px',
+  color: '#666',
+  textAlign: 'center',
+  padding: '4px',
+  boxSizing: 'border-box',
+  wordBreak: 'break-all',
+};
+
 export default function AssetCard({ asset, onSelectAsset }) {
   const [hovered, setHovered] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const rightsColor = RIGHTS_COLORS[asset.rights_status] || '#9ca3af';
   const hasIssues = Array.isArray(asset.quality_issues) && asset.quality_issues.length > 0;
+
+  const thumbnailSrc = asset.thumbnail_path
+    ? `${API_BASE}/api/assets/media/${asset.thumbnail_path}`
+    : null;
+
+  const showPlaceholder = !thumbnailSrc || imgError;
 
   return (
     <div
@@ -85,14 +109,17 @@ export default function AssetCard({ asset, onSelectAsset }) {
       onMouseLeave={() => setHovered(false)}
     >
       <div style={styles.imageWrapper}>
-        {asset.thumbnail_path ? (
+        {showPlaceholder ? (
+          <div data-testid="asset-placeholder" style={placeholderStyle}>
+            {asset.filename || asset.display_title || 'No preview'}
+          </div>
+        ) : (
           <img
-            src={asset.thumbnail_path}
+            src={thumbnailSrc}
             alt={asset.display_title || 'Asset'}
             style={styles.image}
+            onError={() => setImgError(true)}
           />
-        ) : (
-          <div style={{ width: '100%', height: '100%', backgroundColor: '#E8E8E8' }} />
         )}
       </div>
       <div style={styles.body}>

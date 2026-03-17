@@ -297,3 +297,88 @@ Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-frontend/app/.ralph/
   - useRef for idCounter (reset per component instance) avoids test cross-contamination vs module-level counter
   - `createEvent.drop(element)` + `Object.defineProperty(evt, 'dataTransfer', { value: { files: [...] } })` is the correct RTL pattern for testing drop handlers in jsdom
 ---
+
+## [2026-03-17 12:49] - US-001: Fix CDN URL double slash in assets route
+Thread:
+Run: 20260317-124548-57631 (iteration 1)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-fixes/app/.ralph/runs/run-20260317-124548-57631-iter-1.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-fixes/app/.ralph/runs/run-20260317-124548-57631-iter-1.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 8f40cfe fix(assets): strip trailing slash from scene7_domain in cdn_url
+- Post-commit status: clean
+- Verification:
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS (204 kB bundle)
+  - `npm test` -> PASS (Jest: 56 passed, Vitest: 32 passed)
+- Files changed:
+  - server/src/routes/assets.js (cdn_url construction fix)
+  - server/src/__tests__/assets.test.js (updated existing test + 3 new cdn_url tests)
+- What was implemented:
+  - Changed cdn_url construction from template literal (which kept trailing slash) to `row.scene7_domain.replace(/\/+$/, '') + '/is/image/' + row.scene7_file`
+  - Updated existing cdn_url test to use .replace() when building expected value
+  - Added 3 new tests: dubai asset exact URL, all-assets no-double-slash loop, null-when-no-scene7_file
+- **Learnings for future iterations:**
+  - scene7_domain in the DB ends with a trailing slash (https://assets.dm.rccl.com/) — template literal concatenation produces //is/image/
+  - `ralph log` helper is not present in the feature-fixes repo; log directly to .ralph/activity.log via shell append
+  - Root `npm install` (workspace) makes Jest available in server/ without needing to cd server && npm install
+---
+
+## [2026-03-17 12:52] - US-002: Serve DAM media files via Express static route
+Thread:
+Run: 20260317-124548-57631 (iteration 2)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-fixes/app/.ralph/runs/run-20260317-124548-57631-iter-2.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-fixes/app/.ralph/runs/run-20260317-124548-57631-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: bea2b6b feat(server): add static media route for DAM asset files
+- Post-commit status: clean (only ralph logs and .agents/tasks/prd-fixes.json remain modified — not edited per rules)
+- Verification:
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS (204 kB bundle)
+  - `npm test` -> PASS (Jest: 58 passed [+2 new media tests], Vitest: 32 passed)
+- Files changed:
+  - server/src/index.js (added `path` import + static media route)
+  - server/src/__tests__/media.test.js (new — 2 tests)
+- What was implemented:
+  - Added `const path = require('path')` import to server/src/index.js
+  - Registered `app.use('/api/assets/media', express.static(...))` before all API routers, serving files from DATA_DIR (defaults to `../Data/royal` relative to project root)
+  - Path resolved with `path.resolve(__dirname, '..', '..', process.env.DATA_DIR || '../Data/royal')`
+  - Added media.test.js with 2 supertest tests: thumbnail path returns 200 or 404 (never 500); nonexistent path returns 404
+- **Learnings for future iterations:**
+  - `ralph log` helper not present in this repo — append directly to .ralph/activity.log
+  - Static route must be registered BEFORE `app.use('/api/assets', ...)` routers or `/api/assets/media` prefix gets captured by the `:id` param in the assets router
+  - `express.static` returns 404 (not 500) for missing files by default — the negative-case test passes without extra error handling
+---
+
+## [2026-03-17 13:00] - US-003: Update AssetCard to load thumbnails from media route
+Thread:
+Run: 20260317-124548-57631 (iteration 3)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-fixes/app/.ralph/runs/run-20260317-124548-57631-iter-3.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-fixes/app/.ralph/runs/run-20260317-124548-57631-iter-3.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 65df462 feat(asset-card): load thumbnails from media route with error fallback
+- Post-commit status: clean (ralph logs staged separately)
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS
+  - Command: npm test -> PASS (58 server + 35 client = 93 total)
+  - Browser: 49 asset cards rendered, 49 requests to /api/assets/media/ URLs, onError → placeholders (no broken image icons)
+- Files changed:
+  - client/src/components/AssetCard.jsx
+  - client/src/components/AssetCard.test.jsx
+  - server/src/index.js
+- What was implemented:
+  - AssetCard builds thumbnail src as `http://localhost:3001/api/assets/media/${thumbnail_path}` when set
+  - Added `imgError` state + `onError` handler to swap broken img to grey placeholder div
+  - Placeholder shows filename/display_title text (not a broken image icon)
+  - When thumbnail_path is null, renders placeholder immediately (no img rendered)
+  - Updated CORS from `http://localhost:5173` to regex `/^http:\/\/localhost(:\d+)?$/` to support any localhost port
+  - 3 Vitest tests: img src contains media route, null path shows placeholder, onError swaps to placeholder
+- **Learnings for future iterations:**
+  - Thumbnail PNGs don't exist in mock data (only .JPG originals, no renditions folder) — all 49 assets hit onError, placeholders are correct behavior
+  - CORS hardcoded to port 5173 blocked browser testing from static server on port 4173; updated to regex
+  - Port 5173 is occupied by feature-frontend worktree's Vite — new worktrees need different ports or flexible CORS
+  - Browser devtools network tab (via Playwright request interceptor) is the reliable way to verify img src before onError swaps the element
+---
