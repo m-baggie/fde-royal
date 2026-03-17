@@ -1,0 +1,12 @@
+Working tree is clean of all implementation files. Only the PRD JSON (not to be edited per rules) and ralph runtime artifacts remain.
+
+**US-004 complete.** Summary:
+
+- **`server/src/services/search.js`** — `searchAssets(db, params)` with FTS5 MATCH primary path (ranked by relevance) and automatic LIKE fallback when FTS returns 0 results; all filter params (category, subcategory, rights_status, location, has_title, has_rights, has_release_placeholder); pagination capped at 200; display field computation
+- **`server/src/routes/assets.js`** — Express Router for `GET /api/assets`
+- **`server/src/index.js`** — mounted `assetsRouter` at `/api/assets`
+- **`server/jest.globalSetup.js`** — pre-populates `dam.sqlite` before supertest suites run (needed in fresh worktrees where the default `DATA_DIR` path doesn't exist)
+- **`server/src/__tests__/assets.test.js`** — 7 supertest cases covering all AC
+- All 23 server tests pass; lint and build clean
+
+<promise>COMPLETE</promise>

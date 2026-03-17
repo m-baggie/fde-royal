@@ -1,6 +1,11 @@
 # Activity Log
 
 ## Run Summary
+- 2026-03-17 12:14:28 | run=20260317-115046-14307 | iter=5 | mode=build | story=US-008 | duration=281s | status=success
+- 2026-03-17 12:09:44 | run=20260317-115046-14307 | iter=4 | mode=build | story=US-007 | duration=300s | status=success
+- 2026-03-17 12:04:40 | run=20260317-115046-14307 | iter=3 | mode=build | story=US-006 | duration=169s | status=success
+- 2026-03-17 12:01:47 | run=20260317-115046-14307 | iter=2 | mode=build | story=US-005 | duration=216s | status=success
+- 2026-03-17 11:58:06 | run=20260317-115046-14307 | iter=1 | mode=build | story=US-004 | duration=440s | status=success
 - 2026-03-17 11:44:34 | run=20260317-112130-86970 | iter=3 | mode=build | story=US-003 | duration=651s | status=success
 - 2026-03-17 11:33:40 | run=20260317-112130-86970 | iter=2 | mode=build | story=US-002 | duration=341s | status=success
 - 2026-03-17 11:27:56 | run=20260317-112130-86970 | iter=1 | mode=build | story=US-001 | duration=385s | status=success
@@ -14,3 +19,26 @@
 [2026-03-17 11:33:45] ITERATION 3 start (mode=build story=US-003)
 [2026-03-17 11:38:33] US-003: Starting XML ingest service implementation
 [2026-03-17 11:44:34] ITERATION 3 end (duration=651s)
+[2026-03-17 11:50:48] ITERATION 1 start (mode=build story=US-004)
+[2026-03-17 11:51:00] US-004: Starting implementation — GET /api/assets search and filter endpoint
+[2026-03-17 11:56:30] US-004: Implemented search.js, routes/assets.js, assets.test.js, jest.globalSetup.js; all tests pass
+[2026-03-17 11:57:30] US-004: Progress log updated; story complete
+[2026-03-17 11:58:06] ITERATION 1 end (duration=440s)
+[2026-03-17 11:58:11] ITERATION 2 start (mode=build story=US-005)
+[2026-03-17 12:00:00] US-005: Implemented GET /api/assets/:id with cdn_url, quality_issues, display fields; all 28 tests pass
+[2026-03-17 12:00:30] US-005: Progress log updated; story complete
+[2026-03-17 12:01:47] ITERATION 2 end (duration=216s)
+[2026-03-17 12:01:51] ITERATION 3 start (mode=build story=US-006)
+[2026-03-17 12:04:40] ITERATION 3 end (duration=169s)
+[2026-03-17 12:04:48] ITERATION 4 start (mode=build story=US-007)
+[2026-03-17 12:08:00] US-007: Starting implementation of POST /api/assets/upload endpoint
+[2026-03-17 12:08:30] US-007: Created routes/upload.js with multer diskStorage, fileFilter, size limits; registered before assets router in index.js
+[2026-03-17 12:08:40] US-007: Created upload.test.js — 6 tests; all 42 tests pass, lint clean, build passes
+[2026-03-17 12:08:50] US-007: Committed 217f7e1; progress log updated
+[2026-03-17 12:09:44] ITERATION 4 end (duration=300s)
+[2026-03-17 12:09:49] ITERATION 5 start (mode=build story=US-008)
+[2026-03-17 12:13:00] US-008: Starting implementation of POST /api/assets/:id/enrich endpoint
+[2026-03-17 12:13:30] US-008: Created services/enrich.js, updated routes/assets.js and index.js with OpenAI client init
+[2026-03-17 12:13:40] US-008: Created enrich.test.js — 9 tests covering field mapping, FTS search, all error cases; 53 total tests pass, lint clean, build passes
+[2026-03-17 12:14:00] US-008: Committed 345d9a4; progress log updated
+[2026-03-17 12:14:28] ITERATION 5 end (duration=281s)

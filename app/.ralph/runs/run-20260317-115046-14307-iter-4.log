@@ -1,0 +1,10 @@
+The remaining untracked/modified files are PRD, error log, and ralph run files managed by the harness — not part of this story's scope.
+
+US-007 is complete:
+- `server/src/routes/upload.js` — multer diskStorage, fileFilter (jpeg/png/webp), 20 MB limit, uuid-based ids, DB insert, 201 response
+- `server/src/__tests__/upload.test.js` — 6 supertest tests covering all acceptance criteria; afterAll cleanup prevents DB pollution
+- `server/src/index.js` — uploadRouter registered before assetsRouter
+- All 42 tests pass, lint clean, build passes
+- Commits: `217f7e1` (feat) + `dc16409` (chore/ralph)
+
+<promise>COMPLETE</promise>

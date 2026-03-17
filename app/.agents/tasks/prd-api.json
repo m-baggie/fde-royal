@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "project": "Royal Caribbean DAM — API (Backend)",
+  "project": "Royal Caribbean DAM \u2014 API (Backend)",
   "overview": "Build all Express API endpoints on top of the foundation (scaffold + SQLite + ingest already complete). Covers search/filter, asset detail, filter options, file upload, and OpenAI Vision enrichment. Run this PRD in a feature/api worktree in parallel with the Frontend PRD after the Foundation PRD has been merged.",
   "goals": [
     "Expose a full-text natural language search endpoint with structured filter support",
     "Expose asset detail endpoint with quality issue analysis and CDN URL",
     "Expose filter options endpoint for dynamic UI population",
     "Accept image file uploads (single or multiple) and persist to disk + SQLite",
-    "Enrich uploaded assets with OpenAI GPT-4o Vision — title, description, tags, location, mood, scene"
+    "Enrich uploaded assets with OpenAI GPT-4o Vision \u2014 title, description, tags, location, mood, scene"
   ],
   "nonGoals": [
-    "No React UI work — that is the Frontend PRD",
+    "No React UI work \u2014 that is the Frontend PRD",
     "No user authentication",
     "No production deployment",
     "No write-back to AEM or .content.xml files"
@@ -22,10 +22,10 @@
     "All quality gates pass: npm run lint, npm run build, npm test"
   ],
   "openQuestions": [
-    "Use gpt-4o or gpt-4o-mini for enrichment — gpt-4o for quality, gpt-4o-mini for cost?"
+    "Use gpt-4o or gpt-4o-mini for enrichment \u2014 gpt-4o for quality, gpt-4o-mini for cost?"
   ],
   "assumptions": [
-    "Foundation PRD is complete and merged — scaffold, SQLite schema, FTS5 triggers, and 49 ingested assets all exist",
+    "Foundation PRD is complete and merged \u2014 scaffold, SQLite schema, FTS5 triggers, and 49 ingested assets all exist",
     "server/ directory structure, package.json scripts, and db/index.js are already in place",
     "uploads/ directory exists at project root"
   ],
@@ -38,25 +38,45 @@
     "testing": "Jest + Supertest (already configured)"
   },
   "routes": [
-    { "path": "GET /api/assets",             "name": "Search Assets",     "purpose": "Full-text + structured filter search. Params: q, category, subcategory, rights_status, location, has_title, has_rights, has_release_placeholder, limit, offset" },
-    { "path": "GET /api/assets/:id",         "name": "Asset Detail",      "purpose": "Full asset record with quality_issues array and cdn_url" },
-    { "path": "GET /api/filters",            "name": "Filter Options",    "purpose": "Distinct filter values + metadata counts for UI population" },
-    { "path": "POST /api/assets/upload",     "name": "Upload Asset(s)",   "purpose": "Multipart file upload — saves to disk, inserts to DB, triggers enrichment" },
-    { "path": "POST /api/assets/:id/enrich", "name": "Enrich Asset",      "purpose": "OpenAI Vision enrichment — updates enriched_* fields and FTS index" }
+    {
+      "path": "GET /api/assets",
+      "name": "Search Assets",
+      "purpose": "Full-text + structured filter search. Params: q, category, subcategory, rights_status, location, has_title, has_rights, has_release_placeholder, limit, offset"
+    },
+    {
+      "path": "GET /api/assets/:id",
+      "name": "Asset Detail",
+      "purpose": "Full asset record with quality_issues array and cdn_url"
+    },
+    {
+      "path": "GET /api/filters",
+      "name": "Filter Options",
+      "purpose": "Distinct filter values + metadata counts for UI population"
+    },
+    {
+      "path": "POST /api/assets/upload",
+      "name": "Upload Asset(s)",
+      "purpose": "Multipart file upload \u2014 saves to disk, inserts to DB, triggers enrichment"
+    },
+    {
+      "path": "POST /api/assets/:id/enrich",
+      "name": "Enrich Asset",
+      "purpose": "OpenAI Vision enrichment \u2014 updates enriched_* fields and FTS index"
+    }
   ],
   "rules": [
     "display_title: enriched_title ?? original_title ?? filename without extension",
     "display_description: enriched_description ?? original_description",
     "display_tags: merge + deduplicate enriched_tags and original_tags arrays",
     "quality_issues array keys: 'missing_title', 'missing_description', 'missing_rights', 'missing_location', 'title_equals_description', 's7_sync_error', 'release_placeholder'",
-    "cdn_url: scene7_domain.trimEnd('/') + '/is/image/' + scene7_file — null if either field is missing",
+    "cdn_url: scene7_domain.trimEnd('/') + '/is/image/' + scene7_file \u2014 null if either field is missing",
     "FTS search: use assets_fts MATCH query with the q param; fall back to LIKE %q% on key columns if FTS returns zero results",
     "Upload file storage: uploads/<uuid>-<sanitized-originalname> relative to project root",
     "Upload MIME whitelist: image/jpeg, image/png, image/webp",
     "Upload size limit: 20MB per file (multer limits.fileSize)",
     "Enrichment prompt instructs GPT-4o to respond ONLY with valid JSON: { title, description, tags, location, scene, subjects, mood, channel_hint, confidence }",
-    "After enrichment UPDATE, FTS trigger fires automatically — no manual FTS sync needed",
-    "All routes mounted under /api — register in server/src/index.js"
+    "After enrichment UPDATE, FTS trigger fires automatically \u2014 no manual FTS sync needed",
+    "All routes mounted under /api \u2014 register in server/src/index.js"
   ],
   "qualityGates": [
     "npm run lint",
@@ -66,15 +86,15 @@
   "stories": [
     {
       "id": "US-004",
-      "title": "GET /api/assets — search and filter endpoint",
-      "status": "open",
+      "title": "GET /api/assets \u2014 search and filter endpoint",
+      "status": "done",
       "dependsOn": [],
       "description": "As a content author, I want to search and filter assets via the API so I can find relevant images for my campaign.",
       "acceptanceCriteria": [
-        "server/src/routes/assets.js created — exports an Express Router",
+        "server/src/routes/assets.js created \u2014 exports an Express Router",
         "server/src/services/search.js exports searchAssets(db, params) function",
         "GET /api/assets with no params returns 200 { total: 49, assets: [...] }",
-        "Query param q: runs SELECT from assets JOIN assets_fts WHERE assets_fts MATCH ? — returns ranked results by FTS rank",
+        "Query param q: runs SELECT from assets JOIN assets_fts WHERE assets_fts MATCH ? \u2014 returns ranked results by FTS rank",
         "Query param category: adds WHERE category = ? to query",
         "Query param subcategory: adds WHERE subcategory = ? to query",
         "Query param rights_status: filters on enriched_rights_status column (values: owned, unclear, none)",
@@ -91,74 +111,94 @@
         "Supertest test: GET /api/assets?rights_status=none returns exactly 27 assets",
         "Supertest test: GET /api/assets?limit=5&offset=0 returns assets.length=5 and total=49",
         "Negative case: GET /api/assets?q=zzznomatch returns 200 { total: 0, assets: [] }"
-      ]
+      ],
+      "startedAt": "2026-03-17T15:50:47.308790+00:00",
+      "completedAt": "2026-03-17T15:58:07.495902+00:00",
+      "updatedAt": "2026-03-17T15:58:07.495612+00:00"
     },
     {
       "id": "US-005",
-      "title": "GET /api/assets/:id — asset detail endpoint",
-      "status": "open",
-      "dependsOn": ["US-004"],
+      "title": "GET /api/assets/:id \u2014 asset detail endpoint",
+      "status": "done",
+      "dependsOn": [
+        "US-004"
+      ],
       "description": "As a content author, I want full metadata for a single asset including quality analysis and CDN URL so I can review and use the asset.",
       "acceptanceCriteria": [
         "GET /api/assets/:id returns 200 with the full assets row plus computed fields",
         "Response includes cdn_url computed from scene7_domain + '/is/image/' + scene7_file (null if either missing)",
-        "Response includes quality_issues: array of strings for each issue present — 'missing_title' if both original_title and enriched_title are null/empty; 'missing_description' if both are null/empty; 'missing_rights' if enriched_rights_status = 'none'; 'missing_location' if both location fields are null/empty; 'title_equals_description' if original_title == original_description (non-null); 's7_sync_error' if s7_sync_error = 1; 'release_placeholder' if has_release_placeholder = 1",
+        "Response includes quality_issues: array of strings for each issue present \u2014 'missing_title' if both original_title and enriched_title are null/empty; 'missing_description' if both are null/empty; 'missing_rights' if enriched_rights_status = 'none'; 'missing_location' if both location fields are null/empty; 'title_equals_description' if original_title == original_description (non-null); 's7_sync_error' if s7_sync_error = 1; 'release_placeholder' if has_release_placeholder = 1",
         "Response includes display_title, display_description, display_tags computed fields",
         "Supertest test: GET /api/assets/anthem-of-the-seas-new-york-statue-liberty.jpg returns correct original_title",
         "Supertest test: an asset with enriched_rights_status='none' has 'missing_rights' in quality_issues",
         "Supertest test: an asset with has_release_placeholder=1 has 'release_placeholder' in quality_issues",
         "Supertest test: cdn_url is a correctly formatted string for an asset with scene7_file set",
         "Negative case: GET /api/assets/does-not-exist returns 404 { error: 'Asset not found' }"
-      ]
+      ],
+      "startedAt": "2026-03-17T15:58:10.357193+00:00",
+      "completedAt": "2026-03-17T16:01:47.891054+00:00",
+      "updatedAt": "2026-03-17T16:01:47.890619+00:00"
     },
     {
       "id": "US-006",
-      "title": "GET /api/filters — filter options endpoint",
-      "status": "open",
-      "dependsOn": ["US-004"],
+      "title": "GET /api/filters \u2014 filter options endpoint",
+      "status": "done",
+      "dependsOn": [
+        "US-004"
+      ],
       "description": "As a frontend developer, I want a filters endpoint that returns all distinct filter values and counts so the UI can populate filters dynamically.",
       "acceptanceCriteria": [
-        "server/src/routes/filters.js created — exports an Express Router",
+        "server/src/routes/filters.js created \u2014 exports an Express Router",
         "GET /api/filters returns 200 with { categories, subcategories, locations, rights_statuses, counts }",
         "categories: sorted array of distinct non-null category values",
         "subcategories: object keyed by category, each value is sorted array of subcategory strings e.g. { ships: ['allure','anthem','grandeur'], promotions: ['asia','casino','star-and-icon'] }",
         "locations: sorted array of distinct non-null values from both original_location and enriched_location, merged and deduplicated",
         "rights_statuses: array of { value, count } objects for 'owned', 'unclear', 'none'",
-        "counts: { total, missing_title, missing_description, missing_rights, missing_location, has_release_placeholder, s7_sync_error } — each is an integer",
+        "counts: { total, missing_title, missing_description, missing_rights, missing_location, has_release_placeholder, s7_sync_error } \u2014 each is an integer",
         "Route registered in server/src/index.js: app.use('/api/filters', filtersRouter)",
         "Supertest test: categories contains 'ships' and 'promotions'",
         "Supertest test: subcategories.ships contains 'allure', 'anthem', 'grandeur'",
         "Supertest test: counts.has_release_placeholder equals 7",
         "Supertest test: counts.total equals 49",
         "Negative case: empty database returns all arrays empty and all counts 0"
-      ]
+      ],
+      "startedAt": "2026-03-17T16:01:50.702199+00:00",
+      "completedAt": "2026-03-17T16:04:42.018813+00:00",
+      "updatedAt": "2026-03-17T16:04:42.018590+00:00"
     },
     {
       "id": "US-007",
-      "title": "POST /api/assets/upload — multi-file upload endpoint",
-      "status": "open",
-      "dependsOn": ["US-004"],
+      "title": "POST /api/assets/upload \u2014 multi-file upload endpoint",
+      "status": "done",
+      "dependsOn": [
+        "US-004"
+      ],
       "description": "As a content author, I want to upload image files so they are saved to disk and registered in the database ready for enrichment.",
       "acceptanceCriteria": [
-        "server/src/routes/upload.js created — exports an Express Router",
+        "server/src/routes/upload.js created \u2014 exports an Express Router",
         "POST /api/assets/upload accepts multipart/form-data with field name 'files' using multer().array('files')",
         "multer configured with: storage = diskStorage saving to uploads/ with filename <uuid>-<originalname>, fileFilter rejecting non-image MIME types with error 'Unsupported file type. Accepted: jpeg, png, webp', limits.fileSize = 20 * 1024 * 1024",
         "For each accepted file: generate uuid v4 as id, insert asset row with id, filename=originalname, filepath=uploads/<uuid>-<originalname>, mime_type, file_size=bytes, category='uploaded', enrichment_source='pending', created_at=now",
         "Response 201: { uploaded: N, assets: [{ id, filename, filepath }] }",
-        "Route registered in server/src/index.js: app.use('/api/assets', uploadRouter) — note: upload route is POST /api/assets/upload so it must be registered before the :id param route",
+        "Route registered in server/src/index.js: app.use('/api/assets', uploadRouter) \u2014 note: upload route is POST /api/assets/upload so it must be registered before the :id param route",
         "Supertest test: POST with a valid JPEG buffer returns 201 with an asset id",
         "Supertest test: uploaded asset is retrievable via GET /api/assets/:id",
         "Supertest test: file exists on disk at the filepath in the response",
         "Negative case: POST with a .txt file returns 400 { error: 'Unsupported file type. Accepted: jpeg, png, webp' }",
         "Negative case: POST with no files field returns 400 { error: 'No files provided' }",
         "Negative case: multer fileSize error returns 413 { error: 'File too large. Maximum size is 20MB' }"
-      ]
+      ],
+      "startedAt": "2026-03-17T16:04:45.266410+00:00",
+      "completedAt": "2026-03-17T16:09:45.581704+00:00",
+      "updatedAt": "2026-03-17T16:09:45.581408+00:00"
     },
     {
       "id": "US-008",
-      "title": "POST /api/assets/:id/enrich — OpenAI Vision enrichment endpoint",
-      "status": "open",
-      "dependsOn": ["US-007"],
+      "title": "POST /api/assets/:id/enrich \u2014 OpenAI Vision enrichment endpoint",
+      "status": "done",
+      "dependsOn": [
+        "US-007"
+      ],
       "description": "As a content author, I want uploaded images enriched with AI-generated metadata so they are immediately descriptive and searchable.",
       "acceptanceCriteria": [
         "server/src/services/enrich.js exports enrichAsset(db, id, openaiClient)",
@@ -169,14 +209,17 @@
         "Parses JSON from response, updates assets row: enriched_title, enriched_description, enriched_tags=JSON.stringify(tags), enriched_location, enriched_scene, enriched_subjects=JSON.stringify(subjects), enriched_mood, enriched_channel=channel_hint, enrichment_source='ai-vision', enrichment_confidence, updated_at=now",
         "POST /api/assets/:id/enrich route in server/src/routes/assets.js calls enrichAsset, returns 200 with updated full asset record",
         "OpenAI client initialized in server/src/index.js only if OPENAI_API_KEY is set, passed to routes via app.locals.openai",
-        "If OPENAI_API_KEY not set: route returns 503 { error: 'AI enrichment unavailable — OPENAI_API_KEY not configured' }",
+        "If OPENAI_API_KEY not set: route returns 503 { error: 'AI enrichment unavailable \u2014 OPENAI_API_KEY not configured' }",
         "Jest test (jest.mock openai): enrichAsset maps all response fields correctly to DB columns",
         "Jest test (jest.mock openai): after enrich, asset has non-null enriched_title in DB",
         "Jest test (jest.mock openai): after enrich, FTS search on enriched_title returns the asset",
-        "Negative case: asset has no filepath → 400 { error: 'No image file available for enrichment' }",
-        "Negative case: filepath not found on disk → 404 { error: 'Image file not found on disk' }",
-        "Negative case: OpenAI API throws → 502 { error: 'Enrichment failed', detail: message } — asset row unchanged"
-      ]
+        "Negative case: asset has no filepath \u2192 400 { error: 'No image file available for enrichment' }",
+        "Negative case: filepath not found on disk \u2192 404 { error: 'Image file not found on disk' }",
+        "Negative case: OpenAI API throws \u2192 502 { error: 'Enrichment failed', detail: message } \u2014 asset row unchanged"
+      ],
+      "startedAt": "2026-03-17T16:09:48.649816+00:00",
+      "completedAt": "2026-03-17T16:14:29.291434+00:00",
+      "updatedAt": "2026-03-17T16:14:29.290775+00:00"
     }
   ]
 }

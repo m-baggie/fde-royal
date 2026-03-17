@@ -1,0 +1,10 @@
+Clean working tree. US-006 is complete.
+
+**Summary:**
+- Created `server/src/routes/filters.js` — Express router with a single `GET /` handler that queries the DB for categories, subcategories (keyed by category), merged locations, rights status counts, and quality counts
+- Registered the router in `server/src/index.js` as `app.use('/api/filters', filtersRouter)`
+- Created `server/src/__tests__/filters.test.js` with 8 supertest tests covering all acceptance criteria
+- All 36 tests pass, lint clean, build passes
+- Commits: `70b0548` (feat) + `b3c3520` (chore/ralph)
+
+<promise>COMPLETE</promise>

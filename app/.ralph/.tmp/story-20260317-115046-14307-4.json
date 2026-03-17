@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "total": 5,
+  "remaining": 2,
+  "quality_gates": [
+    "npm run lint",
+    "npm run build",
+    "npm test"
+  ],
+  "id": "US-007",
+  "title": "POST /api/assets/upload \u2014 multi-file upload endpoint"
+}

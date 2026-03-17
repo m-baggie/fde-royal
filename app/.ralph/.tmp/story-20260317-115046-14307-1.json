@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "total": 5,
+  "remaining": 5,
+  "quality_gates": [
+    "npm run lint",
+    "npm run build",
+    "npm test"
+  ],
+  "id": "US-004",
+  "title": "GET /api/assets \u2014 search and filter endpoint"
+}
