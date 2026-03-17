@@ -205,7 +205,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
               >
                 {(asset.web_image_path || asset.thumbnail_path) ? (
                   <img
-                    src={asset.web_image_path || asset.thumbnail_path}
+                    src={`http://localhost:3001/api/assets/media/${asset.web_image_path || asset.thumbnail_path}`}
                     alt={asset.display_title || 'Asset'}
                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />

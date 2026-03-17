@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "project": "Royal Caribbean DAM — Enriched-First UX & Upload Review Flow",
+  "overview": "Two UX improvements: (1) flip the asset detail modal to show enriched metadata first with an optional toggle to reveal original values; (2) replace the simple upload progress flow with a two-step Review carousel where users can inspect and edit AI-proposed metadata per image before committing to the database.",
+  "goals": [
+    "Show enriched metadata as the primary view in AssetDetailModal with a toggle for original",
+    "Add a Review step to UploadModal: after enrichment, show a scrollable list of image cards with editable title, description, tags, location fields",
+    "Allow editing individual images and submitting one at a time, or editing all and submitting all at once",
+    "Hold all edits in local React state until user explicitly submits — nothing saved to DB until then"
+  ],
+  "nonGoals": [
+    "No new API endpoints — use existing POST /api/assets/:id/enrich and a new PATCH /api/assets/:id for user edits",
+    "No bulk re-enrichment from the UI",
+    "No editing of original_* fields — only enriched_* fields are updated on submit",
+    "No multi-step wizard outside of the UploadModal"
+  ],
+  "successMetrics": [
+    "AssetDetailModal defaults to showing enriched values; 'Show Original' toggle reveals side-by-side",
+    "After upload + enrichment, UploadModal advances to a Review step showing all uploaded images as editable cards",
+    "Submitting edits for a single image calls PATCH /api/assets/:id and shows a success state on that card",
+    "Submit All saves all edited images in sequence and shows a final summary"
+  ],
+  "openQuestions": [],
+  "stack": {
+    "backend": "Express.js (Node 20) — server/src/",
+    "frontend": "React 18 + Vite — client/src/",
+    "database": "SQLite via better-sqlite3",
+    "auth": "None"
+  },
+  "routes": [
+    {
+      "path": "PATCH /api/assets/:id",
+      "name": "Update Asset Enriched Fields",
+      "purpose": "Accept user-edited enriched fields (enriched_title, enriched_description, enriched_tags, enriched_location) and write them to the assets table. Sets enrichment_source='user-edited'."
+    }
+  ],
+  "uiNotes": [
+    "AssetDetailModal: default view shows enriched values in a single-column layout. Add a 'Show Original' toggle button (top-right of metadata panel). When toggled on, render two-column layout (Original | Enriched) as before.",
+    "Enriched values shown in navy text (#001B6B). Empty enriched cells show 'Not enriched' in grey italic.",
+    "UploadModal steps: Step 1 = drop zone (existing), Step 2 = enrichment progress (existing per-file status), Step 3 = Review (new)",
+    "Auto-advance to Review step once ALL files have status 'done' or 'error'",
+    "Review step: scrollable vertical list of ReviewCard components, one per successfully enriched file",
+    "ReviewCard layout: left = thumbnail (150px square), right = editable fields (title, description, tags, location) + a 'Submit' button per card",
+    "Fields: title and description are single-line and multi-line text inputs respectively. Tags is a comma-separated text input. Location is a text input.",
+    "Each ReviewCard starts with AI-proposed values pre-filled. User can edit any field.",
+    "Per-card submit button label: 'Save' — on click calls PATCH /api/assets/:id, then shows green checkmark and disables the card",
+    "At top of Review step: 'Submit All' button — saves all unsubmitted cards in sequence, shows a progress count 'Saving X of Y...'",
+    "After all cards saved: show 'Done! X assets added to library.' with a 'View Assets' button that closes modal and refreshes grid",
+    "Error-state cards (enrichment failed) shown greyed out with message 'Enrichment failed — asset saved without AI metadata'. No submit button.",
+    "Review step header: 'Review & Edit Enriched Metadata' with a subtitle showing count: 'X images ready for review'"
+  ],
+  "dataModel": [
+    {
+      "entity": "assets (existing)",
+      "description": "PATCH endpoint updates enriched fields only",
+      "fields": [
+        "enriched_title TEXT",
+        "enriched_description TEXT",
+        "enriched_tags TEXT (JSON array string)",
+        "enriched_location TEXT",
+        "enrichment_source TEXT — set to 'user-edited' on PATCH"
+      ]
+    }
+  ],
+  "rules": [
+    "PATCH /api/assets/:id accepts body: { enriched_title, enriched_description, enriched_tags, enriched_location } — all optional, only provided fields are updated",
+    "enriched_tags in PATCH body may be a string (comma-separated) or array — normalize to JSON array string before saving",
+    "PATCH sets enrichment_source = 'user-edited' and updated_at = now()",
+    "PATCH updates FTS5 row after DB update (same trigger as UPDATE)",
+    "AssetDetailModal: 'Show Original' toggle state is local — resets to hidden each time modal opens",
+    "UploadModal: Review step only shows assets where upload succeeded (status was 'done' or 'enriching-done') — skip files that failed upload",
+    "ReviewCard edits are held in local state (useState per card) — not sent to API until Save or Submit All is clicked",
+    "Submit All iterates cards in order, calling PATCH sequentially — failure on one card logs it but continues to next"
+  ],
+  "qualityGates": [
+    "npm run lint",
+    "npm run build",
+    "npm test"
+  ],
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "PATCH /api/assets/:id — update enriched fields endpoint",
+      "status": "open",
+      "dependsOn": [],
+      "description": "As a developer, I want a PATCH endpoint to update enriched metadata fields so user edits from the Review step can be persisted.",
+      "acceptanceCriteria": [
+        "PATCH /api/assets/:id added to server/src/routes/assets.js",
+        "Accepts JSON body with any subset of: enriched_title (string), enriched_description (string), enriched_tags (string or array), enriched_location (string)",
+        "Normalizes enriched_tags: if array, JSON.stringify it; if comma-separated string, split/trim/JSON.stringify; if already JSON string, keep as-is",
+        "Updates only the fields provided in the request body — omitted fields are not changed",
+        "Sets enrichment_source = 'user-edited' and updated_at = current ISO timestamp",
+        "Returns the full updated asset record with 200 status",
+        "client/src/api/assets.js exports updateAsset(id, fields) that calls PATCH /api/assets/:id",
+        "Supertest test: PATCH with { enriched_title: 'New Title' } updates only enriched_title, leaves other fields unchanged",
+        "Supertest test: PATCH with enriched_tags as array saves as JSON string",
+        "Supertest test: PATCH with enriched_tags as 'a, b, c' saves as '[\"a\",\"b\",\"c\"]'",
+        "Negative case: PATCH /api/assets/nonexistent returns 404 { error: 'Asset not found' }",
+        "Negative case: PATCH with empty body returns 400 { error: 'No fields provided' }"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "AssetDetailModal — enriched-first view with Show Original toggle",
+      "status": "open",
+      "dependsOn": [],
+      "description": "As a content author, I want to see enriched metadata by default in the asset detail so the best available data is front and centre.",
+      "acceptanceCriteria": [
+        "AssetDetailModal default view: single-column metadata table showing enriched value if present, else original value, else grey italic 'Not enriched'",
+        "Add a 'Show Original' toggle button in the top-right of the metadata panel (navy outline button, small)",
+        "When 'Show Original' is active: render two-column layout with headers 'Original' and 'Enriched' (existing side-by-side layout)",
+        "Toggle button label changes to 'Hide Original' when active",
+        "Metadata rows shown: Title, Description, Tags, Location, Creator, Rights Owner, Usage Terms, Channel, Format",
+        "Enriched values displayed in navy text (#001B6B); empty enriched fields show '—' in grey",
+        "Toggle state resets to hidden (enriched-only) each time the modal is opened",
+        "Vitest test: modal renders enriched_title as primary title when present",
+        "Vitest test: 'Show Original' button is present in the metadata panel",
+        "Vitest test: clicking 'Show Original' button renders both 'Original' and 'Enriched' column headers",
+        "Negative case: asset with no enriched data at all shows original values with a 'Not yet enriched' banner and 'Enrich with AI' button (existing behaviour preserved)"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "UploadModal — Review step with editable enrichment cards",
+      "status": "open",
+      "dependsOn": ["US-001"],
+      "description": "As a content author, I want to review and edit AI-proposed metadata for my uploaded images before saving so I can ensure accuracy before assets go into the library.",
+      "acceptanceCriteria": [
+        "UploadModal adds a third step: Review (after Upload and Enriching progress)",
+        "Auto-advances to Review step when all files have reached a terminal status (done, error, or enrichment-unavailable)",
+        "Review step renders a scrollable list of ReviewCard components — one per successfully uploaded file",
+        "ReviewCard shows: thumbnail (150px square, using /api/assets/media/<thumbnail_path> or a placeholder), filename as card header, and editable fields: Title (text input), Description (textarea), Tags (text input, comma-separated), Location (text input)",
+        "Each field is pre-filled with AI-enriched values from the uploaded asset record",
+        "Each ReviewCard has a 'Save' button — on click calls updateAsset(id, editedFields), shows spinner during save, then green checkmark; card becomes read-only after save",
+        "Review step header shows: 'Review & Edit Enriched Metadata' and 'X images ready for review'",
+        "'Submit All' button at top of review list — on click saves all unsaved cards in sequence; button shows 'Saving X of Y...' during progress",
+        "After all saved: shows 'Done! X assets added to library.' with 'View Assets' button that closes modal and triggers asset grid refresh",
+        "Failed-upload cards shown greyed out with 'Upload failed' label — no editable fields, no Save button",
+        "Enrichment-unavailable cards shown with original filename and a note 'Saved without AI metadata' — fields editable, can still be submitted",
+        "Vitest test: ReviewCard renders pre-filled title input with enriched_title value",
+        "Vitest test: editing title input and clicking Save calls updateAsset with new title",
+        "Vitest test: Submit All button calls updateAsset for each unsaved card",
+        "Vitest test: successfully saved card shows checkmark and inputs become disabled",
+        "Negative case: if Save fails for a card, shows error message on that card and re-enables the Save button — does not block other cards"
+      ]
+    }
+  ]
+}
