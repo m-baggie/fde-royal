@@ -3,6 +3,28 @@
 const { Router } = require('express');
 const db = require('../db');
 
+function normalizeChannel(filename, width, height) {
+  const f = (filename || '').toLowerCase();
+  if (f.includes('hero')) return 'hero';
+  if (f.includes('banner')) return 'banner';
+  if (f.includes('mobile')) return 'mobile';
+  if (f.includes('desktop')) return 'desktop';
+  if (f.includes('-bg') || f.includes('_bg') || f.includes('background')) return 'background';
+  if (width && height) {
+    if (width === height) return 'square';
+    if (width / height > 2.5) return 'leaderboard';
+    if (width > height) return 'landscape';
+    if (height > width) return 'portrait';
+  }
+  return null;
+}
+
+function normalizeLocation(loc) {
+  if (!loc) return null;
+  if (/^open ocean/i.test(loc)) return 'Open Ocean';
+  return loc;
+}
+
 const router = Router();
 
 /**
@@ -50,15 +72,11 @@ router.get('/', (req, res) => {
       subcategories[category].push(subcategory);
     }
 
-    // channels — distinct enriched_channel values
-    const channelRows = db
-      .prepare(
-        `SELECT DISTINCT enriched_channel AS channel FROM assets
-         WHERE enriched_channel IS NOT NULL
-         ORDER BY enriched_channel ASC`
-      )
-      .all();
-    const channels = channelRows.map((r) => r.channel);
+    // channels — normalize from filename keywords, fall back to AI value
+    const channelAssets = db.prepare('SELECT filename, width, height FROM assets').all();
+    const channels = [...new Set(
+      channelAssets.map((a) => normalizeChannel(a.filename, a.width, a.height)).filter(Boolean)
+    )].sort();
 
     // scenes — distinct enriched_scene values
     const sceneRows = db
@@ -78,7 +96,7 @@ router.get('/', (req, res) => {
          SELECT enriched_location AS loc FROM assets WHERE enriched_location IS NOT NULL`
       )
       .all();
-    const locations = [...new Set(locRows.map((r) => r.loc))].sort();
+    const locations = [...new Set(locRows.map((r) => normalizeLocation(r.loc)).filter(Boolean))].sort();
 
     // rights_statuses
     const rightsRows = db

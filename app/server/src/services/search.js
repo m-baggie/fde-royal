@@ -174,7 +174,7 @@ function formatAssets(rows) {
       web_image_path: row.web_image_path,
       enriched_rights_status: row.enriched_rights_status,
       enrichment_source: row.enrichment_source,
-      enriched_channel: row.enriched_channel,
+      enriched_channel: normalizeChannel(row.filename, row.width, row.height),
       enriched_scene: row.enriched_scene,
       width: row.width,
       height: row.height,
@@ -185,6 +185,22 @@ function formatAssets(rows) {
       has_release_placeholder: row.has_release_placeholder,
     };
   });
+}
+
+function normalizeChannel(filename, width, height) {
+  const f = (filename || '').toLowerCase();
+  if (f.includes('hero')) return 'hero';
+  if (f.includes('banner')) return 'banner';
+  if (f.includes('mobile')) return 'mobile';
+  if (f.includes('desktop')) return 'desktop';
+  if (f.includes('-bg') || f.includes('_bg') || f.includes('background')) return 'background';
+  if (width && height) {
+    if (width === height) return 'square';
+    if (width / height > 2.5) return 'leaderboard';
+    if (width > height) return 'landscape';
+    if (height > width) return 'portrait';
+  }
+  return null;
 }
 
 function tryParseJson(str) {

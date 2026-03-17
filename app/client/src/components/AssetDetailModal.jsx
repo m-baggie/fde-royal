@@ -27,6 +27,16 @@ const METADATA_ROWS = [
   { label: 'Format',      origKey: 'file_format',          enrichedKey: 'enriched_format' },
 ];
 
+function formatCellValue(label, value) {
+  if (label === 'Tags' && value) {
+    try {
+      const arr = typeof value === 'string' ? JSON.parse(value) : value;
+      if (Array.isArray(arr)) return arr.join(', ');
+    } catch {}
+  }
+  return value;
+}
+
 function formatFileSize(bytes) {
   if (!bytes) return '—';
   if (bytes < 1024) return `${bytes} B`;
@@ -40,6 +50,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
   const [enriching, setEnriching] = useState(false);
   const [copyLabel, setCopyLabel] = useState('Copy');
   const [toast, setToast] = useState(null);
+  const [showOriginal, setShowOriginal] = useState(false);
   const copyTimeoutRef = useRef(null);
   const toastTimeoutRef = useRef(null);
 
@@ -48,6 +59,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
     if (!selectedAssetId) return;
     setLoading(true);
     setAsset(null);
+    setShowOriginal(false);
     getAsset(selectedAssetId)
       .then((data) => {
         setAsset(data);
@@ -271,7 +283,25 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                 {asset.display_title || asset.filename}
               </h2>
 
-              {/* Metadata comparison table */}
+              {/* Metadata table — enriched-first with Show Original toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: '#6b7280' }}>Metadata</span>
+                <button
+                  data-testid="show-original-toggle"
+                  onClick={() => setShowOriginal((v) => !v)}
+                  style={{
+                    fontSize: '12px',
+                    padding: '3px 10px',
+                    borderRadius: '6px',
+                    border: `1px solid ${NAVY}`,
+                    backgroundColor: showOriginal ? NAVY : '#fff',
+                    color: showOriginal ? '#fff' : NAVY,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {showOriginal ? 'Hide Original' : 'Show Original'}
+                </button>
+              </div>
               <table
                 style={{
                   width: '100%',
@@ -282,39 +312,16 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
               >
                 <thead>
                   <tr>
-                    <th
-                      style={{
-                        width: '100px',
-                        textAlign: 'left',
-                        padding: '6px 8px',
-                        color: '#6b7280',
-                        fontWeight: '600',
-                        borderBottom: '2px solid #e5e7eb',
-                      }}
-                    >
+                    <th style={{ width: '100px', textAlign: 'left', padding: '6px 8px', color: '#6b7280', fontWeight: '600', borderBottom: '2px solid #e5e7eb' }}>
                       Field
                     </th>
-                    <th
-                      style={{
-                        textAlign: 'left',
-                        padding: '6px 8px',
-                        color: NAVY,
-                        fontWeight: '600',
-                        borderBottom: '2px solid #e5e7eb',
-                      }}
-                    >
-                      Original
-                    </th>
-                    <th
-                      style={{
-                        textAlign: 'left',
-                        padding: '6px 8px',
-                        color: NAVY,
-                        fontWeight: '600',
-                        borderBottom: '2px solid #e5e7eb',
-                      }}
-                    >
-                      Enriched
+                    {showOriginal && (
+                      <th style={{ textAlign: 'left', padding: '6px 8px', color: '#6b7280', fontWeight: '600', borderBottom: '2px solid #e5e7eb' }}>
+                        Original
+                      </th>
+                    )}
+                    <th style={{ textAlign: 'left', padding: '6px 8px', color: NAVY, fontWeight: '600', borderBottom: '2px solid #e5e7eb' }}>
+                      {showOriginal ? 'Enriched' : 'Value'}
                     </th>
                   </tr>
                 </thead>
@@ -322,31 +329,27 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                   {METADATA_ROWS.map(({ label, origKey, enrichedKey }) => {
                     const origVal = origKey ? (asset[origKey] ?? null) : null;
                     const enrichedVal = enrichedKey ? (asset[enrichedKey] ?? null) : null;
+                    const displayVal = enrichedVal ?? origVal;
                     const isImproved = enrichedVal !== null && enrichedVal !== origVal;
                     return (
                       <tr key={label} style={{ borderTop: '1px solid #f3f4f6' }}>
-                        <td
-                          style={{
-                            padding: '6px 8px',
-                            color: '#6b7280',
-                            fontWeight: '500',
-                            verticalAlign: 'top',
-                          }}
-                        >
+                        <td style={{ padding: '6px 8px', color: '#6b7280', fontWeight: '500', verticalAlign: 'top' }}>
                           {label}
                         </td>
-                        <td style={{ padding: '6px 8px', color: '#374151', verticalAlign: 'top' }}>
-                          {origVal != null ? origVal : <span style={{ color: '#9ca3af' }}>—</span>}
-                        </td>
+                        {showOriginal && (
+                          <td style={{ padding: '6px 8px', color: '#374151', verticalAlign: 'top' }}>
+                            {origVal != null ? origVal : <span style={{ color: '#9ca3af' }}>—</span>}
+                          </td>
+                        )}
                         <td
                           style={{
                             padding: '6px 8px',
                             color: enrichedVal != null ? NAVY : '#9ca3af',
                             verticalAlign: 'top',
-                            borderLeft: isImproved ? `3px solid ${GOLD}` : undefined,
+                            borderLeft: showOriginal && isImproved ? `3px solid ${GOLD}` : undefined,
                           }}
                         >
-                          {enrichedVal != null ? enrichedVal : <span style={{ color: '#9ca3af' }}>—</span>}
+                          {displayVal != null ? formatCellValue(label, displayVal) : <span style={{ color: '#9ca3af' }}>Not enriched</span>}
                         </td>
                       </tr>
                     );
