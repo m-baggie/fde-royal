@@ -1,0 +1,21 @@
+US-012 is complete. Summary of what was implemented:
+
+**`client/src/components/UploadModal.jsx`** (new)
+- Fixed full-screen overlay (same style as AssetDetailModal)
+- "Upload Assets" header + × close + ESC close + body scroll lock
+- Drop zone: 2px dashed `#C8960C` border, 200px min-height, solid border + light gold bg on dragover
+- Hidden `<input type="file">` triggered by zone click; folder mode toggle (webkitdirectory)
+- Client-side validation: >20MB → "Too large (max 20MB)" red; wrong MIME → "Unsupported type" red
+- Submit: batched `uploadFiles(formData)` → per-file `enrichAsset(id)` via `Promise.allSettled`
+- Per-file status badges: Pending (grey) → Uploading (blue) → Enriching (purple) → Done ✓ (green) / Upload failed (red) / Uploaded — enrichment unavailable (amber)
+- "View in library" button after all files settle → calls `onUploadComplete`
+
+**`client/src/components/UploadModal.test.jsx`** (new, 8 tests) — all AC covered including negative cases
+
+**`BrowsePage.jsx`** — accepts `isUploadOpen`/`onUploadRequestClose` props, mounts UploadModal, `refreshKey` triggers `getAssets` reload on upload complete
+
+**`App.jsx`** — wires Upload button → `uploadOpen` state → BrowsePage
+
+Quality gates: **32/32 tests PASS**, lint PASS, build PASS (204 kB), browser PASS
+
+<promise>COMPLETE</promise>

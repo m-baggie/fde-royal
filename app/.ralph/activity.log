@@ -1,11 +1,12 @@
 # Activity Log
 
 ## Run Summary
-- 2026-03-17 12:14:28 | run=20260317-115046-14307 | iter=5 | mode=build | story=US-008 | duration=281s | status=success
-- 2026-03-17 12:09:44 | run=20260317-115046-14307 | iter=4 | mode=build | story=US-007 | duration=300s | status=success
-- 2026-03-17 12:04:40 | run=20260317-115046-14307 | iter=3 | mode=build | story=US-006 | duration=169s | status=success
-- 2026-03-17 12:01:47 | run=20260317-115046-14307 | iter=2 | mode=build | story=US-005 | duration=216s | status=success
-- 2026-03-17 11:58:06 | run=20260317-115046-14307 | iter=1 | mode=build | story=US-004 | duration=440s | status=success
+- 2026-03-17 12:38:59 | run=20260317-115411-18011 | iter=5 | mode=build | story=US-012 | duration=722s | status=success
+- 2026-03-17 12:26:54 | run=20260317-115411-18011 | iter=4 | mode=build | story=US-011 | duration=255s | status=success
+- 2026-03-17 12:22:35 | run=20260317-115411-18011 | iter=3 | mode=build | story=US-011 | duration=775s | status=success
+- 2026-03-17 12:20:00 | run=20260317-115411-18011 | iter=3 | mode=build | story=US-011 | status=success
+- 2026-03-17 12:09:36 | run=20260317-115411-18011 | iter=2 | mode=build | story=US-010 | duration=539s | status=success
+- 2026-03-17 12:00:33 | run=20260317-115411-18011 | iter=1 | mode=build | story=US-009 | duration=381s | status=success
 - 2026-03-17 11:44:34 | run=20260317-112130-86970 | iter=3 | mode=build | story=US-003 | duration=651s | status=success
 - 2026-03-17 11:33:40 | run=20260317-112130-86970 | iter=2 | mode=build | story=US-002 | duration=341s | status=success
 - 2026-03-17 11:27:56 | run=20260317-112130-86970 | iter=1 | mode=build | story=US-001 | duration=385s | status=success
@@ -19,26 +20,31 @@
 [2026-03-17 11:33:45] ITERATION 3 start (mode=build story=US-003)
 [2026-03-17 11:38:33] US-003: Starting XML ingest service implementation
 [2026-03-17 11:44:34] ITERATION 3 end (duration=651s)
-[2026-03-17 11:50:48] ITERATION 1 start (mode=build story=US-004)
-[2026-03-17 11:51:00] US-004: Starting implementation — GET /api/assets search and filter endpoint
-[2026-03-17 11:56:30] US-004: Implemented search.js, routes/assets.js, assets.test.js, jest.globalSetup.js; all tests pass
-[2026-03-17 11:57:30] US-004: Progress log updated; story complete
-[2026-03-17 11:58:06] ITERATION 1 end (duration=440s)
-[2026-03-17 11:58:11] ITERATION 2 start (mode=build story=US-005)
-[2026-03-17 12:00:00] US-005: Implemented GET /api/assets/:id with cdn_url, quality_issues, display fields; all 28 tests pass
-[2026-03-17 12:00:30] US-005: Progress log updated; story complete
-[2026-03-17 12:01:47] ITERATION 2 end (duration=216s)
-[2026-03-17 12:01:51] ITERATION 3 start (mode=build story=US-006)
-[2026-03-17 12:04:40] ITERATION 3 end (duration=169s)
-[2026-03-17 12:04:48] ITERATION 4 start (mode=build story=US-007)
-[2026-03-17 12:08:00] US-007: Starting implementation of POST /api/assets/upload endpoint
-[2026-03-17 12:08:30] US-007: Created routes/upload.js with multer diskStorage, fileFilter, size limits; registered before assets router in index.js
-[2026-03-17 12:08:40] US-007: Created upload.test.js — 6 tests; all 42 tests pass, lint clean, build passes
-[2026-03-17 12:08:50] US-007: Committed 217f7e1; progress log updated
-[2026-03-17 12:09:44] ITERATION 4 end (duration=300s)
-[2026-03-17 12:09:49] ITERATION 5 start (mode=build story=US-008)
-[2026-03-17 12:13:00] US-008: Starting implementation of POST /api/assets/:id/enrich endpoint
-[2026-03-17 12:13:30] US-008: Created services/enrich.js, updated routes/assets.js and index.js with OpenAI client init
-[2026-03-17 12:13:40] US-008: Created enrich.test.js — 9 tests covering field mapping, FTS search, all error cases; 53 total tests pass, lint clean, build passes
-[2026-03-17 12:14:00] US-008: Committed 345d9a4; progress log updated
-[2026-03-17 12:14:28] ITERATION 5 end (duration=281s)
+[2026-03-17 11:54:12] ITERATION 1 start (mode=build story=US-009)
+[2026-03-17 11:58:00] US-009: Implemented Header.jsx, App.jsx, api/assets.js and tests
+[2026-03-17 11:59:00] US-009: All 10 Vitest tests pass; lint and build pass; browser verified
+[2026-03-17 11:59:30] US-009: Committed f484717; progress log updated
+[2026-03-17 12:00:33] ITERATION 1 end (duration=381s)
+[2026-03-17 12:00:37] ITERATION 2 start (mode=build story=US-010)
+[2026-03-17 12:03:56] [US-010] START: Beginning implementation of Search and browse page — BrowsePage, SearchBar, FilterSidebar, AssetGrid, AssetCard, SkeletonCard, AssetDetailModal
+[2026-03-17 12:07:55] [US-010] CODE: Implemented BrowsePage, SearchBar, FilterSidebar, AssetGrid, AssetCard, SkeletonCard, AssetDetailModal; updated App.jsx and App.test.jsx
+[2026-03-17 12:07:55] [US-010] VERIFY: lint PASS, build PASS (192kB), vitest 16/16 PASS, browser check PASS (error banner visible when server offline)
+[2026-03-17 12:09:24] [US-010] COMPLETE: committed eaa5bea, progress log updated, all quality gates passed
+[2026-03-17 12:09:36] ITERATION 2 end (duration=539s)
+[2026-03-17 12:09:42] ITERATION 3 start (mode=build story=US-011)
+[2026-03-17 12:12:00] [US-011] START: Implementing AssetDetailModal — full detail modal with fetch, metadata table, quality badges, CDN copy, enrich button
+[2026-03-17 12:17:00] [US-011] CODE: AssetDetailModal.jsx fully rewritten; AssetDetailModal.test.jsx created (8 tests); BrowsePage.jsx updated to pass selectedAssetId
+[2026-03-17 12:18:00] [US-011] VERIFY: lint PASS, build PASS (198kB), vitest 24/24 PASS, browser modal verified with left/right panels, badges, CDN URL, Enrich button
+[2026-03-17 12:20:00] [US-011] COMPLETE: committed f9ee19e, progress log updated
+[2026-03-17 12:22:35] ITERATION 3 end (duration=775s)
+[2026-03-17 12:22:41] ITERATION 4 start (mode=build story=US-011)
+[2026-03-17 12:24:00] [US-011] ITER-4: Verifying existing implementation — all quality gates re-run, browser verification completed
+[2026-03-17 12:25:00] [US-011] VERIFY: lint PASS, build PASS (198kB, 90 modules), vitest 24/24 PASS, browser modal: display_title, closeBtn, enrichBtn, copyBtn, qualityBadge all confirmed present
+[2026-03-17 12:25:30] [US-011] COMPLETE: Committing leftover run/log files, appending iter-4 progress entry
+[2026-03-17 12:26:54] ITERATION 4 end (duration=255s)
+[2026-03-17 12:26:59] ITERATION 5 start (mode=build story=US-012)
+[2026-03-17 12:32:29] [US-012] START: Starting implementation — UploadModal component with per-file enrichment status
+[2026-03-17 12:35:18] [US-012] CODE: UploadModal.jsx + UploadModal.test.jsx created; BrowsePage.jsx + App.jsx updated for upload integration
+[2026-03-17 12:37:20] [US-012] VERIFY: All tests pass (32/32), lint+build PASS, browser: modal opens, drop zone correct, ESC closes, folder toggle works
+[2026-03-17 12:38:25] [US-012] PROGRESS: Updated progress.md with US-012 entry
+[2026-03-17 12:38:59] ITERATION 5 end (duration=722s)

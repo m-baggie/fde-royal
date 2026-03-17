@@ -1,0 +1,10 @@
+Working tree is clean. US-011 is fully complete and verified.
+
+**Summary:**
+- **Lint:** PASS
+- **Build:** PASS (198 kB, 90 modules)
+- **Tests:** PASS (24/24 Vitest)
+- **Browser:** PASS — modal confirmed with all ACs: overlay, left panel (image placeholder, filename, dimensions, format badge), right panel (metadata table with navy headers, gold left-border on enriched diffs), quality badge ("No Rights Data" red), CDN URL + Copy button, "Enrich with AI" gold button, × close
+- **Commits:** `df78b50` + `d78b18e` — working tree clean
+
+<promise>COMPLETE</promise>

@@ -1,0 +1,11 @@
+Clean working tree. US-009 is complete.
+
+**Summary:**
+
+- `client/src/components/Header.jsx` — fixed 64px navy header with gold border, "Royal Caribbean" white bold + "DAM Asset Intelligence" gold subtitle, gold Upload button
+- `client/src/App.jsx` — renders `<Header onUploadClick>` above `<main style={{ paddingTop: '64px' }}>`
+- `client/src/api/assets.js` — axios instance (`baseURL: http://localhost:3001`) with all 5 exported functions; errors propagate to callers
+- Tests: 10 Vitest tests pass (3 Header, 6 API, 1 App); `vi.hoisted()` used to share mock fns with hoisted `vi.mock` factory
+- Browser verified: header renders correctly at localhost:5174
+
+<promise>COMPLETE</promise>

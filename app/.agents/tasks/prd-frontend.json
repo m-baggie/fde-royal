@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "project": "Royal Caribbean DAM — Frontend",
+  "project": "Royal Caribbean DAM \u2014 Frontend",
   "overview": "Build the full React UI on top of the completed foundation. Covers the branded app shell, search and browse page with filters, asset detail modal, and the upload component with AI enrichment flow. Run this PRD in a feature/frontend worktree in parallel with the API PRD after the Foundation PRD has been merged.",
   "goals": [
     "Royal Caribbean branded app shell with header and layout",
@@ -9,7 +9,7 @@
     "Upload component with drag-and-drop, folder support, and per-file enrichment status"
   ],
   "nonGoals": [
-    "No Express route implementation — that is the API PRD",
+    "No Express route implementation \u2014 that is the API PRD",
     "No user authentication",
     "No production deployment",
     "No direct database access from the frontend"
@@ -23,8 +23,8 @@
   ],
   "openQuestions": [],
   "assumptions": [
-    "Foundation PRD is complete and merged — scaffold, SQLite, and 49 ingested assets all exist",
-    "API PRD is complete or running in parallel — all /api/* endpoints are available at http://localhost:3001",
+    "Foundation PRD is complete and merged \u2014 scaffold, SQLite, and 49 ingested assets all exist",
+    "API PRD is complete or running in parallel \u2014 all /api/* endpoints are available at http://localhost:3001",
     "client/ directory with Vite, React 18, axios, vitest, and @testing-library/react already installed"
   ],
   "stack": {
@@ -34,7 +34,11 @@
     "linting": "ESLint (already configured)"
   },
   "routes": [
-    { "path": "/", "name": "Search & Browse", "purpose": "Main page — search bar, filter sidebar, asset grid" }
+    {
+      "path": "/",
+      "name": "Search & Browse",
+      "purpose": "Main page \u2014 search bar, filter sidebar, asset grid"
+    }
   ],
   "uiNotes": [
     "Brand colors: Navy #001B6B (primary), Gold #C8960C (accent), LGRAY #F2F4F8 (card/sidebar bg), DGRAY #1A1A2E (text)",
@@ -42,16 +46,16 @@
     "Layout: header fixed top, below = flex row. Left sidebar 260px fixed, right = fluid main with asset grid",
     "Sidebar: white bg, 1px right border #E0E0E0, overflow-y auto. Sections: Category, Subcategory, Rights Status, Location, Metadata Quality",
     "Asset card: white bg, 8px border-radius, box-shadow on hover, overflow hidden. Top: 16:9 img (object-fit cover, grey bg placeholder). Body: 10px padding, 2-line clamped title (13px bold), badges row",
-    "Rights dot: 8px circle — green #27AE60 (owned), amber #E67E22 (unclear), red #C0392B (none)",
-    "Warning icon: shown on card if quality_issues.length > 0 — amber triangle ⚠",
+    "Rights dot: 8px circle \u2014 green #27AE60 (owned), amber #E67E22 (unclear), red #C0392B (none)",
+    "Warning icon: shown on card if quality_issues.length > 0 \u2014 amber triangle \u26a0",
     "Detail modal: fixed overlay full-screen, z-index 1000, semi-transparent black bg. White panel centered 90vw max-width 1100px, max-height 90vh, overflow auto",
     "Modal left panel (40%): image, filename, dimensions, file size, format",
     "Modal right panel (60%): two-column metadata table headers 'Original' | 'Enriched'. Enriched values in navy; grey dash if null. Gold left border on enriched cell if value differs from original",
     "Quality Issues badges in modal: red bg for 'release_placeholder' and 'missing_rights'; amber for others",
-    "CDN URL: monospace code block, copy button — shows 'Copied!' for 2s",
+    "CDN URL: monospace code block, copy button \u2014 shows 'Copied!' for 2s",
     "Upload modal: full-screen overlay. Drag-drop zone centered, dashed 2px border #C8960C, transitions to solid on dragover. File list below zone with per-file rows",
     "File status colors: pending=grey, uploading=blue, enriching=purple, done=green #27AE60, error=red",
-    "Skeleton cards: grey animated shimmer rectangles matching card dimensions — show 12 while loading"
+    "Skeleton cards: grey animated shimmer rectangles matching card dimensions \u2014 show 12 while loading"
   ],
   "dataModel": [
     {
@@ -102,8 +106,8 @@
   "rules": [
     "Thumbnail URL: if thumbnail_path set, request from GET http://localhost:3001/thumbnails/<thumbnail_path>; else show grey placeholder div",
     "All API calls use baseURL http://localhost:3001",
-    "Search is debounced 300ms — do not fire a new API request on every keystroke",
-    "All active filters are combined into a single getAssets() call — one request per filter change",
+    "Search is debounced 300ms \u2014 do not fire a new API request on every keystroke",
+    "All active filters are combined into a single getAssets() call \u2014 one request per filter change",
     "Parse display_tags from JSON string if it arrives as a string, else treat as array",
     "Modal scroll lock: add overflow:hidden to body when modal is open, remove on close",
     "ESC key closes any open modal (both detail and upload)",
@@ -118,7 +122,7 @@
     {
       "id": "US-009",
       "title": "App shell, layout, and API client",
-      "status": "open",
+      "status": "done",
       "dependsOn": [],
       "description": "As a developer, I want a branded app shell with a consistent layout and a centralised API client so all pages share structure and API calls are in one place.",
       "acceptanceCriteria": [
@@ -135,23 +139,28 @@
         "Vitest test: Header renders text 'DAM Asset Intelligence'",
         "Vitest test: Header renders a button with text 'Upload'",
         "Vitest test: getAssets called with { category: 'ships' } makes GET to /api/assets?category=ships (mock axios)",
-        "Negative case: axios network error propagates — callers handle it, app does not crash"
-      ]
+        "Negative case: axios network error propagates \u2014 callers handle it, app does not crash"
+      ],
+      "startedAt": "2026-03-17T15:54:11.393152+00:00",
+      "completedAt": "2026-03-17T16:00:33.872941+00:00",
+      "updatedAt": "2026-03-17T16:00:33.872402+00:00"
     },
     {
       "id": "US-010",
       "title": "Search and browse page",
-      "status": "open",
-      "dependsOn": ["US-009"],
+      "status": "done",
+      "dependsOn": [
+        "US-009"
+      ],
       "description": "As a content author, I want to search and browse assets on the main page with live filters so I can find the right image quickly.",
       "acceptanceCriteria": [
         "client/src/pages/BrowsePage.jsx is the main page rendered at route /",
         "client/src/components/SearchBar.jsx: text input full-width, placeholder 'Search by keyword, location, mood, ship...', onChange updates q state, debounced 300ms using setTimeout/clearTimeout in useEffect",
         "client/src/components/FilterSidebar.jsx: 260px fixed left panel. Sections (each collapsible with a toggle arrow): Category (ships/promotions chips from getFilters()), Subcategory (dynamic chips under selected category), Rights Status (owned/unclear/none chips), Location (select dropdown from getFilters()), Metadata Quality (toggle chips: 'Missing Title', 'Missing Rights', 'Release Placeholder')",
-        "Active filters shown as removable chips in a row below SearchBar. Each chip has an × button that clears that filter",
+        "Active filters shown as removable chips in a row below SearchBar. Each chip has an \u00d7 button that clears that filter",
         "All filter state managed in BrowsePage, passed to getAssets() as params on any change",
         "client/src/components/AssetGrid.jsx: CSS grid, repeat(auto-fill, minmax(200px, 1fr)), gap 16px",
-        "client/src/components/AssetCard.jsx: white card, 8px border-radius, hover shadow. Top: aspect-ratio 16/9 img with object-fit cover (grey #E8E8E8 bg if no thumbnail). Body: 10px padding, 2-line clamped display_title (13px bold #1A1A2E), badges row showing category pill and rights dot, amber ⚠ icon if quality_issues.length > 0",
+        "client/src/components/AssetCard.jsx: white card, 8px border-radius, hover shadow. Top: aspect-ratio 16/9 img with object-fit cover (grey #E8E8E8 bg if no thumbnail). Body: 10px padding, 2-line clamped display_title (13px bold #1A1A2E), badges row showing category pill and rights dot, amber \u26a0 icon if quality_issues.length > 0",
         "Results count label above grid: 'Showing {assets.length} of {total} assets' in grey 12px",
         "Loading state: show 12 SkeletonCard components (grey animated shimmer matching card shape) while API call is in-flight",
         "Empty state: centred message 'No assets match your search.' with a 'Clear all filters' button that resets all filter state",
@@ -159,57 +168,67 @@
         "Vitest test: BrowsePage renders 3 AssetCards when getAssets mock returns 3 assets",
         "Vitest test: typing 'sunset' in SearchBar triggers getAssets with q='sunset' after debounce (use fake timers)",
         "Vitest test: clicking category chip 'ships' calls getAssets with category='ships'",
-        "Vitest test: clicking active filter chip × removes it and calls getAssets without that param",
+        "Vitest test: clicking active filter chip \u00d7 removes it and calls getAssets without that param",
         "Vitest test: shows 12 skeleton cards while loading is true",
-        "Negative case: getAssets rejects → error banner 'Failed to load assets. Please try again.' shown above grid, no crash"
-      ]
+        "Negative case: getAssets rejects \u2192 error banner 'Failed to load assets. Please try again.' shown above grid, no crash"
+      ],
+      "startedAt": "2026-03-17T16:00:36.737760+00:00",
+      "completedAt": "2026-03-17T16:09:37.015315+00:00",
+      "updatedAt": "2026-03-17T16:09:37.014781+00:00"
     },
     {
       "id": "US-011",
       "title": "Asset detail modal",
-      "status": "open",
-      "dependsOn": ["US-010"],
+      "status": "done",
+      "dependsOn": [
+        "US-010"
+      ],
       "description": "As a content author, I want a full-detail popup for any asset so I can compare original vs enriched metadata, copy the CDN URL, and trigger AI enrichment.",
       "acceptanceCriteria": [
         "client/src/components/AssetDetailModal.jsx renders as a fixed full-screen overlay when selectedAssetId is non-null",
-        "Modal fetches full asset via getAsset(id) on open — shows loading spinner until resolved",
+        "Modal fetches full asset via getAsset(id) on open \u2014 shows loading spinner until resolved",
         "Overlay: fixed, inset 0, z-index 1000, background rgba(0,0,0,0.6). Inner panel: white, border-radius 12px, max-width 1100px, 90vw, max-height 90vh, overflow-y auto, centred with flex",
-        "Close button × at top-right — closes modal. ESC keydown listener added on mount, removed on unmount",
+        "Close button \u00d7 at top-right \u2014 closes modal. ESC keydown listener added on mount, removed on unmount",
         "body overflow:hidden added when modal opens, restored on close",
-        "Left panel (40% width): image tag src=web_image_path or thumbnail_path (proxied through Express /thumbnails/), grey placeholder if both null. Below image: filename in bold, 'W × H px' dimensions, formatted file size, format badge",
-        "Right panel (60% width): scrollable. Metadata table — two columns with headers 'Original' and 'Enriched' in navy. Rows: Title, Description, Tags, Location, Creator, Rights Owner, Usage Terms, Channel, Format. Cell values: enriched column shows enriched_* value in navy; null shows grey '—'. If enriched value is non-null AND differs from original: add 3px left border gold on enriched cell",
-        "Quality Issues section below table: only renders if quality_issues.length > 0. Each issue shown as a badge: 'release_placeholder' and 'missing_rights' → red badge; others → amber badge. Badge labels: missing_title='Missing Title', missing_rights='No Rights Data', release_placeholder='Release Placeholder — Review Required', s7_sync_error='CDN Sync Error', etc.",
-        "CDN URL section: renders only if cdn_url is non-null. Shows label 'CDN URL', full url in <code> monospace block, Copy button. On Copy click: navigator.clipboard.writeText(cdn_url), button text → 'Copied!' for 2000ms then reverts to 'Copy'",
-        "'Enrich with AI' button shown only if enrichment_source is null or 'pending'. On click: calls enrichAsset(id), button shows spinner + 'Enriching...', on success re-fetches asset and refreshes modal, on 503 shows toast 'Enrichment unavailable — add OPENAI_API_KEY to .env'",
+        "Left panel (40% width): image tag src=web_image_path or thumbnail_path (proxied through Express /thumbnails/), grey placeholder if both null. Below image: filename in bold, 'W \u00d7 H px' dimensions, formatted file size, format badge",
+        "Right panel (60% width): scrollable. Metadata table \u2014 two columns with headers 'Original' and 'Enriched' in navy. Rows: Title, Description, Tags, Location, Creator, Rights Owner, Usage Terms, Channel, Format. Cell values: enriched column shows enriched_* value in navy; null shows grey '\u2014'. If enriched value is non-null AND differs from original: add 3px left border gold on enriched cell",
+        "Quality Issues section below table: only renders if quality_issues.length > 0. Each issue shown as a badge: 'release_placeholder' and 'missing_rights' \u2192 red badge; others \u2192 amber badge. Badge labels: missing_title='Missing Title', missing_rights='No Rights Data', release_placeholder='Release Placeholder \u2014 Review Required', s7_sync_error='CDN Sync Error', etc.",
+        "CDN URL section: renders only if cdn_url is non-null. Shows label 'CDN URL', full url in <code> monospace block, Copy button. On Copy click: navigator.clipboard.writeText(cdn_url), button text \u2192 'Copied!' for 2000ms then reverts to 'Copy'",
+        "'Enrich with AI' button shown only if enrichment_source is null or 'pending'. On click: calls enrichAsset(id), button shows spinner + 'Enriching...', on success re-fetches asset and refreshes modal, on 503 shows toast 'Enrichment unavailable \u2014 add OPENAI_API_KEY to .env'",
         "Vitest test: modal renders display_title from mocked getAsset response",
         "Vitest test: ESC keydown triggers onClose",
-        "Vitest test: clicking × button triggers onClose",
+        "Vitest test: clicking \u00d7 button triggers onClose",
         "Vitest test: Copy button shows 'Copied!' immediately after click (mock clipboard API)",
         "Vitest test: 'Enrich with AI' button is visible when enrichment_source is null",
         "Vitest test: quality_issues badge 'No Rights Data' renders when 'missing_rights' in quality_issues",
-        "Negative case: cdn_url is null → CDN URL section is not rendered",
-        "Negative case: enrichAsset returns 503 → toast shown, modal remains open"
-      ]
+        "Negative case: cdn_url is null \u2192 CDN URL section is not rendered",
+        "Negative case: enrichAsset returns 503 \u2192 toast shown, modal remains open"
+      ],
+      "startedAt": "2026-03-17T16:22:39.880495+00:00",
+      "completedAt": "2026-03-17T16:26:55.255110+00:00",
+      "updatedAt": "2026-03-17T16:26:55.254656+00:00"
     },
     {
       "id": "US-012",
       "title": "Upload component with per-file enrichment status",
-      "status": "open",
-      "dependsOn": ["US-009"],
+      "status": "done",
+      "dependsOn": [
+        "US-009"
+      ],
       "description": "As a content author, I want to drag-and-drop or browse for images and have them automatically enriched with AI metadata so new assets are immediately usable in the library.",
       "acceptanceCriteria": [
         "client/src/components/UploadModal.jsx renders as a fixed full-screen overlay when isOpen is true",
-        "Overlay same style as AssetDetailModal. Header: 'Upload Assets' title, × close button. ESC closes modal",
+        "Overlay same style as AssetDetailModal. Header: 'Upload Assets' title, \u00d7 close button. ESC closes modal",
         "Drag-and-drop zone: centred box, dashed 2px border #C8960C, border-radius 8px, 200px min-height, text 'Drop images here or click to browse'. On dragover: border becomes solid, bg tints gold lightly. On drop: captures files",
         "Hidden <input type='file' accept='image/jpeg,image/png,image/webp' multiple ref> triggered when zone is clicked",
-        "Toggle button below zone: 'Upload folder' — switches input to include webkitdirectory and multiple attributes. Toggle label changes to 'Upload files' when folder mode is active",
+        "Toggle button below zone: 'Upload folder' \u2014 switches input to include webkitdirectory and multiple attributes. Toggle label changes to 'Upload files' when folder mode is active",
         "After file selection, file list renders below zone. Each row: filename (truncated 40 chars), formatted file size, status badge",
-        "Client-side validation before adding to list: file > 20MB → status 'Too large (max 20MB)' red, excluded from upload. Non-image MIME → status 'Unsupported type' red, excluded. Valid files → status 'Pending' grey",
-        "Submit button 'Upload {N} files' at bottom of modal — disabled if no valid (pending) files",
-        "On submit: build FormData appending all valid files under field 'files', call uploadFiles(formData). Each file status → 'Uploading...' blue",
-        "On upload success: for each { id } in response.assets, immediately call enrichAsset(id). File status → 'Enriching...' purple",
-        "On enrich success: file status → 'Done ✓' green",
-        "On enrich 503: file status → amber 'Uploaded — enrichment unavailable'",
+        "Client-side validation before adding to list: file > 20MB \u2192 status 'Too large (max 20MB)' red, excluded from upload. Non-image MIME \u2192 status 'Unsupported type' red, excluded. Valid files \u2192 status 'Pending' grey",
+        "Submit button 'Upload {N} files' at bottom of modal \u2014 disabled if no valid (pending) files",
+        "On submit: build FormData appending all valid files under field 'files', call uploadFiles(formData). Each file status \u2192 'Uploading...' blue",
+        "On upload success: for each { id } in response.assets, immediately call enrichAsset(id). File status \u2192 'Enriching...' purple",
+        "On enrich success: file status \u2192 'Done \u2713' green",
+        "On enrich 503: file status \u2192 amber 'Uploaded \u2014 enrichment unavailable'",
         "When ALL files reach a terminal status (done/error/unavailable): 'View in library' button appears. On click: close modal, call onUploadComplete() which triggers getAssets() refresh in BrowsePage",
         "Vitest test: dropping a valid JPEG sets its status to 'Pending' in the file list",
         "Vitest test: file > 20MB shows 'Too large' status and is not in the pending list",
@@ -217,9 +236,12 @@
         "Vitest test: Submit button label shows correct file count 'Upload 3 files'",
         "Vitest test: after mocked uploadFiles + enrichAsset resolve, file status shows 'Done'",
         "Vitest test: 'View in library' button appears after all files are done",
-        "Negative case: uploadFiles rejects for one file → that file shows 'Upload failed' red, other files continue processing independently",
-        "Negative case: enrichAsset returns 503 → file shows amber 'Uploaded — enrichment unavailable', 'View in library' still appears when all files settle"
-      ]
+        "Negative case: uploadFiles rejects for one file \u2192 that file shows 'Upload failed' red, other files continue processing independently",
+        "Negative case: enrichAsset returns 503 \u2192 file shows amber 'Uploaded \u2014 enrichment unavailable', 'View in library' still appears when all files settle"
+      ],
+      "startedAt": "2026-03-17T16:26:58.024369+00:00",
+      "completedAt": "2026-03-17T16:39:00.691526+00:00",
+      "updatedAt": "2026-03-17T16:39:00.690853+00:00"
     }
   ]
 }

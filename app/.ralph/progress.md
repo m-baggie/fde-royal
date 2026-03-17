@@ -81,6 +81,38 @@ Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.foundation/app/.ralph/runs/r
   - `CREATE TRIGGER IF NOT EXISTS` works correctly for idempotent re-runs
 ---
 
+## [2026-03-17 11:59] - US-009: App shell, layout, and API client
+Thread:
+Run: 20260317-115411-18011 (iteration 1)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-frontend/app/.ralph/runs/run-20260317-115411-18011-iter-1.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-frontend/app/.ralph/runs/run-20260317-115411-18011-iter-1.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: f484717 feat(frontend): add app shell, header, and API client
+- Post-commit status: clean
+- Verification:
+  - `npm run lint` -> PASS
+  - `cd client && npx vite build` -> PASS (143 kB bundle)
+  - `cd client && npx vitest run` -> PASS (10 tests: 3 Header, 6 assets API, 1 App)
+  - Browser: Header rendered at localhost:5174 with correct branding and Upload button -> PASS
+- Files changed:
+  - client/src/components/Header.jsx (new)
+  - client/src/components/Header.test.jsx (new)
+  - client/src/api/assets.js (new)
+  - client/src/api/assets.test.js (new)
+  - client/src/App.jsx (updated)
+  - client/src/App.test.jsx (updated)
+- What was implemented:
+  - Header.jsx: fixed 64px navy (#001B6B) header with 3px gold bottom border, "Royal Caribbean" white bold 20px + "DAM Asset Intelligence" gold 12px branding, gold Upload button
+  - App.jsx: renders <Header onUploadClick> above <main> with paddingTop:64px
+  - api/assets.js: axios instance (baseURL: http://localhost:3001) with getAssets (URLSearchParams), getAsset, getFilters, uploadFiles, enrichAsset — all errors propagate to callers
+- **Learnings for future iterations:**
+  - `vi.mock` is hoisted by Vitest — variables declared in module scope are NOT available inside mock factory. Use `vi.hoisted()` to create mock functions that can be shared between the factory and tests
+  - `npm test` (root) fails when server native deps (better-sqlite3) not compiled; run `cd client && npx vitest run` and `cd server && npx jest` separately when needed
+  - Node 18 means `npm run build` from root calls `cd client && npm run build` which requires client node_modules installed first; run `cd client && npm install` if vite not found
+
+---
+
 ## [2026-03-17 11:43] - US-003: XML ingest service — parse DAM export into SQLite
 Thread:
 Run: 20260317-112130-86970 (iteration 3)
@@ -117,154 +149,151 @@ Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.foundation/app/.ralph/runs/r
   - xmpRights:Owner has trailing spaces — always trim before rights comparison
 ---
 
-## [2026-03-17 12:00] - US-005: GET /api/assets/:id — asset detail endpoint
+## [2026-03-17 12:20] - US-011: Asset detail modal
 Thread:
-Run: 20260317-115046-14307 (iteration 2)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-api/app/.ralph/runs/run-20260317-115046-14307-iter-2.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-api/app/.ralph/runs/run-20260317-115046-14307-iter-2.md
+Run: 20260317-115411-18011 (iteration 3)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-frontend/app/.ralph/runs/run-20260317-115411-18011-iter-3.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-frontend/app/.ralph/runs/run-20260317-115411-18011-iter-3.md
 - Guardrails reviewed: yes
 - No-commit run: false
-- Commit: 4bdbe49 feat(api): add GET /api/assets/:id detail endpoint
-- Post-commit status: clean (only prd-api.json + ralph run artifacts remain)
+- Commit: f9ee19e feat(frontend): implement AssetDetailModal with full US-011 spec
+- Post-commit status: M .agents/tasks/prd-frontend.json (not edited per rules), M client/dist/index.html (pre-existing tracked artifact)
 - Verification:
   - `npm run lint` -> PASS
-  - `npm run build` -> PASS (vite, 142 kB)
-  - `npm test` -> PASS (Jest 28 passed, Vitest 1 passed)
+  - `npm run build` -> PASS (198 kB bundle, 90 modules)
+  - `cd client && npx vitest run` -> PASS (24/24 tests: 5 suites)
+  - Browser: Modal opens on asset card click — left panel (image placeholder, filename, 1920×1080, 2.0MB, JPEG badge), right panel (metadata table with Original/Enriched navy headers, gold border on enriched diffs, Quality Issues badges, CDN URL + Copy button, Enrich with AI button) -> PASS
 - Files changed:
-  - server/src/routes/assets.js (added GET /:id handler)
-  - server/src/__tests__/assets.test.js (added 5 new tests for US-005)
+  - client/src/components/AssetDetailModal.jsx (full rewrite)
+  - client/src/components/AssetDetailModal.test.jsx (new — 8 tests)
+  - client/src/pages/BrowsePage.jsx (pass selectedAssetId not selectedAsset to modal)
 - What was implemented:
-  - `GET /api/assets/:id` route: SELECT * FROM assets WHERE id=?; returns 404 { error: 'Asset not found' } if missing
-  - cdn_url computed as `scene7_domain + '/is/image/' + scene7_file` (null if either missing)
-  - quality_issues array: missing_title, missing_description, missing_rights, missing_location, title_equals_description, s7_sync_error, release_placeholder
-  - display_title, display_description, display_tags computed identical to search formatAssets
-  - 5 supertest tests: anthem asset present with original_title; missing_rights for rights_status=none asset; release_placeholder for has_release_placeholder=1 asset; cdn_url format for scene7 asset; 404 for does-not-exist
+  - AssetDetailModal: fixed overlay (z-index 1000, rgba(0,0,0,0.6)), inner panel (border-radius 12px, max-width 1100px, 90vw, max-height 90vh)
+  - Fetches full asset via getAsset(selectedAssetId) on open; shows loading spinner
+  - Close button × + ESC keydown listener; body overflow:hidden on mount
+  - Left panel (40%): image (web_image_path || thumbnail_path), grey placeholder if null; filename bold; W×H px; formatted file size; format badge
+  - Right panel (60%): scrollable; Original vs Enriched metadata table — 9 rows (Title, Description, Tags, Location, Creator, Rights Owner, Usage Terms, Channel, Format); navy column headers; gold 3px left border when enriched value differs from original
+  - Quality Issues section: red badges for missing_rights/release_placeholder, amber for others; label map for readable names
+  - CDN URL section: only if cdn_url non-null; monospace code block + Copy button with 2s "Copied!" feedback
+  - Enrich with AI button: visible when enrichment_source null/pending; spinner during enrichment; re-fetches on success; 503 toast message
+  - 8 Vitest tests covering all AC positive and negative cases
 - **Learnings for future iterations:**
-  - Route order matters: `/:id` must be registered AFTER `/` in Express to avoid shadowing the collection route
-  - `SELECT *` is safe here since it's a single-row detail endpoint; no performance concern
-  - quality_issues isEmpty check must handle null, undefined, and '' to match SQLite NULLs and empty strings consistently
+  - display_title must be rendered as visible text (not just img alt) — test `getByText(display_title)` fails if only in alt attribute; add an h2 heading in the right panel
+  - For browser testing with Playwright route interception: set up `page.route()` BEFORE `page.goto()` and use `waitUntil: 'domcontentloaded'` + `waitForTimeout(3000)` rather than `networkidle` which can block on Vite HMR websocket
+  - axios requests go to localhost:3001 directly; Playwright `page.route('http://localhost:3001/**')` correctly intercepts them without blocking vite asset loading on 5176
 ---
 
-## [2026-03-17 11:57] - US-004: GET /api/assets — search and filter endpoint
+## [2026-03-17 12:25] - US-011: Asset detail modal (iteration 4 — verification & cleanup)
 Thread:
-Run: 20260317-115046-14307 (iteration 1)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-api/app/.ralph/runs/run-20260317-115046-14307-iter-1.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-api/app/.ralph/runs/run-20260317-115046-14307-iter-1.md
+Run: 20260317-115411-18011 (iteration 4)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-frontend/app/.ralph/runs/run-20260317-115411-18011-iter-4.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-frontend/app/.ralph/runs/run-20260317-115411-18011-iter-4.md
 - Guardrails reviewed: yes
 - No-commit run: false
-- Commit: a49972b feat(api): add GET /api/assets search and filter endpoint
-- Post-commit status: clean (only prd-api.json + ralph run artifacts remain — not editable per rules)
+- Commit: df78b50 chore(ralph): finalize US-011 — commit run logs and browser verification
+- Post-commit status: clean
 - Verification:
   - `npm run lint` -> PASS
-  - `npm run build` -> PASS (vite, 142 kB)
-  - `npm test` -> PASS (Jest 23 passed, Vitest 1 passed)
+  - `npm run build` -> PASS (198 kB bundle, 90 modules)
+  - `cd client && npx vitest run` -> PASS (24/24 tests: 5 suites)
+  - Browser: Modal opens on card click — display_title 'Allure of the Seas Sunset', close ×, Enrich with AI, Copy CDN, 'No Rights Data' red badge, gold border on enriched-diff cells (Title, Channel) -> PASS
 - Files changed:
-  - server/src/services/search.js (new)
-  - server/src/routes/assets.js (new)
-  - server/src/__tests__/assets.test.js (new)
-  - server/jest.globalSetup.js (new)
-  - server/package.json (added jest.globalSetup config)
-  - server/src/index.js (mounted assetsRouter at /api/assets)
-  - .ralph/activity.log
+  - .ralph/activity.log (appended iter-4 entries)
+  - .ralph/progress.md (this entry)
+  - .ralph/runs/run-20260317-115411-18011-iter-*.log (leftover log artifacts)
+  - .agents/tasks/prd-frontend.json (not edited; committed as-is per rules)
+  - client/dist/index.html (pre-committed tracked build artifact)
 - What was implemented:
-  - `searchAssets(db, params)` in services/search.js — FTS5 MATCH primary path (ranked by rank), automatic LIKE fallback when FTS returns 0; structured filter conditions for category, subcategory, rights_status, location, has_title, has_rights, has_release_placeholder; pagination (limit 1-200, offset ≥ 0); display field computation (display_title, display_description, display_tags)
-  - Express Router in routes/assets.js with GET / handler
-  - Registered in index.js: `app.use('/api/assets', assetsRouter)`
-  - jest.globalSetup.js pre-populates dam.sqlite with real data before supertest suites run (avoids 0-row failures in fresh worktrees)
-  - 7 supertest test cases covering all AC: total=49, q=sunset, category=ships, rights_status=none=27, pagination, required fields, q=zzznomatch=0
+  - No new code changes — implementation was complete from iteration 3
+  - Re-ran all quality gates to confirm clean state
+  - Completed browser verification: all modal ACs confirmed visually
+  - Committed leftover uncommitted log/run files from prior iterations
 - **Learnings for future iterations:**
-  - In fresh worktrees, dam.sqlite doesn't exist — supertest tests against `app` get 0 rows because DATA_DIR defaults to `../Data/royal` (wrong relative path). Fix: jest `globalSetup` that pre-populates with the correct absolute path before suites run
-  - FTS5 MATCH with wrapped q in double quotes isn't needed — raw string works fine for single words; try/catch handles syntax errors and falls back to LIKE
-  - FTS5 at ingest time indexes `enriched_*` fields (all null) + filename/category/subcategory — so FTS search on `q=sunset` hits the filename column where "sunset" is tokenized from hyphens like "allure-of-the-seas-sunset.jpg"
-  - `better-sqlite3` `.all(...args)` with spread works correctly; no need to wrap args in array
+  - `npx tsx` via heredoc fails with Node 18 (SyntaxError: Cannot use import statement outside a module) — write to a .ts file in tmp/ and run `npx tsx tmp/script.ts` instead
+  - Browser verification server must be started before running scripts; `./server.sh &` + sleep 3 is sufficient
+  - Route interception must be set up before `page.goto()` to intercept API calls
+
 ---
 
-## [2026-03-17 12:03] - US-006: GET /api/filters — filter options endpoint
+## [2026-03-17 12:06] - US-010: Search and browse page
 Thread:
-Run: 20260317-115046-14307 (iteration 3)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-api/app/.ralph/runs/run-20260317-115046-14307-iter-3.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-api/app/.ralph/runs/run-20260317-115046-14307-iter-3.md
+Run: 20260317-115411-18011 (iteration 2)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-frontend/app/.ralph/runs/run-20260317-115411-18011-iter-2.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-frontend/app/.ralph/runs/run-20260317-115411-18011-iter-2.md
 - Guardrails reviewed: yes
 - No-commit run: false
-- Commit: 70b0548 feat(api): add GET /api/filters filter options endpoint
-- Post-commit status: clean (ralph/prd files excluded from this commit)
+- Commit: eaa5bea feat(frontend): add search and browse page with filters
+- Post-commit status: M .agents/tasks/prd-frontend.json (not edited per rules), M client/dist/index.html (pre-existing tracked artifact)
 - Verification:
-  - npm test -> PASS (36 tests across 5 suites)
-  - npm run lint -> PASS
-  - npm run build -> PASS
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS (192 kB bundle, 90 modules)
+  - `cd client && npx vitest run` -> PASS (16/16 tests: 4 suites)
+  - Browser: BrowsePage renders at localhost:5175 with header, sidebar, searchbar, error banner (no server) -> PASS
 - Files changed:
-  - server/src/routes/filters.js (new)
-  - server/src/__tests__/filters.test.js (new)
-  - server/src/index.js (register filtersRouter)
+  - client/src/index.css (new — shimmer keyframe)
+  - client/src/main.jsx (import index.css)
+  - client/src/App.jsx (add BrowsePage)
+  - client/src/App.test.jsx (mock API to prevent ECONNREFUSED noise)
+  - client/src/pages/BrowsePage.jsx (new)
+  - client/src/pages/BrowsePage.test.jsx (new — 6 tests)
+  - client/src/components/SearchBar.jsx (new)
+  - client/src/components/FilterSidebar.jsx (new)
+  - client/src/components/AssetGrid.jsx (new)
+  - client/src/components/AssetCard.jsx (new)
+  - client/src/components/SkeletonCard.jsx (new)
+  - client/src/components/AssetDetailModal.jsx (new)
 - What was implemented:
-  - GET /api/filters route returning categories (sorted), subcategories (keyed by category), locations (merged original+enriched, deduped, sorted), rights_statuses (owned/unclear/none with counts), and quality counts
-  - 8 Supertest tests covering shape, categories, subcategories.ships, counts.total=49, counts.has_release_placeholder=7, rights_statuses presence, sort order
+  - BrowsePage: full filter state (q, category, subcategory, rights, location, metadataQuality), calls getFilters() on mount, calls getAssets() on any filter change, active filter chips with × removal, results count label, loading/empty/error states
+  - SearchBar: local value state, 300ms debounce via setTimeout/clearTimeout in useEffect, calls onChange prop
+  - FilterSidebar: 260px aside, collapsible Section components, Category/Subcategory/Rights chips, Location select, Metadata Quality toggle chips
+  - AssetGrid: CSS grid repeat(auto-fill, minmax(200px,1fr)) gap 16px; renders 12 SkeletonCards while loading
+  - AssetCard: white card 8px radius, hover shadow, 16/9 image aspect-ratio with grey fallback, 2-line clamped title, category pill + rights dot badges, ⚠ icon for quality issues
+  - SkeletonCard: shimmer animation via CSS keyframe class
+  - AssetDetailModal: overlay modal triggered by onSelectAsset(asset.id)
 - **Learnings for future iterations:**
-  - UNION query is the cleanest way to merge original_location + enriched_location without duplicates
-  - Ensure all three rights_status values (owned/unclear/none) are present in response even if count=0 — initialize map before iterating DB results
-  - ralph activity logger script not present in this repo; skip that step
+  - Mix of `border` shorthand and `borderColor` non-shorthand in React inline styles triggers runtime warning — always use full `border: '1px solid X'` in active state overrides
+  - For loading skeleton tests: make both getAssets AND getFilters return never-resolving promises to avoid act() warning from getFilters resolving after test completes
+  - App.test.jsx must mock API modules when App renders components that call APIs on mount — otherwise ECONNREFUSED errors pollute test output even if tests pass
+  - `client/dist/` is in .gitignore but pre-committed files remain tracked — run `git rm -r --cached client/dist/` if clean-up is desired in a future chore
 ---
 
-## [2026-03-17 12:08] - US-007: POST /api/assets/upload — multi-file upload endpoint
+## [2026-03-17 12:35] - US-012: Upload component with per-file enrichment status
 Thread:
-Run: 20260317-115046-14307 (iteration 4)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-api/app/.ralph/runs/run-20260317-115046-14307-iter-4.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-api/app/.ralph/runs/run-20260317-115046-14307-iter-4.md
+Run: 20260317-115411-18011 (iteration 5)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-frontend/app/.ralph/runs/run-20260317-115411-18011-iter-5.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-frontend/app/.ralph/runs/run-20260317-115411-18011-iter-5.md
 - Guardrails reviewed: yes
 - No-commit run: false
-- Commit: 217f7e1 feat(api): add POST /api/assets/upload multi-file upload endpoint
-- Post-commit status: clean (ralph/prd files excluded from this commit)
+- Commit: ef68eff feat(frontend): implement UploadModal with per-file enrichment status
+- Post-commit status: M .agents/tasks/prd-frontend.json (not edited per rules), M .ralph/errors.log (leftover), M .ralph/runs/iter-4.log (leftover)
 - Verification:
-  - npm run lint -> PASS
-  - npm run build -> PASS
-  - npm test -> PASS (42 tests across 6 suites)
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS (204 kB bundle, 91 modules)
+  - `cd client && npx vitest run` -> PASS (32/32 tests: 6 suites, 8 new UploadModal tests)
+  - Browser: Modal opens on Upload click — "Upload Assets" title, × close, gold dashed drop zone, "Drop images here or click to browse", folder toggle, disabled "Upload 0 files" button, dark overlay -> PASS
+  - Browser: ESC key closes modal -> PASS
+  - Browser: Folder toggle switches label Upload folder ↔ Upload files -> PASS
 - Files changed:
-  - server/src/routes/upload.js (new)
-  - server/src/__tests__/upload.test.js (new)
-  - server/src/index.js (register uploadRouter before assetsRouter)
+  - client/src/components/UploadModal.jsx (new)
+  - client/src/components/UploadModal.test.jsx (new — 8 tests)
+  - client/src/App.jsx (wire uploadOpen state to BrowsePage)
+  - client/src/App.test.jsx (add uploadFiles/enrichAsset to mock)
+  - client/src/pages/BrowsePage.jsx (accept isUploadOpen/onUploadRequestClose props, mount UploadModal, refreshKey for getAssets reload)
 - What was implemented:
-  - multer diskStorage saving to app/uploads/ with filename <uuid>-<originalname>
-  - fileFilter rejecting non-image MIME types with error message per spec
-  - 20 MB fileSize limit returning 413 on breach
-  - uuid v4 used as both asset id and prefix in disk filename; extracted via slice(0,36)
-  - DB insert per file: id, filename, filepath, mime_type, file_size, category=uploaded, enrichment_source=pending
-  - 201 response { uploaded: N, assets: [{ id, filename, filepath }] }
-  - uploadRouter registered before assetsRouter so POST /upload is not captured by GET /:id
-  - 6 supertest tests: happy path, GET retrieval, disk existence, txt rejection, no-files, oversized
-  - afterAll cleanup: removes inserted DB rows and uploaded files so 49-asset count tests stay stable
+  - UploadModal: full-screen overlay, "Upload Assets" header, × close, ESC close, body scroll lock
+  - Drop zone: 2px dashed #C8960C border, 200px min-height, solid border on dragover, light gold bg tint on dragover
+  - Hidden file input: accept image/jpeg,image/png,image/webp, multiple; triggered by zone click
+  - Folder mode toggle: webkitdirectory + directory attrs when active; label flips Upload folder ↔ Upload files
+  - Client-side validation: >20MB → "Too large (max 20MB)" red; wrong MIME → "Unsupported type" red; valid → "Pending" grey
+  - Submit button: "Upload N files", disabled when no pending files
+  - Submit flow: batched FormData POST via uploadFiles(); per-file enrichAsset() calls run independently via Promise.allSettled
+  - Status progression per file: Pending→Uploading (blue)→Enriching (purple)→Done ✓ (green) | Upload failed (red) | Uploaded — enrichment unavailable (amber)
+  - View in library button appears after all uploaded files settle; calls onUploadComplete → closes modal + increments refreshKey in BrowsePage
+  - BrowsePage: refreshKey state added to useEffect deps; accepts isUploadOpen/onUploadRequestClose props with defaults
+  - App.jsx: passes uploadOpen + onUploadRequestClose to BrowsePage; removed upload-placeholder div
 - **Learnings for future iterations:**
-  - UUID is always 36 chars; file.filename.slice(0,36) cleanly extracts id from diskStorage filename
-  - Register upload router before assets router to prevent /:id from matching /upload
-  - afterAll DB cleanup is critical when upload tests insert rows — existing total=49 tests would fail otherwise
-  - ralph activity logger script not present in this repo; log directly to activity.log
----
-
-## [2026-03-17 12:14] - US-008: POST /api/assets/:id/enrich — OpenAI Vision enrichment endpoint
-Thread:
-Run: 20260317-115046-14307 (iteration 5)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-api/app/.ralph/runs/run-20260317-115046-14307-iter-5.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-api/app/.ralph/runs/run-20260317-115046-14307-iter-5.md
-- Guardrails reviewed: yes
-- No-commit run: false
-- Commit: 345d9a4 feat(api): add POST /api/assets/:id/enrich OpenAI Vision enrichment
-- Post-commit status: ralph logs and prd-api.json remain (managed by ralph harness)
-- Verification:
-  - Command: npm run lint -> PASS
-  - Command: npm run build -> PASS
-  - Command: npm test -> PASS (53 tests, 7 suites)
-- Files changed:
-  - server/src/services/enrich.js (new)
-  - server/src/__tests__/enrich.test.js (new)
-  - server/src/routes/assets.js (added POST /:id/enrich + enrichAsset import)
-  - server/src/index.js (OpenAI client init via app.locals.openai)
-- What was implemented:
-  - enrichAsset(db, id, openaiClient): reads asset filepath, converts image to base64, calls gpt-4o vision with JSON-only prompt, parses response, updates all enriched_* columns + enrichment_source='ai-vision'
-  - POST /api/assets/:id/enrich route: delegates to enrichAsset, returns 200 with full updated row; 503 if no OpenAI key, 400/404 for asset issues, 502 on OpenAI error
-  - OpenAI initialized in index.js only if OPENAI_API_KEY is present, stored as app.locals.openai
-  - 9 Jest tests: field mapping, enriched_title non-null, FTS search after enrich, all 3 negative service cases, all 4 HTTP route cases
-- **Learnings for future iterations:**
-  - jest.mock('openai') auto-mock prevents accidental real API calls; remove unused import to pass no-unused-vars lint
-  - `app.locals` is the correct Express pattern for sharing singletons across routes without circular deps
-  - FTS5 update trigger fires on UPDATE so FTS search works immediately after enrichAsset writes enriched_title
-  - filepath in DB is relative to app root (e.g. "uploads/uuid-name.jpg"); resolve with path.join(__dirname, '../../../', filepath) from services/
+  - Playwright page.dispatchEvent with DragEventInit fails for dataTransfer — use evaluate() to directly set border style or just skip the visual dragover test in browser verification
+  - Promise.allSettled is the correct primitive for per-file enrichment independence (each file's rejection doesn't affect others)
+  - useRef for idCounter (reset per component instance) avoids test cross-contamination vs module-level counter
+  - `createEvent.drop(element)` + `Object.defineProperty(evt, 'dataTransfer', { value: { files: [...] } })` is the correct RTL pattern for testing drop handlers in jsdom
 ---
