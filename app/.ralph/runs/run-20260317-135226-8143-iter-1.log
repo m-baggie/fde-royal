@@ -1,0 +1,8 @@
+US-001 is complete and verified:
+
+- `server/scripts/enrich-all.js` fully satisfies all acceptance criteria (implemented in prior run, confirmed this iteration)
+- All quality gates pass: `npm run lint` ✓, `npm run build` (206kB) ✓, server Jest 67/67 ✓, client Vitest 43/43 ✓
+- Committed leftover run artifacts from prior iterations; working tree clean (only unedited PRD JSON remains modified per rules)
+- Key learner: always use `npm test` in `server/` (which passes `--runInBand`) — running `npx jest` directly causes false parallel DB-pollution failures
+
+<promise>COMPLETE</promise>

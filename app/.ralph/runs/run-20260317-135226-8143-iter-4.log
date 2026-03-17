@@ -1,0 +1,13 @@
+Clean working tree. US-004 is complete.
+
+**Summary:**
+- Installed `@anthropic-ai/sdk` in `server/package.json`
+- Replaced OpenAI SDK with Anthropic SDK in `server/scripts/enrich-all.js`:
+  - `ANTHROPIC_API_KEY` guard (exits 1 with error message if missing)
+  - `callAnthropic()` using `anthropicClient.messages.create()` with `claude-opus-4-6`
+  - Anthropic image message format: `{ type: 'image', source: { type: 'base64', media_type, data } }`
+  - Response extracted via `response.content[0].text`
+- All ACs verified: negative case (missing key) exits 1, lint/build/110 tests all pass
+- Committed: `f270d54`
+
+<promise>COMPLETE</promise>

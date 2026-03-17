@@ -14,6 +14,8 @@ const router = Router();
  *   categories:     string[]                              — sorted distinct non-null values
  *   subcategories:  { [category]: string[] }             — sorted subcategory lists per category
  *   locations:      string[]                              — sorted merged distinct locations
+ *   channels:       string[]                              — sorted distinct non-null enriched_channel values
+ *   scenes:         string[]                              — sorted distinct non-null enriched_scene values
  *   rights_statuses: { value: string, count: number }[]  — for 'owned', 'unclear', 'none'
  *   counts: {
  *     total, missing_title, missing_description,
@@ -47,6 +49,26 @@ router.get('/', (req, res) => {
       if (!subcategories[category]) subcategories[category] = [];
       subcategories[category].push(subcategory);
     }
+
+    // channels — distinct enriched_channel values
+    const channelRows = db
+      .prepare(
+        `SELECT DISTINCT enriched_channel AS channel FROM assets
+         WHERE enriched_channel IS NOT NULL
+         ORDER BY enriched_channel ASC`
+      )
+      .all();
+    const channels = channelRows.map((r) => r.channel);
+
+    // scenes — distinct enriched_scene values
+    const sceneRows = db
+      .prepare(
+        `SELECT DISTINCT enriched_scene AS scene FROM assets
+         WHERE enriched_scene IS NOT NULL
+         ORDER BY enriched_scene ASC`
+      )
+      .all();
+    const scenes = sceneRows.map((r) => r.scene);
 
     // locations — merge original_location and enriched_location, deduplicate
     const locRows = db
@@ -129,6 +151,8 @@ router.get('/', (req, res) => {
       categories,
       subcategories,
       locations,
+      channels,
+      scenes,
       rights_statuses,
       counts: {
         total,

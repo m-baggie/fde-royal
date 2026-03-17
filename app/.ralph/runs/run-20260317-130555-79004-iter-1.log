@@ -1,0 +1,20 @@
+Clean. All done.
+
+**US-001 complete.** Summary:
+
+- **Created** `server/scripts/enrich-all.js` — fully implements all acceptance criteria:
+  - Exits with code 1 if `OPENAI_API_KEY` missing
+  - Opens `dam.sqlite` directly via `better-sqlite3`
+  - Queries `WHERE enrichment_source IS NULL`; prints "All assets already enriched" and exits 0 if empty
+  - Image source: Scene7 CDN URL → `thumbnail_path` relative to `DATA_DIR` fallback
+  - Full GPT-4o Vision prompt with retry on simplified prompt; logs `FAILED` and continues on second failure
+  - Updates all `enriched_*` columns + `enrichment_source='ai-vision'`
+  - Manual FTS5 sync (DELETE + INSERT) after each successful update
+  - `ENRICH_DELAY_MS` pacing (default 500ms)
+  - Progress: `[X/total] Enriching <filename>... done/retrying.../failed/skipped`
+  - Summary: `Done. Enriched: X | Failed: Y | Skipped: Z`
+
+- **Quality gates:** lint ✓, build ✓ (205kB), Jest 58/58 ✓, Vitest 35/35 ✓
+- **Commits:** `838ce67`, `692cfd8`
+
+<promise>COMPLETE</promise>

@@ -1,6 +1,13 @@
 # Activity Log
 
 ## Run Summary
+- 2026-03-17 14:08:10 | run=20260317-135226-8143 | iter=4 | mode=build | story=US-004 | duration=224s | status=success
+- 2026-03-17 14:04:22 | run=20260317-135226-8143 | iter=3 | mode=build | story=US-003 | duration=279s | status=success
+- 2026-03-17 13:59:40 | run=20260317-135226-8143 | iter=2 | mode=build | story=US-002 | duration=141s | status=success
+- 2026-03-17 13:57:14 | run=20260317-135226-8143 | iter=1 | mode=build | story=US-001 | duration=288s | status=success
+- 2026-03-17 13:23:40 | run=20260317-130555-79004 | iter=3 | mode=build | story=US-003 | duration=399s | status=success
+- 2026-03-17 13:16:58 | run=20260317-130555-79004 | iter=2 | mode=build | story=US-002 | duration=242s | status=success
+- 2026-03-17 13:12:52 | run=20260317-130555-79004 | iter=1 | mode=build | story=US-001 | duration=416s | status=success
 - 2026-03-17 13:01:32 | run=20260317-124548-57631 | iter=3 | mode=build | story=US-003 | duration=567s | status=success
 - 2026-03-17 12:52:01 | run=20260317-124548-57631 | iter=2 | mode=build | story=US-002 | duration=138s | status=success
 - 2026-03-17 12:49:38 | run=20260317-124548-57631 | iter=1 | mode=build | story=US-001 | duration=230s | status=success
@@ -63,3 +70,38 @@
 [2026-03-17 12:52:06] ITERATION 3 start (mode=build story=US-003)
 [2026-03-17 13:00] US-003: AssetCard updated — thumbnail src from media route, onError fallback, 3 Vitest tests added
 [2026-03-17 13:01:31] ITERATION 3 end (duration=567s)
+[2026-03-17 13:05:57] ITERATION 1 start (mode=build story=US-001)
+[2026-03-17 13:11] [US-001] CODE: Created server/scripts/enrich-all.js — bulk enrichment CLI with Scene7/thumbnail fallback, OpenAI retry, FTS5 sync
+[2026-03-17 13:11] [US-001] VERIFY: lint PASS, build PASS (205kB), Jest 58/58 PASS, Vitest 35/35 PASS
+[2026-03-17 13:12] [US-001] COMPLETE: committed 838ce67, progress log updated
+[2026-03-17 13:12:51] ITERATION 1 end (duration=416s)
+[2026-03-17 13:12:56] ITERATION 2 start (mode=build story=US-002)
+[2026-03-17 13:16:35] US-002 complete: committed 34f5117 — channel/scene filters added to /api/filters and /api/assets; 102 tests passing
+[2026-03-17 13:16:58] ITERATION 2 end (duration=242s)
+[2026-03-17 13:17:02] ITERATION 3 start (mode=build story=US-003)
+[2026-03-17 13:17:48] US-003: Starting implementation
+[2026-03-17 13:17:52] US-003: Starting implementation - Channel and Scene filter sections in FilterSidebar
+[2026-03-17 13:19:00] [US-003] CODE: FilterSidebar.jsx updated — Channel (single-select, collapsed) and Scene/Mood (multi-select, collapsed) sections added; BrowsePage.jsx updated — channel/scene state, buildParams, handleFilterChange, clearAllFilters, activeChips
+[2026-03-17 13:19:30] [US-003] TEST: FilterSidebar.test.jsx created (8 tests); npm test PASS (43 client, 67 server), lint PASS, build PASS
+[2026-03-17 13:20:00] [US-003] BROWSER: localhost:5181 loaded — sidebar renders without Channel/Scene (correct negative case, no enriched data)
+[2026-03-17 13:20:30] [US-003] COMPLETE: committed af3914f, progress log updated
+[2026-03-17 13:23:40] ITERATION 3 end (duration=399s)
+[2026-03-17 13:52:28] ITERATION 1 start (mode=build story=US-001)
+[2026-03-17 13:56:03] [US-001] run-20260317-135226-8143 iter-1: start — verifying existing enrich-all.js implementation
+[2026-03-17 13:56:07] [US-001] Verification: lint PASS, build PASS (206kB), server tests 67/67 PASS, client tests 43/43 PASS
+[2026-03-17 13:57:07] [US-001] Committed: 59ce153 — progress entry updated, working tree clean
+[2026-03-17 13:57:14] ITERATION 1 end (duration=288s)
+[2026-03-17 13:57:20] ITERATION 2 start (mode=build story=US-002)
+[2026-03-17 13:59:40] ITERATION 2 end (duration=141s)
+[2026-03-17 13:59:45] ITERATION 3 start (mode=build story=US-003)
+[2026-03-17 14:00:44] US-003 iter-3: start re-verification
+[2026-03-17 14:01:09] US-003 iter-3: all quality gates passed — lint/build/test
+[2026-03-17 14:03:11] US-003 iter-3: browser verification PASS — Channel/Scene sections render with data, hidden when empty
+[2026-03-17 14:03:50] US-003 iter-3: progress log updated, committing
+[2026-03-17 14:04:09] US-003 iter-3: committed d63e1ae — COMPLETE
+[2026-03-17 14:04:22] ITERATION 3 end (duration=279s)
+[2026-03-17 14:04:28] ITERATION 4 start (mode=build story=US-004)
+[2026-03-17 14:06:14] US-004: Starting work - replacing OpenAI with Anthropic SDK in enrich-all.js
+[2026-03-17 14:06:47] US-004: Replaced OpenAI with Anthropic SDK in enrich-all.js; all 110 tests pass
+[2026-03-17 14:07:50] US-004: Complete - all ACs met, 110 tests pass, committed f270d54
+[2026-03-17 14:08:09] ITERATION 4 end (duration=224s)

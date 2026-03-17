@@ -44,7 +44,8 @@ Scaffold the client manually or use `create-vite@5`.
 ## Environment
 
 Copy `.env.example` to `.env` and fill in values.
-- Missing `OPENAI_API_KEY` logs a warning but does not crash.
+- Missing `OPENAI_API_KEY` logs a warning but does not crash (used by server API route).
+- `ANTHROPIC_API_KEY` is required by `server/scripts/enrich-all.js` — script exits 1 if not set.
 - `DATA_DIR` defaults to `../Data/royal` relative to `server/`.
 
 ## Server Entry

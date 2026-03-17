@@ -382,3 +382,235 @@ Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-fixes/app/.ralph/run
   - Port 5173 is occupied by feature-frontend worktree's Vite — new worktrees need different ports or flexible CORS
   - Browser devtools network tab (via Playwright request interceptor) is the reliable way to verify img src before onError swaps the element
 ---
+
+## [2026-03-17 13:11] - US-001: Bulk enrichment CLI script
+Thread:
+Run: 20260317-130555-79004 (iteration 1)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-130555-79004-iter-1.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-130555-79004-iter-1.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 838ce67 feat(scripts): add bulk enrichment CLI (US-001)
+- Post-commit status: clean
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS (205kB)
+  - Command: npm test -> PASS (Jest 58/58, Vitest 35/35)
+- Files changed:
+  - server/scripts/enrich-all.js (new)
+  - .ralph/activity.log
+  - .agents/tasks/prd-enrichment.json
+  - .ralph/.tmp/* (run artifacts)
+  - .ralph/runs/run-20260317-130555-79004-iter-1.log
+- What was implemented:
+  Created server/scripts/enrich-all.js — a re-runnable bulk enrichment CLI.
+  Key behaviors:
+  - dotenv loaded from app root; exits 1 if OPENAI_API_KEY missing
+  - Opens dam.sqlite with better-sqlite3 at app root
+  - Queries WHERE enrichment_source IS NULL; prints "All assets already enriched" if empty
+  - Image resolution: Scene7 CDN URL → thumbnail_path relative to DATA_DIR
+  - Full GPT-4o prompt (title/description/tags/location/scene/subjects/mood/channel_hint/confidence)
+  - Retries once with simplified prompt (omits subjects/mood) on OpenAI error
+  - Logs FAILED and continues on second failure
+  - DB update: enriched_* columns + enrichment_source='ai-vision'
+  - FTS5 manual sync: DELETE + INSERT after each successful update
+  - ENRICH_DELAY_MS (default 500ms) sleep between assets
+  - Progress: [X/total] Enriching <filename>... done/retrying.../failed/skipped
+  - Summary: Done. Enriched: X | Failed: Y | Skipped: Z
+- **Learnings for future iterations:**
+  - thumbnail_path in DB is relative to DATA_DIR (resolvedDir from ingest); use path.resolve(DATA_DIR, asset.thumbnail_path)
+  - DATA_DIR env var is resolved relative to process.cwd() (app root); default is sibling of app/ dir
+  - The assets_au trigger on assets table fires on UPDATE, so FTS5 is auto-synced; the manual FTS5 sync in the script is an additional explicit AC requirement
+  - Node 18 https module used for CDN fetch (no node-fetch dependency needed)
+  - Script does not need to run server or import server's db module — opens its own DB connection directly
+---
+
+## [2026-03-17 13:16] - US-002: Expand /api/filters and /api/assets for channel and scene
+Thread:
+Run: 20260317-130555-79004 (iteration 2)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-130555-79004-iter-2.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-130555-79004-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 34f5117 feat(api): add channel and scene filters to assets and filters API
+- Post-commit status: clean
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS
+  - Command: npm test -> PASS (67 server + 35 client, 102 total)
+- Files changed:
+  - server/src/routes/filters.js
+  - server/src/routes/assets.js
+  - server/src/services/search.js
+  - server/src/__tests__/filters.test.js
+  - server/src/__tests__/assets.test.js
+- What was implemented:
+  - `/api/filters` response now includes `channels` (distinct enriched_channel values, sorted) and `scenes` (distinct enriched_scene values, sorted)
+  - `/api/assets` now accepts `channel` and `scene` query params, each adding a WHERE clause on enriched_channel/enriched_scene; composes correctly with all existing filters
+  - `enriched_channel` and `enriched_scene` added to SELECT_FIELDS and formatAssets output so list responses include these fields
+  - New supertest tests covering all US-002 acceptance criteria: channels/scenes arrays in filters, insert+assert pattern, channel= and scene= filtering, nonexistent channel returns empty, compose with category
+- **Learnings for future iterations:**
+  - enriched_channel and enriched_scene columns already existed in the schema — no migration needed
+  - The formatAssets() function in search.js controls the list response shape — new fields must be added both to SELECT_FIELDS and the returned object
+  - INSERT OR REPLACE used in beforeEach test hooks for safe idempotent test asset insertion; afterEach cleans up
+  - The `ralph log` script is absent from this repo — log directly to activity.log file
+---
+
+## [2026-03-17 13:20] - US-003: Add Channel and Scene filter sections to FilterSidebar
+Thread:
+Run: 20260317-130555-79004 (iteration 3)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-130555-79004-iter-3.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-130555-79004-iter-3.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: af3914f feat(ui): add Channel and Scene filter sections to FilterSidebar
+- Post-commit status: clean
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS
+  - Command: npm test -> PASS (43 client, 67 server)
+  - Browser: localhost:5181 loaded — sidebar shows no Channel/Scene (correct: no enriched data) -> PASS
+- Files changed:
+  - client/src/components/FilterSidebar.jsx
+  - client/src/components/FilterSidebar.test.jsx (new)
+  - client/src/pages/BrowsePage.jsx
+- What was implemented:
+  - FilterSidebar: added Channel (single-select) and Scene / Mood (multi-select) collapsible sections; both start collapsed and only render when filters.channels/filters.scenes are non-empty
+  - Section component given a `defaultOpen` prop (defaults true) so Channel and Scene start collapsed
+  - BrowsePage: added `channel` and `scene` state; wired into buildParams, handleFilterChange, clearAllFilters, activeChips row, and FilterSidebar props
+  - FilterSidebar.test.jsx: 8 tests covering rendering, empty-state, chip click, deselect, multi-select, and negative case
+- **Learnings for future iterations:**
+  - Section component was easy to extend with a `defaultOpen` prop without breaking existing behavior
+  - Pattern for multi-select (scene) mirrors existing metadataQuality; single-select (channel) mirrors category
+  - Browser negative case confirmed correct: no Channel/Scene sections appear when DB has no enriched data
+  - The `ralph log` script is absent; use activity.log directly
+---
+
+## [2026-03-17 13:53] - US-001: Bulk enrichment CLI script (re-verify)
+Thread:
+Run: 20260317-135226-8143 (iteration 1)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-135226-8143-iter-1.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-135226-8143-iter-1.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 59ce153 chore(ralph): add US-001 re-verification progress entry and run summary
+- Post-commit status: clean
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS (206kB)
+  - Command: cd server && npm test -> PASS (Jest: 67/67)
+  - Command: cd client && npx vitest run -> PASS (Vitest: 43/43)
+- Files changed:
+  - .ralph/activity.log
+  - .ralph/runs/run-20260317-130555-79004-iter-3.log (leftover from prior run)
+  - .ralph/runs/run-20260317-130555-79004-iter-3.md (leftover from prior run)
+  - .ralph/.tmp/* (run artifacts)
+  - .ralph/runs/run-20260317-135226-8143-iter-1.log
+- What was implemented:
+  - US-001 was already fully implemented in run-20260317-130555-79004 iter-1 (commit 838ce67).
+  - This iteration performed re-verification: confirmed enrich-all.js satisfies all ACs, all quality gates pass.
+  - Note: running `npx jest` without `--runInBand` produces false test failures due to parallel DB access; always use `npm test` (which passes `--runInBand`) or `npx jest --runInBand`.
+- **Learnings for future iterations:**
+  - Do NOT run `npx jest` directly — it omits `--runInBand` and causes false test-pollution failures; always use `npm test` in the server directory
+  - The pre-existing enrich-all.js from iter-1 is complete and correct — no code changes needed
+---
+
+## [2026-03-17 13:58] - US-002: Expand /api/filters and /api/assets for channel and scene
+Thread:
+Run: 20260317-135226-8143 (iteration 2)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-135226-8143-iter-2.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-135226-8143-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: e4c9c98 chore(ralph): add US-002 re-verification progress entry and run summary
+- Post-commit status: clean (only .agents/tasks/prd-enrichment.json modified — per rules, not edited)
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS (206kB)
+  - Command: npm test -> PASS (Jest: 67/67 server, Vitest: 43/43 client)
+- Files changed:
+  - .ralph/progress.md
+  - .ralph/runs/run-20260317-135226-8143-iter-2.md
+  - .ralph/activity.log
+  - .ralph/runs/run-20260317-135226-8143-iter-2.log
+  - .ralph/.tmp/story-20260317-135226-8143-2.* (run artifacts)
+- What was implemented:
+  - US-002 was already fully implemented in commit 34f5117 (feat(api): add channel and scene filters to assets and filters API).
+  - server/src/routes/filters.js: GET /api/filters returns `channels` and `scenes` arrays (distinct, sorted, non-null enriched_channel/enriched_scene values).
+  - server/src/services/search.js: GET /api/assets accepts `channel` and `scene` query params; both compose correctly with all other filters.
+  - server/src/__tests__/filters.test.js: tests for channels/scenes arrays, enriched-data insertion and verification.
+  - server/src/__tests__/assets.test.js: tests for channel=hero, scene=ocean, channel=nonexistent, and composed filter (category+channel+scene).
+  - This iteration performed re-verification: confirmed all ACs satisfied, all quality gates pass.
+- **Learnings for future iterations:**
+  - The `channel` and `scene` filter pattern mirrors existing `category`/`rights_status` filters — simple equality WHERE clause on enriched_channel/enriched_scene
+  - Tests use beforeEach/afterEach with INSERT OR REPLACE + DELETE to isolate test data without affecting the 49 real assets
+  - FTS path and LIKE fallback both correctly pick up the channel/scene conditions from the shared `conditions` array
+---
+
+## [2026-03-17 14:02] - US-003: Add Channel and Scene filter sections to FilterSidebar (re-verify)
+Thread:
+Run: 20260317-135226-8143 (iteration 3)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-135226-8143-iter-3.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-135226-8143-iter-3.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: (see below)
+- Post-commit status: clean
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS (206kB, 91 modules)
+  - Command: cd server && npm test -> PASS (67/67 Jest)
+  - Command: cd client && npx vitest run -> PASS (43/43 Vitest, 8 FilterSidebar tests)
+  - Browser positive: Channel + Scene / Mood sections visible with mock channels=['hero','banner'] scenes=['ocean','sunset','aerial'] -> PASS
+  - Browser negative: sections hidden when channels=[] and scenes=[] -> PASS
+- Files changed:
+  - .ralph/activity.log
+  - .ralph/progress.md
+  - .ralph/runs/run-20260317-135226-8143-iter-3.md
+  - .ralph/runs/run-20260317-135226-8143-iter-3.log
+  - .ralph/.tmp/* (run artifacts)
+- What was implemented:
+  - US-003 was already fully implemented in commit af3914f (run-20260317-130555-79004 iter-3).
+  - FilterSidebar: Channel (single-select) and Scene / Mood (multi-select) collapsible sections; start collapsed; only render when non-empty
+  - BrowsePage: channel/scene state, buildParams, handleFilterChange, activeChips row
+  - FilterSidebar.test.jsx: 8 Vitest tests covering all ACs
+  - This iteration performed re-verification: confirmed all ACs satisfied, all quality gates pass, browser verified
+- **Learnings for future iterations:**
+  - Browser route interception must be set before goto(); use page.route() for mocking API calls
+  - npx tsx via heredoc fails on Node 18 — write to tmp/*.ts file and run `npx tsx tmp/file.ts`
+  - Dev browser server starts at port 3333 (not 9222 which is the raw Playwright websocket)
+---
+
+## [2026-03-17 14:07] - US-004: Fix dotenv path and update enrich-all script to use Anthropic
+Thread: 
+Run: 20260317-135226-8143 (iteration 4)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-135226-8143-iter-4.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralph/runs/run-20260317-135226-8143-iter-4.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: f270d54 feat(enrich): replace OpenAI with Anthropic SDK in enrich-all script
+- Post-commit status: clean (pending ralph/progress.md + run summary commits)
+- Verification:
+  - `ANTHROPIC_API_KEY="" node scripts/enrich-all.js` -> PASS (logs error, exits 1)
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS
+  - `npm test` (67 server + 43 client = 110 total) -> PASS
+- Files changed:
+  - server/scripts/enrich-all.js
+  - server/package.json
+  - package-lock.json
+  - AGENTS.md
+- What was implemented:
+  - Installed @anthropic-ai/sdk in server/package.json
+  - Replaced `require('openai')` with `require('@anthropic-ai/sdk')`
+  - Replaced `const openai = new OpenAI(...)` with `const anthropicClient = new Anthropic.default(...)`
+  - Replaced OPENAI_API_KEY check with ANTHROPIC_API_KEY check (exit 1 on missing)
+  - Renamed `callOpenAI()` to `callAnthropic()` using `anthropicClient.messages.create()` with model `claude-opus-4-6`
+  - Message format: `{ type: 'image', source: { type: 'base64', media_type, data } }` + `{ type: 'text', text: prompt }`
+  - Response extraction: `response.content[0].text` (not `choices[0].message.content`)
+  - Updated AGENTS.md to document ANTHROPIC_API_KEY requirement
+- **Learnings for future iterations:**
+  - `@anthropic-ai/sdk` CJS entry exports class as `Anthropic.default` when using `require()`
+  - dotenv path in enrich-all.js was already correct (`../../.env` = app root)
+  - Server index.js still uses OpenAI for the API route (separate concern, out of scope)
+---

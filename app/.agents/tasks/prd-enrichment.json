@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "project": "Royal Caribbean DAM — Bulk Enrichment & Expanded Filters",
+  "project": "Royal Caribbean DAM \u2014 Bulk Enrichment & Expanded Filters",
   "overview": "Enrich all 49 existing DAM assets with AI-generated metadata via a re-runnable CLI script, then expand the filter sidebar to expose enriched dimensions (channel, scene) so content authors can find assets by AI-inferred context.",
   "goals": [
     "Bulk-enrich all unenriched assets using OpenAI GPT-4o Vision via a CLI script",
@@ -10,7 +10,7 @@
   ],
   "nonGoals": [
     "No changes to single-asset upload enrichment flow",
-    "No UI trigger for bulk enrichment — CLI only",
+    "No UI trigger for bulk enrichment \u2014 CLI only",
     "No editing or updating of .content.xml source files",
     "No authentication or rate-limit UI feedback"
   ],
@@ -22,19 +22,27 @@
   ],
   "openQuestions": [],
   "stack": {
-    "backend": "Express.js (Node 20) — server/src/",
-    "frontend": "React 18 + Vite — client/src/",
+    "backend": "Express.js (Node 20) \u2014 server/src/",
+    "frontend": "React 18 + Vite \u2014 client/src/",
     "database": "SQLite via better-sqlite3",
     "ai": "OpenAI GPT-4o Vision (OPENAI_API_KEY env var)",
     "auth": "None"
   },
   "routes": [
-    { "path": "GET /api/filters", "name": "Filter Options", "purpose": "Now returns channels and scenes arrays in addition to existing fields" },
-    { "path": "GET /api/assets", "name": "Search Assets", "purpose": "Now accepts channel and scene query params" }
+    {
+      "path": "GET /api/filters",
+      "name": "Filter Options",
+      "purpose": "Now returns channels and scenes arrays in addition to existing fields"
+    },
+    {
+      "path": "GET /api/assets",
+      "name": "Search Assets",
+      "purpose": "Now accepts channel and scene query params"
+    }
   ],
   "uiNotes": [
-    "Channel filter: chip group (hero, banner, mobile, desktop, square) — only render section if channels array is non-empty",
-    "Scene/Mood filter: chip group of distinct enriched_scene values — only render section if scenes array is non-empty",
+    "Channel filter: chip group (hero, banner, mobile, desktop, square) \u2014 only render section if channels array is non-empty",
+    "Scene/Mood filter: chip group of distinct enriched_scene values \u2014 only render section if scenes array is non-empty",
     "Both new sections follow the same collapsible pattern as existing FilterSidebar sections",
     "Both sections collapsed by default",
     "Active channel/scene filters shown as removable chips below search bar (same pattern as existing active filters)"
@@ -42,22 +50,22 @@
   "dataModel": [
     {
       "entity": "assets (existing)",
-      "description": "No schema changes — enriched_channel and enriched_scene columns already exist",
+      "description": "No schema changes \u2014 enriched_channel and enriched_scene columns already exist",
       "fields": [
-        "enriched_channel TEXT — set by enrich-all script",
-        "enriched_scene TEXT — set by enrich-all script",
-        "enrichment_source TEXT — set to 'ai-vision' after successful enrichment"
+        "enriched_channel TEXT \u2014 set by enrich-all script",
+        "enriched_scene TEXT \u2014 set by enrich-all script",
+        "enrichment_source TEXT \u2014 set to 'ai-vision' after successful enrichment"
       ]
     }
   ],
   "rules": [
-    "Script targets assets WHERE enrichment_source IS NULL — re-running skips already-enriched assets",
+    "Script targets assets WHERE enrichment_source IS NULL \u2014 re-running skips already-enriched assets",
     "Image source priority: (1) fetch Scene7 CDN URL = scene7_domain.replace(/\\/+$/, '') + '/is/image/' + scene7_file; (2) fall back to path.resolve(DATA_DIR, thumbnail_path) if file exists on disk",
     "If no image source is available (no scene7_file and no thumbnail_path), skip asset and log 'no image source'",
     "Full prompt asks for: title, description, tags (array), location, scene, subjects (array), mood, channel_hint, confidence",
-    "Retry prompt (simplified): asks only for title, description, tags (array), location, scene, channel_hint, confidence — omits mood and subjects",
-    "After retry failure, log 'FAILED: <filename>' and continue — do not exit",
-    "ENRICH_DELAY_MS env var (default 500) — wait this many ms between each asset call",
+    "Retry prompt (simplified): asks only for title, description, tags (array), location, scene, channel_hint, confidence \u2014 omits mood and subjects",
+    "After retry failure, log 'FAILED: <filename>' and continue \u2014 do not exit",
+    "ENRICH_DELAY_MS env var (default 500) \u2014 wait this many ms between each asset call",
     "FTS5 sync: after each successful DB update, run INSERT INTO assets_fts(...) to keep search in sync",
     "GET /api/assets channel param: WHERE enriched_channel = :channel",
     "GET /api/assets scene param: WHERE enriched_scene = :scene",
@@ -73,11 +81,11 @@
     {
       "id": "US-001",
       "title": "Bulk enrichment CLI script",
-      "status": "open",
+      "status": "done",
       "dependsOn": [],
       "description": "As a developer, I want a re-runnable CLI script that enriches all unenriched assets with OpenAI Vision so the full 49-asset library has AI-generated metadata.",
       "acceptanceCriteria": [
-        "File created at server/scripts/enrich-all.js — executable via `node server/scripts/enrich-all.js` from the app/ root",
+        "File created at server/scripts/enrich-all.js \u2014 executable via `node server/scripts/enrich-all.js` from the app/ root",
         "Script loads .env from app root using dotenv (require('dotenv').config({ path: path.resolve(__dirname, '../../.env') }))",
         "Script opens dam.sqlite using better-sqlite3 at path.resolve(__dirname, '../../dam.sqlite')",
         "Queries SELECT * FROM assets WHERE enrichment_source IS NULL to get unenriched assets",
@@ -94,38 +102,48 @@
         "Example: running script with valid OPENAI_API_KEY processes all 49 assets and prints summary",
         "Negative case: if OPENAI_API_KEY is missing, script logs 'Error: OPENAI_API_KEY not set' and exits with code 1 immediately",
         "Negative case: re-running script after all assets are enriched logs 'All assets already enriched. Nothing to do.' and exits 0"
-      ]
+      ],
+      "startedAt": "2026-03-17T17:52:26.778002+00:00",
+      "completedAt": "2026-03-17T17:57:15.827106+00:00",
+      "updatedAt": "2026-03-17T17:57:15.826833+00:00"
     },
     {
       "id": "US-002",
       "title": "Expand /api/filters and /api/assets for channel and scene",
-      "status": "open",
-      "dependsOn": ["US-001"],
+      "status": "done",
+      "dependsOn": [
+        "US-001"
+      ],
       "description": "As a frontend developer, I want the filters and assets API endpoints to support channel and scene so the UI can filter by AI-enriched dimensions.",
       "acceptanceCriteria": [
         "GET /api/filters response includes `channels`: array of distinct non-null enriched_channel values sorted alphabetically",
         "GET /api/filters response includes `scenes`: array of distinct non-null enriched_scene values sorted alphabetically",
-        "GET /api/assets accepts `channel` query param — adds WHERE enriched_channel = :channel to query",
-        "GET /api/assets accepts `scene` query param — adds WHERE enriched_scene = :scene to query",
+        "GET /api/assets accepts `channel` query param \u2014 adds WHERE enriched_channel = :channel to query",
+        "GET /api/assets accepts `scene` query param \u2014 adds WHERE enriched_scene = :scene to query",
         "Both new filters compose correctly with existing filters (category, rights_status, q, etc.)",
         "Supertest test: GET /api/filters returns channels and scenes as arrays (may be empty before enrichment)",
         "Supertest test: after inserting a test asset with enriched_channel='hero', GET /api/filters includes 'hero' in channels",
         "Supertest test: GET /api/assets?channel=hero returns only assets with enriched_channel='hero'",
         "Supertest test: GET /api/assets?scene=ocean returns only assets with enriched_scene='ocean'",
         "Negative case: GET /api/assets?channel=nonexistent returns { total: 0, assets: [] } with 200 status"
-      ]
+      ],
+      "startedAt": "2026-03-17T17:57:18.890702+00:00",
+      "completedAt": "2026-03-17T17:59:40.833702+00:00",
+      "updatedAt": "2026-03-17T17:59:40.833399+00:00"
     },
     {
       "id": "US-003",
       "title": "Add Channel and Scene filter sections to FilterSidebar",
-      "status": "open",
-      "dependsOn": ["US-002"],
+      "status": "done",
+      "dependsOn": [
+        "US-002"
+      ],
       "description": "As a content author, I want to filter assets by AI-inferred channel and scene so I can quickly find the right format for my campaign.",
       "acceptanceCriteria": [
-        "FilterSidebar renders a 'Channel' collapsible section below existing sections — only rendered if filters.channels is non-empty",
-        "Channel chips: one chip per value in filters.channels — clicking selects/deselects (single-select, same as category)",
-        "FilterSidebar renders a 'Scene / Mood' collapsible section — only rendered if filters.scenes is non-empty",
-        "Scene chips: multi-select chips from filters.scenes — clicking toggles inclusion",
+        "FilterSidebar renders a 'Channel' collapsible section below existing sections \u2014 only rendered if filters.channels is non-empty",
+        "Channel chips: one chip per value in filters.channels \u2014 clicking selects/deselects (single-select, same as category)",
+        "FilterSidebar renders a 'Scene / Mood' collapsible section \u2014 only rendered if filters.scenes is non-empty",
+        "Scene chips: multi-select chips from filters.scenes \u2014 clicking toggles inclusion",
         "Both sections start collapsed by default",
         "Active channel selection shown as a removable chip in the active filters row below the search bar",
         "Active scene selections shown as removable chips in the active filters row",
@@ -135,23 +153,31 @@
         "Vitest test: FilterSidebar with channels=[] does not render a 'Channel' section",
         "Vitest test: clicking a channel chip calls onFilterChange with key='channel' and the chip value",
         "Negative case: if API returns no channels and no scenes, FilterSidebar renders identically to before enrichment (no empty sections)"
-      ]
+      ],
+      "startedAt": "2026-03-17T17:59:44.112286+00:00",
+      "completedAt": "2026-03-17T18:04:23.298058+00:00",
+      "updatedAt": "2026-03-17T18:04:23.297462+00:00"
     },
     {
       "id": "US-004",
       "title": "Fix dotenv path and update enrich-all script to use Anthropic",
-      "status": "open",
-      "dependsOn": ["US-001"],
+      "status": "done",
+      "dependsOn": [
+        "US-001"
+      ],
       "description": "As a developer, I want the server to correctly load .env and the enrich-all script to use the Anthropic Claude API so enrichment works end-to-end.",
       "acceptanceCriteria": [
         "In server/scripts/enrich-all.js, replace any OpenAI references with Anthropic: require('@anthropic-ai/sdk') instead of openai, use anthropicClient.messages.create() with model 'claude-opus-4-6'",
         "Message format: content array with { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64Data } } and { type: 'text', text: prompt }",
         "Extract response text from response.content[0].text (not response.choices[0].message.content)",
-        "Script reads ANTHROPIC_API_KEY from env (not OPENAI_API_KEY) — exits with error if missing",
+        "Script reads ANTHROPIC_API_KEY from env (not OPENAI_API_KEY) \u2014 exits with error if missing",
         "Simplified retry prompt also uses Anthropic client with same message format",
         "Example: running script with valid ANTHROPIC_API_KEY successfully enriches assets",
         "Negative case: running without ANTHROPIC_API_KEY logs 'Error: ANTHROPIC_API_KEY not set' and exits 1"
-      ]
+      ],
+      "startedAt": "2026-03-17T18:04:26.379283+00:00",
+      "completedAt": "2026-03-17T18:08:11.164634+00:00",
+      "updatedAt": "2026-03-17T18:08:11.164179+00:00"
     }
   ]
 }

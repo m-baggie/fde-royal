@@ -2,6 +2,7 @@
 
 const request = require('supertest');
 const app = require('../index');
+const db = require('../db');
 
 describe('GET /api/filters', () => {
   it('returns 200 with expected shape', async () => {
@@ -62,5 +63,53 @@ describe('GET /api/filters', () => {
     expect(res.status).toBe(200);
     const locs = res.body.locations;
     expect(locs).toEqual([...new Set(locs)].sort());
+  });
+
+  it('returns channels and scenes as arrays (may be empty before enrichment)', async () => {
+    const res = await request(app).get('/api/filters');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.channels)).toBe(true);
+    expect(Array.isArray(res.body.scenes)).toBe(true);
+  });
+
+  describe('channels and scenes with enriched data', () => {
+    const TEST_ID = '__test_channel_scene__';
+
+    beforeEach(() => {
+      db.prepare(
+        `INSERT OR REPLACE INTO assets (id, filename, enriched_channel, enriched_scene)
+         VALUES (?, ?, ?, ?)`
+      ).run(TEST_ID, 'test.jpg', 'hero', 'ocean');
+    });
+
+    afterEach(() => {
+      db.prepare('DELETE FROM assets WHERE id = ?').run(TEST_ID);
+    });
+
+    it('channels includes hero after inserting asset with enriched_channel=hero', async () => {
+      const res = await request(app).get('/api/filters');
+      expect(res.status).toBe(200);
+      expect(res.body.channels).toContain('hero');
+    });
+
+    it('scenes includes ocean after inserting asset with enriched_scene=ocean', async () => {
+      const res = await request(app).get('/api/filters');
+      expect(res.status).toBe(200);
+      expect(res.body.scenes).toContain('ocean');
+    });
+
+    it('channels array is sorted alphabetically', async () => {
+      const res = await request(app).get('/api/filters');
+      expect(res.status).toBe(200);
+      const ch = res.body.channels;
+      expect(ch).toEqual([...ch].sort());
+    });
+
+    it('scenes array is sorted alphabetically', async () => {
+      const res = await request(app).get('/api/filters');
+      expect(res.status).toBe(200);
+      const sc = res.body.scenes;
+      expect(sc).toEqual([...sc].sort());
+    });
   });
 });

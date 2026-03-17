@@ -78,7 +78,7 @@ const styles = {
   },
 };
 
-function buildParams({ q, category, subcategory, rights, location, metadataQuality }) {
+function buildParams({ q, category, subcategory, rights, location, metadataQuality, channel, scene }) {
   const params = {};
   if (q) params.q = q;
   if (category) params.category = category;
@@ -88,6 +88,8 @@ function buildParams({ q, category, subcategory, rights, location, metadataQuali
   if (metadataQuality && metadataQuality.length > 0) {
     params.metadataQuality = metadataQuality.join(',');
   }
+  if (channel) params.channel = channel;
+  if (scene && scene.length > 0) params.scene = scene.join(',');
   return params;
 }
 
@@ -98,6 +100,8 @@ export default function BrowsePage({ isUploadOpen = false, onUploadRequestClose 
   const [rights, setRights] = useState('');
   const [location, setLocation] = useState('');
   const [metadataQuality, setMetadataQuality] = useState([]);
+  const [channel, setChannel] = useState('');
+  const [scene, setScene] = useState([]);
 
   const [assets, setAssets] = useState([]);
   const [total, setTotal] = useState(0);
@@ -114,7 +118,7 @@ export default function BrowsePage({ isUploadOpen = false, onUploadRequestClose 
 
   // Load assets whenever filter state or refreshKey changes
   useEffect(() => {
-    const params = buildParams({ q, category, subcategory, rights, location, metadataQuality });
+    const params = buildParams({ q, category, subcategory, rights, location, metadataQuality, channel, scene });
     setLoading(true);
     setError(null);
     getAssets(params)
@@ -127,7 +131,7 @@ export default function BrowsePage({ isUploadOpen = false, onUploadRequestClose 
         setError('Failed to load assets. Please try again.');
         setLoading(false);
       });
-  }, [q, category, subcategory, rights, location, metadataQuality, refreshKey]);
+  }, [q, category, subcategory, rights, location, metadataQuality, channel, scene, refreshKey]);
 
   function handleUploadComplete() {
     onUploadRequestClose();
@@ -140,6 +144,8 @@ export default function BrowsePage({ isUploadOpen = false, onUploadRequestClose 
     else if (key === 'rights') setRights(value);
     else if (key === 'location') setLocation(value);
     else if (key === 'metadataQuality') setMetadataQuality(value);
+    else if (key === 'channel') setChannel(value);
+    else if (key === 'scene') setScene(value);
   }, []);
 
   function clearAllFilters() {
@@ -149,6 +155,8 @@ export default function BrowsePage({ isUploadOpen = false, onUploadRequestClose 
     setRights('');
     setLocation('');
     setMetadataQuality([]);
+    setChannel('');
+    setScene([]);
   }
 
   // Build active filter chips list
@@ -165,6 +173,14 @@ export default function BrowsePage({ isUploadOpen = false, onUploadRequestClose 
       clear: () => setMetadataQuality((prev) => prev.filter((v) => v !== mq)),
     })
   );
+  if (channel) activeChips.push({ key: 'channel', label: channel, clear: () => setChannel('') });
+  scene.forEach((s) =>
+    activeChips.push({
+      key: `scene-${s}`,
+      label: s,
+      clear: () => setScene((prev) => prev.filter((v) => v !== s)),
+    })
+  );
 
   return (
     <div style={styles.page}>
@@ -175,6 +191,8 @@ export default function BrowsePage({ isUploadOpen = false, onUploadRequestClose 
         activeRights={rights}
         activeLocation={location}
         activeMetadataQuality={metadataQuality}
+        activeChannel={channel}
+        activeScene={scene}
         onFilterChange={handleFilterChange}
       />
 

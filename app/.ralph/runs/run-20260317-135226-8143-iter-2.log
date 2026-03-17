@@ -1,0 +1,7 @@
+US-002 re-verification complete:
+
+- **Implementation**: Already in place (commit `34f5117`) — `GET /api/filters` returns `channels` and `scenes` arrays; `GET /api/assets` accepts `channel` and `scene` query params composing with all existing filters.
+- **Quality gates**: lint ✓, build ✓, 67 server tests ✓, 43 client tests ✓ — all passing.
+- **Commit**: `e4c9c98 chore(ralph): add US-002 re-verification progress entry and run summary`
+
+<promise>COMPLETE</promise>

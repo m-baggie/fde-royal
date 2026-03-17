@@ -1,0 +1,13 @@
+Clean working tree. US-003 is complete.
+
+**Summary of what was implemented:**
+
+- **`FilterSidebar.jsx`** — Added `Channel` (single-select) and `Scene / Mood` (multi-select) collapsible sections, both collapsed by default, only rendered when `filters.channels`/`filters.scenes` are non-empty. Extended the `Section` component with a `defaultOpen` prop.
+
+- **`BrowsePage.jsx`** — Added `channel` (string) and `scene` (array) state; wired into `buildParams`, `handleFilterChange`, `clearAllFilters`, active filter chips row, and `FilterSidebar` props.
+
+- **`FilterSidebar.test.jsx`** (new) — 8 Vitest tests covering: Channel section renders with 2 chips, empty channels renders nothing, chip click calls `onFilterChange('channel', value)`, deselect works, Scene section renders/hides, scene multi-select, and the negative case (no Channel or Scene sections when both are empty).
+
+All quality gates pass: lint ✓, build ✓, 43 client + 67 server tests ✓, browser verified ✓.
+
+<promise>COMPLETE</promise>

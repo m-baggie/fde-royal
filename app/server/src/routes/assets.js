@@ -10,7 +10,7 @@ const router = Router();
 /**
  * GET /api/assets
  * Search and filter assets. Supported query params:
- *   q, category, subcategory, rights_status, location,
+ *   q, category, subcategory, rights_status, location, channel, scene,
  *   has_title, has_rights, has_release_placeholder,
  *   limit (default 100, max 200), offset (default 0)
  */

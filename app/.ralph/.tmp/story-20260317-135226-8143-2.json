@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "total": 4,
+  "remaining": 3,
+  "quality_gates": [
+    "npm run lint",
+    "npm run build",
+    "npm test"
+  ],
+  "id": "US-002",
+  "title": "Expand /api/filters and /api/assets for channel and scene"
+}

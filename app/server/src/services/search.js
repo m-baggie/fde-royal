@@ -22,6 +22,8 @@ function searchAssets(db, params) {
     subcategory,
     rights_status,
     location,
+    channel,
+    scene,
     has_title,
     has_rights,
     has_release_placeholder,
@@ -52,6 +54,14 @@ function searchAssets(db, params) {
     conditions.push('(a.enriched_location = ? OR a.original_location = ?)');
     condArgs.push(location, location);
   }
+  if (channel !== undefined && channel !== null && channel !== '') {
+    conditions.push('a.enriched_channel = ?');
+    condArgs.push(channel);
+  }
+  if (scene !== undefined && scene !== null && scene !== '') {
+    conditions.push('a.enriched_scene = ?');
+    condArgs.push(scene);
+  }
   if (has_title === 'true') {
     conditions.push(
       "((a.original_title IS NOT NULL AND a.original_title != '') OR (a.enriched_title IS NOT NULL AND a.enriched_title != ''))"
@@ -71,6 +81,7 @@ function searchAssets(db, params) {
     a.original_description, a.enriched_description,
     a.original_tags, a.enriched_tags,
     a.enriched_rights_status, a.enrichment_source,
+    a.enriched_channel, a.enriched_scene,
     a.width, a.height,
     a.scene7_file, a.scene7_domain,
     a.s7_sync_error, a.needs_rights_review, a.has_release_placeholder
@@ -163,6 +174,8 @@ function formatAssets(rows) {
       web_image_path: row.web_image_path,
       enriched_rights_status: row.enriched_rights_status,
       enrichment_source: row.enrichment_source,
+      enriched_channel: row.enriched_channel,
+      enriched_scene: row.enriched_scene,
       width: row.width,
       height: row.height,
       scene7_file: row.scene7_file,

@@ -2,6 +2,7 @@
 
 const request = require('supertest');
 const app = require('../index');
+const db = require('../db');
 
 describe('GET /api/assets', () => {
   it('returns 200 with total 49 when no params given', async () => {
@@ -66,6 +67,74 @@ describe('GET /api/assets', () => {
       expect(asset).toHaveProperty(field);
     }
     expect(Array.isArray(asset.display_tags)).toBe(true);
+  });
+});
+
+describe('GET /api/assets — channel and scene filters', () => {
+  const TEST_IDS = ['__test_ch_scene_1__', '__test_ch_scene_2__'];
+
+  beforeEach(() => {
+    db.prepare(
+      `INSERT OR REPLACE INTO assets (id, filename, enriched_channel, enriched_scene)
+       VALUES (?, ?, ?, ?)`
+    ).run(TEST_IDS[0], 'test-hero.jpg', 'hero', 'ocean');
+    db.prepare(
+      `INSERT OR REPLACE INTO assets (id, filename, enriched_channel, enriched_scene)
+       VALUES (?, ?, ?, ?)`
+    ).run(TEST_IDS[1], 'test-banner.jpg', 'banner', 'mountain');
+  });
+
+  afterEach(() => {
+    for (const id of TEST_IDS) {
+      db.prepare('DELETE FROM assets WHERE id = ?').run(id);
+    }
+  });
+
+  it('channel=hero returns only assets with enriched_channel=hero', async () => {
+    const res = await request(app).get('/api/assets?channel=hero');
+    expect(res.status).toBe(200);
+    expect(res.body.assets.length).toBeGreaterThan(0);
+    for (const asset of res.body.assets) {
+      expect(asset.enriched_channel).toBe('hero');
+    }
+  });
+
+  it('scene=ocean returns only assets with enriched_scene=ocean', async () => {
+    const res = await request(app).get('/api/assets?scene=ocean');
+    expect(res.status).toBe(200);
+    expect(res.body.assets.length).toBeGreaterThan(0);
+    for (const asset of res.body.assets) {
+      expect(asset.enriched_scene).toBe('ocean');
+    }
+  });
+
+  it('channel=nonexistent returns { total: 0, assets: [] } with 200 status', async () => {
+    const res = await request(app).get('/api/assets?channel=nonexistent');
+    expect(res.status).toBe(200);
+    expect(res.body.total).toBe(0);
+    expect(res.body.assets).toEqual([]);
+  });
+
+  it('channel and scene compose correctly with category filter', async () => {
+    // Insert asset with all three fields set
+    const COMBO_ID = '__test_ch_scene_combo__';
+    db.prepare(
+      `INSERT OR REPLACE INTO assets (id, filename, category, enriched_channel, enriched_scene)
+       VALUES (?, ?, ?, ?, ?)`
+    ).run(COMBO_ID, 'combo.jpg', 'ships', 'hero', 'ocean');
+    try {
+      const res = await request(app).get('/api/assets?category=ships&channel=hero&scene=ocean');
+      expect(res.status).toBe(200);
+      const ids = res.body.assets.map((a) => a.id);
+      expect(ids).toContain(COMBO_ID);
+      for (const asset of res.body.assets) {
+        expect(asset.category).toBe('ships');
+        expect(asset.enriched_channel).toBe('hero');
+        expect(asset.enriched_scene).toBe('ocean');
+      }
+    } finally {
+      db.prepare('DELETE FROM assets WHERE id = ?').run(COMBO_ID);
+    }
   });
 });
 

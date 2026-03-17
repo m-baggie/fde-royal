@@ -1,0 +1,12 @@
+Clean. US-002 is complete.
+
+**Summary of what was implemented:**
+
+- **`/api/filters`** — added `channels` and `scenes` arrays (distinct non-null `enriched_channel`/`enriched_scene` values, sorted alphabetically)
+- **`/api/assets`** — added `channel` and `scene` query params that add `WHERE enriched_channel = ?` / `WHERE enriched_scene = ?` clauses, composing correctly with all existing filters
+- **`search.js`** — added `enriched_channel` and `enriched_scene` to both `SELECT_FIELDS` and the `formatAssets` return object so list responses include these fields
+- **Tests** — new supertest tests covering all 10 acceptance criteria: shape checks, insert+assert pattern for `channels`/`scenes`, filtering by `channel` and `scene`, negative case returning `{total:0, assets:[]}`, and composition with existing filters
+
+All quality gates passed: lint ✓, build ✓, 102 tests (67 server + 35 client) ✓
+
+<promise>COMPLETE</promise>

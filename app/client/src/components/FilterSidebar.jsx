@@ -62,8 +62,8 @@ const styles = {
   },
 };
 
-function Section({ title, children }) {
-  const [open, setOpen] = useState(true);
+function Section({ title, children, defaultOpen = true }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div style={styles.section}>
       <div style={styles.sectionHeader} onClick={() => setOpen((o) => !o)}>
@@ -101,11 +101,15 @@ export default function FilterSidebar({
   activeRights,
   activeLocation,
   activeMetadataQuality,
+  activeChannel,
+  activeScene,
   onFilterChange,
 }) {
   const categories = filters?.categories || [];
   const subcategories = activeCategory ? (filters?.subcategories?.[activeCategory] || []) : [];
   const locations = filters?.locations || [];
+  const channels = filters?.channels || [];
+  const scenes = filters?.scenes || [];
 
   function handleCategoryToggle(val) {
     const next = activeCategory === val ? '' : val;
@@ -130,6 +134,17 @@ export default function FilterSidebar({
       ? activeMetadataQuality.filter((q) => q !== val)
       : [...activeMetadataQuality, val];
     onFilterChange('metadataQuality', next);
+  }
+
+  function handleChannelToggle(val) {
+    onFilterChange('channel', activeChannel === val ? '' : val);
+  }
+
+  function handleSceneToggle(val) {
+    const next = activeScene.includes(val)
+      ? activeScene.filter((s) => s !== val)
+      : [...activeScene, val];
+    onFilterChange('scene', next);
   }
 
   return (
@@ -180,6 +195,26 @@ export default function FilterSidebar({
           onToggle={handleQualityToggle}
         />
       </Section>
+
+      {channels.length > 0 && (
+        <Section title="Channel" defaultOpen={false}>
+          <Chips
+            options={channels}
+            active={activeChannel}
+            onToggle={handleChannelToggle}
+          />
+        </Section>
+      )}
+
+      {scenes.length > 0 && (
+        <Section title="Scene / Mood" defaultOpen={false}>
+          <Chips
+            options={scenes}
+            active={activeScene}
+            onToggle={handleSceneToggle}
+          />
+        </Section>
+      )}
     </aside>
   );
 }
