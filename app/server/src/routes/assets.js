@@ -98,13 +98,13 @@ router.get('/:id', (req, res) => {
  * Requires OPENAI_API_KEY to be configured; returns 503 otherwise.
  */
 router.post('/:id/enrich', async (req, res) => {
-  const openai = req.app.locals.openai;
-  if (!openai) {
-    return res.status(503).json({ error: 'AI enrichment unavailable — OPENAI_API_KEY not configured' });
+  const anthropic = req.app.locals.anthropic;
+  if (!anthropic) {
+    return res.status(503).json({ error: 'AI enrichment unavailable — ANTHROPIC_API_KEY not configured' });
   }
 
   try {
-    const updated = await enrichAsset(db, req.params.id, openai);
+    const updated = await enrichAsset(db, req.params.id, anthropic);
     if (!updated) {
       return res.status(404).json({ error: 'Asset not found' });
     }
