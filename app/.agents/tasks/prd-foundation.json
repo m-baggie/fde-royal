@@ -1,0 +1,225 @@
+{
+  "version": 1,
+  "project": "Royal Caribbean DAM — Foundation",
+  "overview": "Scaffold the monorepo, set up SQLite with FTS5, and ingest all 49 existing AEM DAM assets from .content.xml files into the database. This PRD must complete and be committed before the API and Frontend PRDs run in parallel worktrees.",
+  "goals": [
+    "Scaffold Express backend + React Vite frontend in a single monorepo",
+    "Create SQLite schema with FTS5 full-text search and auto-sync triggers",
+    "Parse all 49 .content.xml files from Data/royal/ and load them into SQLite with deterministic enrichment"
+  ],
+  "nonGoals": [
+    "No API route implementation beyond GET /api/health",
+    "No React UI beyond the base scaffold",
+    "No AI enrichment in this PRD",
+    "No file upload logic"
+  ],
+  "successMetrics": [
+    "npm run dev starts both Express (port 3001) and Vite (port 5173) without error",
+    "SELECT COUNT(*) FROM assets returns 49 after ingest",
+    "All quality gates pass"
+  ],
+  "openQuestions": [],
+  "stack": {
+    "frontend": "React 18 + Vite",
+    "backend": "Express.js (Node 20)",
+    "database": "SQLite via better-sqlite3",
+    "search": "SQLite FTS5 full-text search",
+    "testing_backend": "Jest + Supertest",
+    "testing_frontend": "Vitest + React Testing Library",
+    "linting": "ESLint",
+    "auth": "None"
+  },
+  "projectStructure": {
+    "root": "/ (ralph runs from the app/ directory)",
+    "layout": [
+      "client/                     React + Vite frontend",
+      "client/src/components/      Reusable UI components",
+      "client/src/pages/           Page-level components",
+      "client/src/hooks/           Custom React hooks",
+      "client/src/api/             Axios API client",
+      "server/                     Express backend",
+      "server/src/routes/          Express route handlers",
+      "server/src/services/        Business logic (ingest, enrich, search)",
+      "server/src/db/              SQLite setup and migrations",
+      "server/src/__tests__/       Jest + Supertest tests",
+      "uploads/                    Uploaded image files (gitignored)",
+      "dam.sqlite                  SQLite database file (gitignored)",
+      "package.json                Root workspace",
+      ".env.example                Committed example env file"
+    ]
+  },
+  "routes": [
+    { "path": "GET /api/health", "name": "Health Check", "purpose": "Returns { status: 'ok' } — smoke test that server is running" }
+  ],
+  "uiNotes": [
+    "client/src/App.jsx renders a placeholder: <h1>Royal Caribbean DAM</h1>",
+    "No styling required in this PRD — layout and branding come in the Frontend PRD"
+  ],
+  "dataModel": [
+    {
+      "entity": "assets",
+      "description": "Main table — original XML metadata plus deterministic enrichment fields",
+      "fields": [
+        "id TEXT PRIMARY KEY",
+        "filename TEXT NOT NULL",
+        "filepath TEXT",
+        "thumbnail_path TEXT",
+        "web_image_path TEXT",
+        "category TEXT",
+        "subcategory TEXT",
+        "subsubcategory TEXT",
+        "original_title TEXT",
+        "original_description TEXT",
+        "original_creator TEXT",
+        "original_rights_owner TEXT",
+        "original_dc_rights TEXT",
+        "original_usage_terms TEXT",
+        "original_location TEXT",
+        "original_tags TEXT",
+        "enriched_title TEXT",
+        "enriched_description TEXT",
+        "enriched_tags TEXT",
+        "enriched_location TEXT",
+        "enriched_scene TEXT",
+        "enriched_subjects TEXT",
+        "enriched_mood TEXT",
+        "enriched_creator_normalized TEXT",
+        "enriched_rights_status TEXT",
+        "enriched_channel TEXT",
+        "enriched_format TEXT",
+        "enrichment_source TEXT",
+        "enrichment_confidence REAL",
+        "width INTEGER",
+        "height INTEGER",
+        "file_size INTEGER",
+        "file_format TEXT",
+        "mime_type TEXT",
+        "scene7_file TEXT",
+        "scene7_domain TEXT",
+        "scene7_status TEXT",
+        "s7_sync_error INTEGER DEFAULT 0",
+        "needs_rights_review INTEGER DEFAULT 0",
+        "has_release_placeholder INTEGER DEFAULT 0",
+        "dam_last_modified TEXT",
+        "dam_last_replicated TEXT",
+        "created_at TEXT DEFAULT CURRENT_TIMESTAMP",
+        "updated_at TEXT DEFAULT CURRENT_TIMESTAMP"
+      ]
+    },
+    {
+      "entity": "assets_fts (virtual FTS5)",
+      "description": "Full-text search index kept in sync with assets via triggers",
+      "fields": [
+        "id",
+        "title",
+        "description",
+        "tags",
+        "location",
+        "creator",
+        "category",
+        "subcategory",
+        "filename"
+      ]
+    }
+  ],
+  "rules": [
+    "DATA_DIR env var points to the existing DAM export — default '../Data/royal' (relative to server/)",
+    "On server startup: run DB migrations, then run XML ingest only if SELECT COUNT(*) FROM assets = 0",
+    "Creator normalization: map '[Royal Carribean]', 'Brand Team', 'Brand Team ', '[Brand Team]', '[Production Team ]', '[Production Team]' → 'Royal Caribbean Brand Team'",
+    "Rights reconciliation: if xmpRights:Owner or dc:rights contains 'royal caribbean' (case-insensitive, trimmed) → enriched_rights_status='owned'; if rights data present but has typo/inconsistency → 'unclear'; if no rights data → 'none'",
+    "Channel inference from filename + dimensions: 'hero' in name → hero; 'banner' in name → banner; portrait (height > width) or 'mobile' in name → mobile; landscape (width > height) or 'desktop' in name → desktop; square → square",
+    "Format from dimensions: width > height → landscape; height > width → portrait; width == height → square",
+    "Release placeholder: any field value containing 'Selecione' → set has_release_placeholder = 1",
+    "S7 sync error: if dam:lastS7SyncStatus starts with 'failed' → set s7_sync_error = 1",
+    "JCR type stripping: '{Long}1920' → 1920 (integer), '{Boolean}true' → true, '{Date}2021-...' → string without wrapper",
+    "FTS sync triggers fire automatically on INSERT/UPDATE/DELETE to assets table",
+    "thumbnail_path and web_image_path are set only if those rendition files exist on disk"
+  ],
+  "qualityGates": [
+    "npm run lint",
+    "npm run build",
+    "npm test"
+  ],
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Scaffold monorepo — Express + React Vite",
+      "status": "open",
+      "dependsOn": [],
+      "description": "As a developer, I want a working monorepo with Express backend and React Vite frontend so I can build and test both apps from a single root.",
+      "acceptanceCriteria": [
+        "Root package.json has workspaces: ['client', 'server'] and name: 'dam-search'",
+        "npm install concurrently at root",
+        "Root scripts: dev (concurrently runs server dev + client dev), test (cd server && npm test && cd ../client && npm test), lint (cd server && npm run lint && cd ../client && npm run lint), build (cd client && npm run build)",
+        "server/ package.json — install: npm install express better-sqlite3 multer cors dotenv openai uuid",
+        "server/ devDependencies — install: npm install --save-dev jest supertest nodemon eslint",
+        "server/ scripts: start (node src/index.js), dev (nodemon src/index.js), test (jest --runInBand --forceExit), lint (eslint src)",
+        "server/src/index.js: creates Express app, uses cors({ origin: 'http://localhost:5173' }), uses express.json(), mounts GET /api/health → res.json({ status: 'ok' }), listens on PORT env var defaulting to 3001, logs 'Server running on port 3001'",
+        "client/ created with: npm create vite@latest client -- --template react",
+        "client/ install: npm install axios",
+        "client/ devDependencies: npm install --save-dev vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom eslint",
+        "client/vite.config.js configures test: { environment: 'jsdom', globals: true, setupFiles: './src/test-setup.js' }",
+        "client/src/test-setup.js imports @testing-library/jest-dom",
+        "client/ scripts: dev (vite), build (vite build), test (vitest run), lint (eslint src)",
+        "client/src/App.jsx renders <h1>Royal Caribbean DAM</h1>",
+        ".env.example at project root contains: OPENAI_API_KEY=your_key_here, PORT=3001, DATA_DIR=../Data/royal",
+        ".gitignore includes: node_modules/, dam.sqlite, uploads/, .env",
+        "uploads/ directory created with a .gitkeep file",
+        "Jest test: GET /api/health returns 200 { status: 'ok' }",
+        "Vitest test: App renders text 'Royal Caribbean DAM'",
+        "Example: npm run dev starts both servers without error",
+        "Negative case: missing OPENAI_API_KEY does not crash server — logs warning 'AI enrichment disabled: OPENAI_API_KEY not set' and continues"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "SQLite schema, migrations, and FTS5 triggers",
+      "status": "open",
+      "dependsOn": ["US-001"],
+      "description": "As a developer, I want SQLite tables and FTS triggers created automatically on startup so the app has persistent searchable storage without manual setup.",
+      "acceptanceCriteria": [
+        "server/src/db/schema.js exports runMigrations(db)",
+        "runMigrations creates the assets table using CREATE TABLE IF NOT EXISTS with all fields in the data model",
+        "runMigrations creates assets_fts: CREATE VIRTUAL TABLE IF NOT EXISTS assets_fts USING fts5(id UNINDEXED, title, description, tags, location, creator, category, subcategory, filename, content='assets', content_rowid='rowid')",
+        "runMigrations creates three triggers: assets_ai (AFTER INSERT), assets_au (AFTER UPDATE), assets_ad (AFTER DELETE) to keep assets_fts in sync",
+        "server/src/db/index.js opens dam.sqlite at project root using better-sqlite3, calls runMigrations(db), exports db as default",
+        "server/src/index.js imports db on startup (triggering migrations)",
+        "Jest test: runMigrations on an in-memory DB (new Database(':memory:')) creates both tables without error",
+        "Jest test: INSERT a row into assets → SELECT from assets_fts WHERE assets_fts MATCH the inserted title returns that row",
+        "Jest test: UPDATE assets row title → FTS reflects new title",
+        "Jest test: DELETE assets row → FTS no longer returns it",
+        "Jest test: calling runMigrations twice does not throw",
+        "Negative case: if dam.sqlite path is not writable, process logs the error and exits with code 1"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "XML ingest service — parse DAM export into SQLite",
+      "status": "open",
+      "dependsOn": ["US-002"],
+      "description": "As a developer, I want all 49 existing .content.xml files parsed and loaded into SQLite on first startup so assets are immediately available without a separate import step.",
+      "acceptanceCriteria": [
+        "server/src/services/ingest.js exports ingestAssets(db, dataDir)",
+        "Recursively walks dataDir using Node fs/path, finds .content.xml files where: parent folder name ends in .jpg/.jpeg/.png/.JPG AND full path does not contain '_jcr_content'",
+        "Parses XML with Node's built-in DOMParser or the 'fast-xml-parser' package (npm install fast-xml-parser in server/) — reads all fields listed in dataModel",
+        "Namespace attribute mapping: dc:title → original_title, dc:description → original_description, dc:creator → original_creator, dc:rights → original_dc_rights, xmpRights:Owner → original_rights_owner, xmpRights:UsageTerms → original_usage_terms, Iptc4xmpExt:LocationShown → original_location, cq:tags → original_tags, tiff:ImageWidth → width, tiff:ImageLength → height, dam:size → file_size, dam:Fileformat → file_format, dam:MIMEtype → mime_type, dam:scene7File → scene7_file, dam:scene7Domain → scene7_domain, dam:scene7FileStatus → scene7_status",
+        "dam:lastS7SyncStatus is on the jcr:content element (not metadata child) — read it from there",
+        "Strip JCR type wrappers from all values: '{Long}1920' → 1920, '{Boolean}true' → 'true', '{Date}2021-...' → '2021-...'",
+        "Infer category/subcategory/subsubcategory from path segments relative to dataDir (last segment is the asset folder name itself — exclude it)",
+        "Apply all deterministic rules from the rules section: creator normalization, rights reconciliation, channel/format inference, release placeholder detection, s7 sync error flag",
+        "Set thumbnail_path to relative path of _jcr_content/renditions/cq5dam.thumbnail.319.319.png if it exists",
+        "Set web_image_path to relative path of _jcr_content/renditions/cq5dam.web.1280.1280.jpeg if it exists",
+        "Use INSERT OR IGNORE so re-running is safe",
+        "server/src/index.js: after DB init, if SELECT COUNT(*) FROM assets = 0, call ingestAssets(db, process.env.DATA_DIR || '../Data/royal') and log 'Ingested N assets'",
+        "Jest test: ingestAssets against the real ../Data/royal directory inserts exactly 49 rows",
+        "Jest test: asset with id 'anthem-of-the-seas-new-york-statue-liberty.jpg' has original_title 'Anthem of the Seas Sightseeing the Statue of Liberty, New York'",
+        "Jest test: creator '[Royal Carribean]' → enriched_creator_normalized = 'Royal Caribbean Brand Team'",
+        "Jest test: exactly 7 assets have has_release_placeholder = 1",
+        "Jest test: exactly 6 assets have s7_sync_error = 1",
+        "Jest test: exactly 27 assets have enriched_rights_status = 'none'",
+        "Jest test: asset 'anthem-of-the-seas-new-york-statue-liberty.jpg' has enriched_rights_status = 'owned'",
+        "Negative case: a malformed XML file is skipped with console.warn — remaining files still ingest successfully"
+      ]
+    }
+  ]
+}
