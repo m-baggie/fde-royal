@@ -5,6 +5,7 @@ const NAVY = '#001B6B';
 const GOLD = '#C8960C';
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 const ACCEPTED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
+const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp']);
 
 const STATUS = {
   PENDING: 'Pending',
@@ -18,6 +19,55 @@ const STATUS = {
 };
 
 const TERMINAL = new Set([STATUS.DONE, STATUS.ENRICH_UNAVAILABLE, STATUS.UPLOAD_FAILED]);
+
+/** Returns true if a File object is an image by MIME type or file extension. */
+export function isImageFile(file) {
+  if (file.type && file.type.startsWith('image/')) return true;
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  return IMAGE_EXTENSIONS.has(ext);
+}
+
+/**
+ * Recursively collects all image File objects from a FileSystemEntry.
+ * FileSystemFileEntry and FileSystemDirectoryEntry at any depth are supported.
+ * Non-image files are silently skipped.
+ */
+export async function traverseEntry(entry) {
+  if (entry.isFile) {
+    return new Promise((resolve) => {
+      entry.file((file) => {
+        resolve(isImageFile(file) ? [file] : []);
+      });
+    });
+  }
+
+  if (entry.isDirectory) {
+    const reader = entry.createReader();
+    const allFiles = [];
+
+    // readEntries returns ≤100 entries per call; loop until empty
+    await new Promise((resolve, reject) => {
+      function read() {
+        reader.readEntries(async (entries) => {
+          if (entries.length === 0) {
+            resolve();
+            return;
+          }
+          for (const child of entries) {
+            const files = await traverseEntry(child);
+            allFiles.push(...files);
+          }
+          read();
+        }, reject);
+      }
+      read();
+    });
+
+    return allFiles;
+  }
+
+  return [];
+}
 
 function getStatusStyle(status) {
   switch (status) {
@@ -58,10 +108,10 @@ function validateFile(file) {
 
 export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
   const [fileEntries, setFileEntries] = useState([]);
-  const [folderMode, setFolderMode] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [allDone, setAllDone] = useState(false);
   const fileInputRef = useRef(null);
+  const folderInputRef = useRef(null);
   const idCounterRef = useRef(0);
 
   // ESC key closes modal
@@ -87,7 +137,6 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
   useEffect(() => {
     if (isOpen) {
       setFileEntries([]);
-      setFolderMode(false);
       setIsDragOver(false);
       setAllDone(false);
       idCounterRef.current = 0;
@@ -111,11 +160,30 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
     );
   }
 
-  function handleDrop(e) {
+  async function handleDrop(e) {
     e.preventDefault();
     setIsDragOver(false);
-    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      addFiles(e.dataTransfer.files);
+
+    const items = e.dataTransfer?.items;
+    if (!items || items.length === 0) return;
+
+    // Collect FileSystemEntry objects synchronously before any await
+    const entries = [];
+    for (let i = 0; i < items.length; i++) {
+      const entry = items[i].webkitGetAsEntry?.();
+      if (entry) entries.push(entry);
+    }
+
+    if (entries.length === 0) return;
+
+    const allFiles = [];
+    for (const entry of entries) {
+      const files = await traverseEntry(entry);
+      allFiles.push(...files);
+    }
+
+    if (allFiles.length > 0) {
+      addFiles(allFiles);
     }
   }
 
@@ -128,14 +196,9 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
     setIsDragOver(false);
   }
 
-  function handleZoneClick() {
-    fileInputRef.current?.click();
-  }
-
   function handleFileInputChange(e) {
     if (e.target.files && e.target.files.length > 0) {
       addFiles(e.target.files);
-      // Reset so same files can be re-selected
       e.target.value = '';
     }
   }
@@ -262,15 +325,13 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
             style={{
               border: `2px ${isDragOver ? 'solid' : 'dashed'} ${GOLD}`,
               borderRadius: '8px',
-              minHeight: '200px',
+              minHeight: '160px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              cursor: 'pointer',
               backgroundColor: isDragOver ? 'rgba(200, 150, 12, 0.06)' : 'transparent',
               transition: 'background-color 0.15s, border-style 0.15s',
             }}
-            onClick={handleZoneClick}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -283,24 +344,12 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
                 pointerEvents: 'none',
               }}
             >
-              Drop images here or click to browse
+              Drop images or folders here
             </span>
           </div>
 
-          {/* Hidden file input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            multiple
-            {...(folderMode ? { webkitdirectory: '', directory: '' } : {})}
-            style={{ display: 'none' }}
-            onChange={handleFileInputChange}
-            data-testid="file-input"
-          />
-
-          {/* Folder mode toggle */}
-          <div style={{ marginTop: '12px', textAlign: 'center' }}>
+          {/* Browse buttons */}
+          <div style={{ marginTop: '12px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
             <button
               style={{
                 background: 'none',
@@ -311,12 +360,47 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
                 cursor: 'pointer',
                 color: '#374151',
               }}
-              onClick={() => setFolderMode((m) => !m)}
-              data-testid="folder-toggle-btn"
+              onClick={() => fileInputRef.current?.click()}
+              data-testid="browse-files-btn"
             >
-              {folderMode ? 'Upload files' : 'Upload folder'}
+              Browse files
+            </button>
+            <button
+              style={{
+                background: 'none',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px',
+                padding: '6px 14px',
+                fontSize: '13px',
+                cursor: 'pointer',
+                color: '#374151',
+              }}
+              onClick={() => folderInputRef.current?.click()}
+              data-testid="browse-folder-btn"
+            >
+              Browse folder
             </button>
           </div>
+
+          {/* Hidden file inputs */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            style={{ display: 'none' }}
+            onChange={handleFileInputChange}
+            data-testid="file-input"
+          />
+          <input
+            ref={folderInputRef}
+            type="file"
+            webkitdirectory=""
+            multiple
+            style={{ display: 'none' }}
+            onChange={handleFileInputChange}
+            data-testid="folder-input"
+          />
 
           {/* File list */}
           {fileEntries.length > 0 && (

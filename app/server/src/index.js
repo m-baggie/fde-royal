@@ -19,8 +19,12 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Resolve DATA_ROOT once — used by the media static route and the download endpoint
+const dataRoot = path.resolve(__dirname, '..', '..', process.env.DATA_DIR || '../Data/royal');
+app.locals.dataRoot = dataRoot;
+
 // Static DAM media files — registered before API routers
-app.use('/api/assets/media', express.static(path.resolve(__dirname, '..', '..', process.env.DATA_DIR || '../Data/royal')));
+app.use('/api/assets/media', express.static(dataRoot));
 
 // Upload router must be registered before assetsRouter to avoid /:id capturing /upload
 app.use('/api/assets', uploadRouter);
@@ -30,7 +34,7 @@ app.use('/api/filters', filtersRouter);
 if (process.env.ANTHROPIC_API_KEY) {
   app.locals.anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 } else {
-  console.warn('AI enrichment disabled: ANTHROPIC_API_KEY not set');
+  console.warn('AI enrichment and query expansion disabled: ANTHROPIC_API_KEY not set');
 }
 
 // Ingest assets on first startup (only if the table is empty)

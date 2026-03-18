@@ -1,0 +1,10 @@
+Clean working tree. US-003 is fully complete and verified.
+
+**Summary of what was implemented:**
+- `GET /api/assets/:id/download` — streams asset file with `Content-Disposition: attachment; filename="..."`, returns 404 for missing asset/file, path traversal guard
+- `app.locals.dataRoot` in `server/src/index.js` — single source of truth for data dir, shared with the route handler
+- `getAssetDownloadUrl(id)` exported from `client/src/api/assets.js`
+- Download button `<a href="..." download>` with navy styling in `AssetDetailModal` right panel — always visible when asset is loaded
+- All acceptance criteria met; 147 tests pass (83 server + 64 client); browser verified at port 5178
+
+<promise>COMPLETE</promise>

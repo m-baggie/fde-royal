@@ -28,4 +28,8 @@ export function getAssetVariants(id) {
   return api.get(`/api/assets/${id}/variants`).then((res) => res.data);
 }
 
+export function getAssetDownloadUrl(id) {
+  return `/api/assets/${id}/download`;
+}
+
 export default api;

@@ -11,7 +11,7 @@ vi.mock('axios', () => ({
   },
 }));
 
-import { getAssets, getAsset, getFilters, uploadFiles, enrichAsset, getAssetVariants } from './assets.js';
+import { getAssets, getAsset, getFilters, uploadFiles, enrichAsset, getAssetVariants, getAssetDownloadUrl } from './assets.js';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -64,5 +64,10 @@ describe('assets API', () => {
     const result = await getAssetVariants('a.jpg');
     expect(mockGet).toHaveBeenCalledWith('/api/assets/a.jpg/variants');
     expect(result).toEqual(variants);
+  });
+
+  it('getAssetDownloadUrl(id) returns the download URL string', () => {
+    const url = getAssetDownloadUrl('my-asset.jpg');
+    expect(url).toBe('/api/assets/my-asset.jpg/download');
   });
 });

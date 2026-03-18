@@ -4,6 +4,80 @@ Started: Tue Mar 17 11:21:30 EDT 2026
 ## Codebase Patterns
 - (add reusable patterns here)
 
+## [2026-03-17 20:52] - US-003: Asset download from detail modal
+Thread:
+Run: 20260317-203201-80413 (iteration 3)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-features/app/.ralph/runs/run-20260317-203201-80413-iter-3.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-features/app/.ralph/runs/run-20260317-203201-80413-iter-3.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 1fa6456 feat(download): add asset download endpoint and UI button
+- Post-commit status: clean
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS
+  - Command: npm test (83 server + 64 client = 147 total) -> PASS
+  - Browser: Download button visible at http://localhost:5178, navy bg (#001B6B), correct href + download attr -> PASS
+- Files changed:
+  - server/src/index.js
+  - server/src/routes/assets.js
+  - server/src/__tests__/assets.test.js
+  - client/src/api/assets.js
+  - client/src/api/assets.test.js
+  - client/src/components/AssetDetailModal.jsx
+  - client/src/components/AssetDetailModal.test.jsx
+  - client/dist/index.html
+- What was implemented:
+  - GET /api/assets/:id/download endpoint streams the file with Content-Disposition: attachment
+  - Returns 404 { error: 'Asset not found' } for unknown IDs
+  - Returns 404 { error: 'File not found' } if file missing on disk
+  - Path traversal guard: filePath.startsWith(dataRoot + sep)
+  - app.locals.dataRoot set once in index.js (same value as static media route)
+  - getAssetDownloadUrl(id) exported from client/src/api/assets.js
+  - Download button (<a download> with navy style) in AssetDetailModal right panel, always visible
+  - Supertest tests: 200+Content-Disposition for valid asset, 404 for nonexistent (with dataRoot override in beforeAll)
+  - Vitest tests: Download button renders with correct href and download attr
+- **Learnings for future iterations:**
+  - Multiple Vite dev servers run on different ports (5173-5180+) — must identify the correct one for browser testing
+  - app.locals is the right pattern for sharing computed config (like dataRoot) between index.js and route handlers
+  - Test dataRoot override: use beforeAll/afterAll to temporarily set app.locals.dataRoot to the real data path (same as jest.globalSetup.js resolution: path.resolve(__dirname, '../../../../..', 'Royal Caribbean', 'Data', 'royal') from __tests__)
+  - jest.globalSetup.js uses path.resolve(__dirname, '../../../Royal Caribbean/Data/royal') from server/ — always use this as the canonical data dir reference
+---
+
+## [2026-03-17 20:35] - US-001: Semantic query expansion via Claude Haiku
+Thread:
+Run: 20260317-203201-80413 (iteration 1)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-features/app/.ralph/runs/run-20260317-203201-80413-iter-1.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-features/app/.ralph/runs/run-20260317-203201-80413-iter-1.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 9d1cead feat(search): add semantic query expansion via Claude Haiku
+- Post-commit status: clean
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS
+  - Command: npm test (81 server + 53 client = 134 total) -> PASS
+- Files changed:
+  - server/src/routes/assets.js
+  - server/src/index.js
+  - server/src/__tests__/assets.test.js
+- What was implemented:
+  - Added `expandQuery(anthropic, q)` async function in routes/assets.js that
+    calls claude-haiku-4-5-20251001 with RC-specific prompt and returns original
+    q joined with expanded terms using FTS5 OR syntax
+  - Returns q unchanged when anthropic is null/undefined
+  - Catches all Claude errors and returns original q (never blocks search)
+  - Made GET /api/assets route async to await expandQuery
+  - Initialized app.locals.anthropic in index.js from ANTHROPIC_API_KEY
+  - Added two Supertest tests in a new describe block for US-001
+- **Learnings for future iterations:**
+  - @anthropic-ai/sdk is already installed; just needs client init in index.js
+  - jest binary lives in root node_modules/.bin/jest, not in server/node_modules
+  - Tests run with ANTHROPIC_API_KEY unset so app.locals.anthropic is undefined;
+    expandQuery correctly falls back to plain q — inherently tests the fallback path
+  - client/dist is gitignored; do not try to stage it
+---
+
 ---
 
 ## [2026-03-17 11:25] - US-001: Scaffold monorepo — Express + React Vite
@@ -740,4 +814,47 @@ Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-layout/app/.ralph/runs/r
   - Multiple stale dev servers from prior runs occupy ports 5173–5177; always detect actual port via `lsof -i :517x` rather than hardcoding 5173
   - Server test failures in enrich.test.js (ANTHROPIC vs OPENAI key mismatch) and assets.test.js (enriched_channel null) are pre-existing; safe to ignore for layout stories
   - `client/dist/` is excluded from git; production build artifacts don't need staging
+---
+
+## [2026-03-17 20:42] - US-002: Smart upload — recursive folder and mixed drop support
+Thread:
+Run: 20260317-203201-80413 (iteration 2)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-features/app/.ralph/runs/run-20260317-203201-80413-iter-2.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-features/app/.ralph/runs/run-20260317-203201-80413-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 097add9 feat(upload): add recursive folder drop and browse-folder support
+- Post-commit status: clean (ralph logs staged separately)
+- Verification:
+  - Command: npm test -> PASS (81 server + 62 client = 143 total)
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS (209kB, 91 modules)
+  - Browser: drop zone label, browse-files btn, browse-folder btn all confirmed
+- Files changed:
+  - client/src/components/UploadModal.jsx
+  - client/src/components/UploadModal.test.jsx
+- What was implemented:
+  - Exported `isImageFile(file)` helper: checks MIME starts with 'image/' OR
+    extension in {jpg, jpeg, png, gif, webp} (case-insensitive)
+  - Exported `traverseEntry(entry)` async function: recursively walks
+    FileSystemFileEntry and FileSystemDirectoryEntry at any depth; uses
+    readEntries loop to handle >100 entries; silently skips non-image files
+  - Updated `handleDrop` to use `dataTransfer.items[i].webkitGetAsEntry()`
+    synchronously before any await, then processes entries asynchronously
+  - Drop zone label changed to 'Drop images or folders here'
+  - Removed `folderMode` state and toggle button
+  - Added `folderInputRef` + `[data-testid="folder-input"]` (webkitdirectory)
+  - Added `[data-testid="browse-files-btn"]` and `[data-testid="browse-folder-btn"]`
+    buttons both feeding same `handleFileInputChange` queue
+  - Updated all existing drop tests to use async dropFile() + act() since
+    handleDrop is now async (traverseEntry returns Promise)
+  - Added 7 new Vitest tests: traverseEntry unit tests + mixed drop integration
+- **Learnings for future iterations:**
+  - handleDrop must be async when using traverseEntry; all drop test helpers
+    need `await act(async () => { fireEvent(...) })` to flush microtasks
+  - DataTransfer.items must be accessed synchronously before any await
+    (collect entries array first, then process asynchronously)
+  - `client/dist/` is gitignored — do not `git add client/dist/`
+  - Function declarations (not arrow functions) are hoisted, so helper
+    ordering in test files doesn't matter for function declarations
 ---

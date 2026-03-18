@@ -1,11 +1,43 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
 const { Router } = require('express');
 const db = require('../db');
 const { searchAssets } = require('../services/search');
 const { enrichAsset } = require('../services/enrich');
 
 const router = Router();
+
+const EXPAND_PROMPT =
+  'You are helping search a Royal Caribbean cruise marketing image library. ' +
+  'Expand this search query into 6-8 related keywords a content author might use to tag such images. ' +
+  'Return ONLY a JSON array of lowercase strings, no markdown. Query: ';
+
+/**
+ * expandQuery — uses Claude Haiku to expand a user query into related keywords
+ * for broader FTS5 matching. Falls back to original q on any error.
+ *
+ * @param {import('@anthropic-ai/sdk').Anthropic | null | undefined} anthropic
+ * @param {string} q
+ * @returns {Promise<string>}
+ */
+async function expandQuery(anthropic, q) {
+  if (!anthropic) return q;
+  try {
+    const msg = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 150,
+      messages: [{ role: 'user', content: `${EXPAND_PROMPT}"${q}"` }],
+    });
+    const text = msg.content[0].text;
+    const terms = JSON.parse(text);
+    if (!Array.isArray(terms)) return q;
+    return [q, ...terms].join(' OR ');
+  } catch (_err) {
+    return q;
+  }
+}
 
 /**
  * GET /api/assets
@@ -14,9 +46,12 @@ const router = Router();
  *   has_title, has_rights, has_release_placeholder,
  *   limit (default 100, max 200), offset (default 0)
  */
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const result = searchAssets(db, req.query);
+    const anthropic = req.app.locals.anthropic;
+    const rawQ = req.query.q;
+    const expandedQ = rawQ ? await expandQuery(anthropic, rawQ) : rawQ;
+    const result = searchAssets(db, { ...req.query, q: expandedQ });
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: 'Search failed', detail: err.message });
@@ -138,6 +173,40 @@ router.post('/:id/enrich', async (req, res) => {
     }
     res.status(502).json({ error: 'Enrichment failed', detail: err.message });
   }
+});
+
+/**
+ * GET /api/assets/:id/download
+ * Streams the asset file as an attachment download.
+ * Returns 404 if the asset ID does not exist or the file is missing on disk.
+ */
+router.get('/:id/download', (req, res) => {
+  const row = db.prepare('SELECT * FROM assets WHERE id = ?').get(req.params.id);
+  if (!row) {
+    return res.status(404).json({ error: 'Asset not found' });
+  }
+
+  const relativePath = row.web_image_path || row.thumbnail_path;
+  if (!relativePath) {
+    return res.status(404).json({ error: 'File not found' });
+  }
+
+  // Use the same data root as the /api/assets/media static route (set in index.js)
+  const dataRoot = req.app.locals.dataRoot;
+  const filePath = path.resolve(dataRoot, relativePath);
+
+  // Guard against path traversal
+  if (!filePath.startsWith(dataRoot + path.sep) && filePath !== dataRoot) {
+    return res.status(404).json({ error: 'File not found' });
+  }
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'File not found' });
+  }
+
+  const filename = row.filename || path.basename(filePath);
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.sendFile(filePath);
 });
 
 module.exports = router;

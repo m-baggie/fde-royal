@@ -2,16 +2,18 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 
 // Hoist mock functions so they are available inside the vi.mock factory
-const { mockGetAsset, mockEnrichAsset, mockGetAssetVariants } = vi.hoisted(() => ({
+const { mockGetAsset, mockEnrichAsset, mockGetAssetVariants, mockGetAssetDownloadUrl } = vi.hoisted(() => ({
   mockGetAsset: vi.fn(),
   mockEnrichAsset: vi.fn(),
   mockGetAssetVariants: vi.fn(),
+  mockGetAssetDownloadUrl: vi.fn((id) => `/api/assets/${id}/download`),
 }));
 
 vi.mock('../api/assets', () => ({
   getAsset: mockGetAsset,
   enrichAsset: mockEnrichAsset,
   getAssetVariants: mockGetAssetVariants,
+  getAssetDownloadUrl: mockGetAssetDownloadUrl,
 }));
 
 import AssetDetailModal from './AssetDetailModal';
@@ -198,6 +200,14 @@ describe('AssetDetailModal', () => {
     mockGetAsset.mockResolvedValue({ ...VARIANT_B, quality_issues: [], cdn_url: null });
     fireEvent.click(screen.getByTestId('variant-thumb-asset-2').querySelector('img'));
     await waitFor(() => expect(mockGetAsset).toHaveBeenCalledWith('asset-2'));
+  });
+
+  it('Download button renders with correct href when asset is loaded', async () => {
+    await renderModal();
+    const downloadBtn = screen.getByTestId('download-btn');
+    expect(downloadBtn).toBeInTheDocument();
+    expect(downloadBtn).toHaveAttribute('href', '/api/assets/asset-1/download');
+    expect(downloadBtn).toHaveAttribute('download');
   });
 
   it('no variant strip rendered when variants array is empty', async () => {

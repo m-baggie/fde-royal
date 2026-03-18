@@ -1,0 +1,12 @@
+Working tree is clean. US-002 is complete.
+
+**Summary of what was implemented:**
+
+- `traverseEntry(entry)` — exported async function that recursively walks `FileSystemDirectoryEntry` at any depth, collecting only image files (MIME starts with `image/` OR extension in jpg/jpeg/png/gif/webp). Non-image files silently skipped.
+- `handleDrop` — updated to use `dataTransfer.items[i].webkitGetAsEntry()` (collected synchronously before any await), then processes entries asynchronously. Supports mixed file + folder drops.
+- Drop zone label → `Drop images or folders here`
+- Removed `folderMode` toggle button; added explicit **Browse files** + **Browse folder** buttons backed by separate hidden inputs (`data-testid="browse-files-btn"`, `"browse-folder-btn"`, `"folder-input"`)
+- 7 new Vitest tests added (traverseEntry unit + mixed drop integration); all 62 client + 81 server tests pass
+- Browser verified: correct label, both browse buttons present, toggle gone
+
+<promise>COMPLETE</promise>

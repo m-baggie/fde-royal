@@ -1,5 +1,6 @@
 {
   "version": 1,
+<<<<<<< HEAD
   "project": "Royal Caribbean DAM — Smart Search & Upload",
   "overview": "Three improvements: (1) semantic query expansion — before searching, use Claude Haiku to expand the user's query into related keywords so searches like 'happy family' find images tagged with 'smiling', 'children', 'joy'; (2) smart upload — drop zone accepts any mix of files and folders, recursively extracts all images without asking the user to choose; (3) asset download — a Download button in the detail modal lets content authors download the full-resolution image directly.",
   "goals": [
@@ -15,6 +16,23 @@
     "No UI to show expanded terms to the user",
     "No upload progress changes — existing per-file progress flow unchanged",
     "No server-side folder upload — expansion happens in the browser via webkitdirectory or DataTransferItem API"
+=======
+  "project": "Royal Caribbean DAM \u2014 Smart Search & Upload",
+  "overview": "Three improvements: (1) semantic query expansion \u2014 before searching, use Claude Haiku to expand the user's query into related keywords so searches like 'happy family' find images tagged with 'smiling', 'children', 'joy'; (2) smart upload \u2014 drop zone accepts any mix of files and folders, recursively extracts all images without asking the user to choose; (3) asset download \u2014 a Download button in the detail modal lets content authors download the full-resolution image directly.",
+  "goals": [
+    "Search understands intent, not just exact keywords \u2014 'happy family' returns images of smiling people even if those words aren't in metadata",
+    "Upload accepts files, folders, or any mix \u2014 no prompt asking user to choose",
+    "Recursive folder traversal extracts all image files (jpg, jpeg, png, gif, webp) at any depth",
+    "Query expansion is transparent to the user \u2014 results just feel smarter",
+    "Content authors can download the full-resolution asset from the detail modal with one click"
+  ],
+  "nonGoals": [
+    "No vector embeddings or semantic similarity DB \u2014 expansion runs at query time only",
+    "No changes to FTS5 index or DB schema",
+    "No UI to show expanded terms to the user",
+    "No upload progress changes \u2014 existing per-file progress flow unchanged",
+    "No server-side folder upload \u2014 expansion happens in the browser via webkitdirectory or DataTransferItem API"
+>>>>>>> a970c87 (feat(prd-smart-features): add semantic search, smart upload, asset download)
   ],
   "successMetrics": [
     "Searching 'happy family' returns assets tagged with children, smiling, joy, or similar",
@@ -24,9 +42,15 @@
     "If Claude is unavailable, search falls back to the original query (no breakage)"
   ],
   "stack": {
+<<<<<<< HEAD
     "backend": "Express.js (Node 20) — server/src/",
     "frontend": "React 18 + Vite — client/src/",
     "ai": "Claude Haiku (claude-haiku-4-5-20251001) for query expansion — fast and cheap"
+=======
+    "backend": "Express.js (Node 20) \u2014 server/src/",
+    "frontend": "React 18 + Vite \u2014 client/src/",
+    "ai": "Claude Haiku (claude-haiku-4-5-20251001) for query expansion \u2014 fast and cheap"
+>>>>>>> a970c87 (feat(prd-smart-features): add semantic search, smart upload, asset download)
   },
   "routes": [
     {
@@ -36,6 +60,7 @@
     }
   ],
   "uiNotes": [
+<<<<<<< HEAD
     "Query expansion: no UI changes — happens server-side transparently",
     "Upload drop zone: remove any folder/file toggle or prompt. The drop zone should accept both via the HTML input attribute accept and the DataTransfer API. Use input[type=file] with webkitdirectory disabled but handle DataTransferItem.webkitGetAsEntry() on drop to recursively read folder contents.",
     "Upload drop zone label: change from 'Drop images or a folder here' to 'Drop images or folders here' (plural)",
@@ -43,19 +68,37 @@
     "Download button: placed in the detail modal right panel, next to the CDN URL copy button. Label: 'Download'. Navy background, white text, same style as Copy button.",
     "Download button: renders as an anchor tag (<a href='/api/assets/:id/download' download>) so the browser handles the file save natively. No JS required.",
     "Download button: always visible when an asset is loaded — does not require enrichment or CDN URL to be present"
+=======
+    "Query expansion: no UI changes \u2014 happens server-side transparently",
+    "Upload drop zone: remove any folder/file toggle or prompt. The drop zone should accept both via the HTML input attribute accept and the DataTransfer API. Use input[type=file] with webkitdirectory disabled but handle DataTransferItem.webkitGetAsEntry() on drop to recursively read folder contents.",
+    "Upload drop zone label: change from 'Drop images or a folder here' to 'Drop images or folders here' (plural)",
+    "File type filtering: silently skip non-image files during recursive traversal \u2014 only queue jpg, jpeg, png, gif, webp",
+    "Download button: placed in the detail modal right panel, next to the CDN URL copy button. Label: 'Download'. Navy background, white text, same style as Copy button.",
+    "Download button: renders as an anchor tag (<a href='/api/assets/:id/download' download>) so the browser handles the file save natively. No JS required.",
+    "Download button: always visible when an asset is loaded \u2014 does not require enrichment or CDN URL to be present"
+>>>>>>> a970c87 (feat(prd-smart-features): add semantic search, smart upload, asset download)
   ],
   "dataModel": [],
   "rules": [
     "Query expansion: only run if req.app.locals.anthropic is set AND q param is non-empty",
     "Query expansion prompt: 'You are helping search a Royal Caribbean cruise marketing image library. Expand this search query into 6-8 related keywords a content author might use to tag such images. Return ONLY a JSON array of lowercase strings, no markdown. Query: \"<q>\"'",
     "Query expansion: join original query + expanded terms with OR for FTS5: [q, ...expanded].join(' OR ')",
+<<<<<<< HEAD
     "Query expansion: if Claude call fails or returns invalid JSON, fall back to original q — never block the search",
+=======
+    "Query expansion: if Claude call fails or returns invalid JSON, fall back to original q \u2014 never block the search",
+>>>>>>> a970c87 (feat(prd-smart-features): add semantic search, smart upload, asset download)
     "Query expansion: use claude-haiku-4-5-20251001, max_tokens: 150",
     "Smart upload: use DataTransferItem.webkitGetAsEntry() on drop event to detect folders",
     "Smart upload: recursively read FileSystemDirectoryEntry using readEntries() in a loop until exhausted",
     "Smart upload: filter to image MIME types or extensions: image/jpeg, image/png, image/gif, image/webp, .jpg, .jpeg, .png, .gif, .webp",
+<<<<<<< HEAD
     "Smart upload: existing input[type=file] click-to-browse should accept both files and folders — add webkitdirectory as a second file input or use a directory picker toggle",
     "Smart upload: the existing per-file upload queue and progress UI is unchanged — just feed it the recursively collected File objects"
+=======
+    "Smart upload: existing input[type=file] click-to-browse should accept both files and folders \u2014 add webkitdirectory as a second file input or use a directory picker toggle",
+    "Smart upload: the existing per-file upload queue and progress UI is unchanged \u2014 just feed it the recursively collected File objects"
+>>>>>>> a970c87 (feat(prd-smart-features): add semantic search, smart upload, asset download)
   ],
   "qualityGates": [
     "npm run lint",
@@ -66,7 +109,11 @@
     {
       "id": "US-001",
       "title": "Semantic query expansion via Claude Haiku",
+<<<<<<< HEAD
       "status": "open",
+=======
+      "status": "done",
+>>>>>>> a970c87 (feat(prd-smart-features): add semantic search, smart upload, asset download)
       "dependsOn": [],
       "description": "As a content author, I want to search with natural language like 'happy family on deck' and get relevant results even when those exact words aren't in the metadata.",
       "acceptanceCriteria": [
@@ -78,31 +125,58 @@
         "The expanded query string is passed to searchAssets() in place of the original q",
         "Supertest test: GET /api/assets?q=sunset returns results (expansion is mocked or skipped in tests)",
         "Supertest test: search still works when ANTHROPIC_API_KEY is not set (falls back to plain FTS5)"
+<<<<<<< HEAD
       ]
     },
     {
       "id": "US-002",
       "title": "Smart upload — recursive folder and mixed drop support",
       "status": "open",
+=======
+      ],
+      "startedAt": "2026-03-18T00:32:01.772496+00:00",
+      "completedAt": "2026-03-18T00:36:09.212857+00:00",
+      "updatedAt": "2026-03-18T00:36:09.212613+00:00"
+    },
+    {
+      "id": "US-002",
+      "title": "Smart upload \u2014 recursive folder and mixed drop support",
+      "status": "done",
+>>>>>>> a970c87 (feat(prd-smart-features): add semantic search, smart upload, asset download)
       "dependsOn": [],
       "description": "As a content author, I want to drop a folder of images onto the upload zone and have all images inside it queued automatically, without any prompts.",
       "acceptanceCriteria": [
         "UploadModal drop zone handles onDrop with DataTransferItem.webkitGetAsEntry() to detect folders vs files",
         "A recursive async function traverseEntry(entry) collects all File objects from FileSystemFileEntry and FileSystemDirectoryEntry at any depth",
         "Only image files are collected: mime type starts with 'image/' OR extension is jpg/jpeg/png/gif/webp (case-insensitive)",
+<<<<<<< HEAD
         "Non-image files are silently skipped — no error shown",
+=======
+        "Non-image files are silently skipped \u2014 no error shown",
+>>>>>>> a970c87 (feat(prd-smart-features): add semantic search, smart upload, asset download)
         "Dropping a mix of image files and a folder containing images queues all images from both sources",
         "The collected File array is passed to the existing upload queue logic unchanged",
         "Drop zone label updated to 'Drop images or folders here'",
         "Click-to-browse input: add a second input[type=file][webkitdirectory][multiple] button labelled 'Browse folder' alongside the existing 'Browse files' button, both feeding the same queue",
         "Vitest test: traverseEntry correctly filters out non-image files",
         "Vitest test: drop with a mix of file and folder entries queues only image files"
+<<<<<<< HEAD
       ]
+=======
+      ],
+      "startedAt": "2026-03-18T00:36:11.811528+00:00",
+      "completedAt": "2026-03-18T00:42:57.011128+00:00",
+      "updatedAt": "2026-03-18T00:42:57.010960+00:00"
+>>>>>>> a970c87 (feat(prd-smart-features): add semantic search, smart upload, asset download)
     },
     {
       "id": "US-003",
       "title": "Asset download from detail modal",
+<<<<<<< HEAD
       "status": "open",
+=======
+      "status": "done",
+>>>>>>> a970c87 (feat(prd-smart-features): add semantic search, smart upload, asset download)
       "dependsOn": [],
       "description": "As a content author, I want to download the full-resolution asset directly from the detail modal so I can use it in my campaign without navigating elsewhere.",
       "acceptanceCriteria": [
@@ -116,7 +190,14 @@
         "client/src/api/assets.js exports getAssetDownloadUrl(id) that returns the download URL string",
         "Supertest test: GET /api/assets/:id/download for a valid asset returns 200 with Content-Disposition header",
         "Supertest test: GET /api/assets/nonexistent/download returns 404"
+<<<<<<< HEAD
       ]
+=======
+      ],
+      "startedAt": "2026-03-18T00:42:59.875567+00:00",
+      "completedAt": "2026-03-18T00:56:24.622094+00:00",
+      "updatedAt": "2026-03-18T00:56:24.621583+00:00"
+>>>>>>> a970c87 (feat(prd-smart-features): add semantic search, smart upload, asset download)
     }
   ]
 }

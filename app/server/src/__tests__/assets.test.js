@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const request = require('supertest');
 const app = require('../index');
 const db = require('../db');
@@ -282,6 +283,55 @@ describe('GET /api/assets/:id/variants (US-002)', () => {
   it('non-existent asset returns 404', async () => {
     const res = await request(app).get('/api/assets/does-not-exist-ever/variants');
     expect(res.status).toBe(404);
+  });
+});
+
+describe('GET /api/assets/:id/download (US-003)', () => {
+  let originalDataRoot;
+
+  beforeAll(() => {
+    // Override dataRoot to the real DAM data directory (same path as jest.globalSetup.js)
+    originalDataRoot = app.locals.dataRoot;
+    app.locals.dataRoot = path.resolve(__dirname, '..', '..', '..', '..', '..', 'Royal Caribbean', 'Data', 'royal');
+  });
+
+  afterAll(() => {
+    app.locals.dataRoot = originalDataRoot;
+  });
+
+  it('returns 200 with Content-Disposition attachment for a valid asset', async () => {
+    // Pick the first asset that has a web_image_path or thumbnail_path
+    const list = await request(app).get('/api/assets?show_all_variants=1&limit=200');
+    const asset = list.body.assets.find((a) => a.web_image_path || a.thumbnail_path);
+    if (!asset) return; // no asset has a file path — skip
+    const res = await request(app).get(`/api/assets/${encodeURIComponent(asset.id)}/download`);
+    expect(res.status).toBe(200);
+    expect(res.headers['content-disposition']).toMatch(/attachment/);
+  });
+
+  it('returns 404 for a non-existent asset id', async () => {
+    const res = await request(app).get('/api/assets/nonexistent/download');
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: 'Asset not found' });
+  });
+});
+
+describe('GET /api/assets — query expansion (US-001)', () => {
+  it('GET /api/assets?q=sunset returns results (expansion skipped — no API key in tests)', async () => {
+    const res = await request(app).get('/api/assets?q=sunset');
+    expect(res.status).toBe(200);
+    expect(res.body.total).toBeGreaterThanOrEqual(1);
+    expect(Array.isArray(res.body.assets)).toBe(true);
+    expect(res.body.assets.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('search works when ANTHROPIC_API_KEY is not set (falls back to plain FTS5)', async () => {
+    // In the test environment app.locals.anthropic is undefined (no key set)
+    // expandQuery must return original q so search still works normally
+    expect(app.locals.anthropic).toBeUndefined();
+    const res = await request(app).get('/api/assets?q=aerial');
+    expect(res.status).toBe(200);
+    expect(res.body.total).toBeGreaterThanOrEqual(1);
   });
 });
 

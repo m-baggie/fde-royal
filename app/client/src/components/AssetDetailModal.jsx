@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getAsset, enrichAsset as enrichAssetApi, getAssetVariants } from '../api/assets';
+import { getAsset, enrichAsset as enrichAssetApi, getAssetVariants, getAssetDownloadUrl } from '../api/assets';
 
 const NAVY = '#001B6B';
 const GOLD = '#C8A84B';
@@ -521,6 +521,29 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                   </div>
                 </div>
               )}
+
+              {/* Download */}
+              <div style={{ marginBottom: '16px' }}>
+                <a
+                  href={getAssetDownloadUrl(asset.id)}
+                  download
+                  style={{
+                    display: 'inline-block',
+                    padding: '6px 14px',
+                    backgroundColor: NAVY,
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap',
+                  }}
+                  data-testid="download-btn"
+                >
+                  Download
+                </a>
+              </div>
 
               {/* Enrich with AI */}
               {showEnrichButton && (
