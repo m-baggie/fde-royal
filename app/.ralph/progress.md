@@ -581,39 +581,37 @@ Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralp
   - Dev browser server starts at port 3333 (not 9222 which is the raw Playwright websocket)
 ---
 
-## [2026-03-17 19:41] - US-001: DB migration — add variant_group_id and seed known groups
+## [2026-03-17 19:30] - US-001: Fixed header + search bar layout shell
 Thread:
-Run: 20260317-193048-31816 (iteration 1)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-variants/app/.ralph/runs/run-20260317-193048-31816-iter-1.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-variants/app/.ralph/runs/run-20260317-193048-31816-iter-1.md
+Run: 20260317-192933-29884 (iteration 1)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-layout/app/.ralph/runs/run-20260317-192933-29884-iter-1.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-layout/app/.ralph/runs/run-20260317-192933-29884-iter-1.md
 - Guardrails reviewed: yes
 - No-commit run: false
-- Commit: 3fc8e23 feat(db,api): add variant grouping — US-001
-- Post-commit status: M .agents/tasks/prd-variants.json (not edited per rules); client/dist/ gitignored
+- Commit: c4b94ca feat(layout): fixed header + search bar layout shell (US-001)
+- Post-commit status: M .agents/tasks/prd-layout.json (loop-managed, not edited per rules)
 - Verification:
-  - `npm run lint` -> PASS
-  - `npm run build` -> PASS (206 kB bundle)
-  - `npm test` -> PASS (Jest: 73/73, Vitest: 43/43)
+  - Command: `cd client && npx vitest run` -> PASS (45/45 tests including 2 new)
+  - Command: `npm run lint` -> PASS
+  - Command: `npm run build` -> PASS (207 kB bundle, 91 modules)
+  - Browser: http://localhost:5175 — navy 48px header (Royal Caribbean + Upload), search bar below, sidebar + main grid -> PASS
+  - Note: `npm test` (root) has 6 pre-existing server test failures (enrich route expects OPENAI key, enriched_channel null in channel filter test) — unrelated to this story
 - Files changed:
-  - server/src/db/schema.js (added variant_group_id TEXT, is_primary_variant INTEGER DEFAULT 0)
-  - server/src/db/migrate-variants.js (new — ALTER TABLE guard + seed 4 groups)
-  - server/src/db/index.js (require + call migrateVariants after runMigrations)
-  - server/src/services/search.js (show_all_variants param; grouped WHERE default; fix enriched_channel precedence)
-  - server/src/__tests__/assets.test.js (updated 3 tests to show_all_variants=1; added 6 grouped-mode tests)
-  - server/src/__tests__/enrich.test.js (fix openai→anthropic in app.locals — pre-existing regression)
+  - client/src/App.jsx
+  - client/src/components/Header.jsx
+  - client/src/pages/BrowsePage.jsx
+  - client/src/pages/BrowsePage.test.jsx
 - What was implemented:
-  - schema.js: CREATE TABLE now includes variant_group_id TEXT and is_primary_variant INTEGER DEFAULT 0
-  - migrate-variants.js: checks PRAGMA table_info for column existence before ALTER TABLE; seeds grp-galveston (4 assets, primary: galveston-texas-hero), grp-star-icon (14 assets, primary: 1040x520-2x.jpg), grp-bankroll (3 assets, primary: BankrollBlitz_Desktop .jpg), grp-naples (2 assets, primary: naples-italy.jpg)
-  - index.js: migrateVariants(db) called on every startup after runMigrations (safe: idempotent UPDATEs)
-  - search.js: adds (a.is_primary_variant = 1 OR a.variant_group_id IS NULL) to conditions unless show_all_variants param is truthy; grouped mode returns 30 of 49 assets by default
-  - Fixed pre-existing bug: enriched_channel in formatAssets now respects DB column value, falling back to normalizeChannel() only when null
-  - Fixed pre-existing test regression: enrich.test.js was using app.locals.openai but route checks app.locals.anthropic
+  - App.jsx: flex-column wrapper div (100vh, overflow:hidden); useEffect sets body/html overflow:hidden on mount, cleans up on unmount; renders BrowsePage only (no inline Header)
+  - Header.jsx: removed position:fixed/top/left/right/zIndex, changed height 64px→48px, added flexShrink:0 for flow-based layout
+  - BrowsePage.jsx: owns full layout as a flex column (flex:1); row 1 = Header (48px navy, logo+upload); row 2 = search bar (white bg, 1px #e5e7eb border-bottom, 12px 24px padding); row 3 = body row (flex:1, overflow:hidden, flex row: sidebar + main); added data-testid="sidebar" and data-testid="main-content"; accepts onUploadClick prop
+  - BrowsePage.test.jsx: added 2 new tests — "renders a header element and a search input" and "sidebar and main content area both exist"
 - **Learnings for future iterations:**
-  - 49 total assets: 4 galveston + 14 star-icon + 3 bankroll + 2 naples = 23 grouped; 26 ungrouped → 30 in grouped mode
-  - PRAGMA table_info(assets) is the safe SQLite way to check column existence before ALTER TABLE
-  - seeding UPDATEs are idempotent: run every startup without DB state issues
-  - enriched_channel was being overridden by normalizeChannel() in formatAssets — always use DB value first as it's set by the enrichment pipeline
-  - The enrich HTTP tests use app.locals.anthropic but were written for app.locals.openai — a pre-existing mismatch from the Anthropic migration commit a6028a4
+  - The dev server visible at localhost:5173 is from a DIFFERENT repo directory (`Royal Caribbean/app` not `.prd-layout`). Always check lsof or start a fresh Vite on a new port (5175) from the correct directory.
+  - page.evaluate() with TypeScript syntax (e.g. `as HTMLElement`) causes `__name is not defined` error in tsx — use plain JS functions inside evaluate()
+  - `npx tsx <<'EOF'` heredoc fails with Node 18 — write to tmp/*.ts file and run `npx tsx tmp/file.ts`
+  - Port 5174 was already in use; Vite auto-increments to 5175 — check the Vite log for actual port
+  - The dev-browser server port is 9222 (also the CDP port) — `connect()` uses this by default
 ---
 
 ## [2026-03-17 14:07] - US-004: Fix dotenv path and update enrich-all script to use Anthropic
@@ -650,121 +648,96 @@ Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.feature-enrichment/app/.ralp
   - Server index.js still uses OpenAI for the API route (separate concern, out of scope)
 ---
 
-## [2026-03-17 19:47] - US-002: API — grouped browse and variants endpoint
+## [2026-03-17 20:04] - US-001: Fixed header + search bar layout shell (re-verify)
 Thread:
-Run: 20260317-193048-31816 (iteration 3)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-variants/app/.ralph/runs/run-20260317-193048-31816-iter-3.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-variants/app/.ralph/runs/run-20260317-193048-31816-iter-3.md
+Run: 20260317-200352-54964 (iteration 1)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-layout/app/.ralph/runs/run-20260317-200352-54964-iter-1.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-layout/app/.ralph/runs/run-20260317-200352-54964-iter-1.md
 - Guardrails reviewed: yes
 - No-commit run: false
-- Commit: e680a36 feat(api): add variant_count and /variants endpoint
-- Post-commit status: M .agents/tasks/prd-variants.json (ralph-managed, not edited per rules)
+- Commit: see below
+- Post-commit status: clean
 - Verification:
-  - `npm run lint` -> PASS
-  - `npm run build` -> PASS (206 kB bundle)
-  - `npm test` -> PASS (Jest: 79/79 server, Vitest: 44/44 client)
+  - Command: `npm run lint` -> PASS
+  - Command: `npm run build` -> PASS (207 kB, 91 modules)
+  - Command: `cd client && npx vitest run` -> PASS (45/45 tests)
+  - Browser: header 48px, searchInput, sidebar, main, body+html overflow:hidden -> PASS
 - Files changed:
-  - server/src/services/search.js (variant_count subquery in SELECT_FIELDS and formatAssets)
-  - server/src/routes/assets.js (add GET /:id/variants route before /:id)
-  - server/src/__tests__/assets.test.js (US-002 supertest tests for variant_count and /variants)
-  - client/src/api/assets.js (export getAssetVariants(id))
-  - client/src/api/assets.test.js (test for getAssetVariants)
+  - .ralph/activity.log
+  - .ralph/progress.md
+  - .ralph/runs/run-20260317-200352-54964-iter-1.log
+  - .ralph/runs/run-20260317-200352-54964-iter-1.md
+  - .agents/tasks/prd-layout.overview.md
 - What was implemented:
-  - variant_count: correlated subquery in SELECT_FIELDS; ungrouped assets → 1, grouped assets → count of rows with same variant_group_id
-  - GET /api/assets/:id/variants: returns all assets in the same group ordered by is_primary_variant DESC, id ASC; returns [] for ungrouped; 404 for non-existent asset
-  - client getAssetVariants(id): calls GET /api/assets/:id/variants
-  - 4 new supertest tests: galveston primary has variant_count=4, ungrouped has variant_count=1, galveston /variants returns 4, ungrouped /variants returns [], non-existent /variants returns 404
-  - 1 new Vitest test for getAssetVariants client function
+  - US-001 was already fully implemented in commit c4b94ca (prior run 20260317-192933-29884 iter-1).
+  - This iteration re-verified: all quality gates pass, browser confirmed all ACs.
+  - App.jsx: flex-column 100vh wrapper, useEffect body/html overflow:hidden with cleanup
+  - Header.jsx: 48px height, navy background, logo left / Upload right
+  - BrowsePage.jsx: search bar row (white bg, bottom border), body row (flex:1, overflow:hidden, sidebar + main)
+  - BrowsePage.test.jsx: 2 AC tests — header+searchInput, sidebar+mainContent
 - **Learnings for future iterations:**
-  - The /:id/variants route does NOT conflict with /:id in Express — Express path patterns are anchored so two-segment paths don't match one-segment patterns
-  - Correlated subquery for variant_count is safe at ~49 rows; for larger datasets consider a JOIN with GROUP BY
-  - `ralph log` helper binary is absent in this repo — log directly to .ralph/activity.log via shell echo append
-
+  - `ralph log` helper absent in this repo — append directly to .ralph/activity.log
+  - `npx tsx` via heredoc fails on Node 18 — write to tmp/*.ts and run `npx tsx tmp/file.ts`
+  - dev-browser server.sh lives at ~/.claude/skills/dev-browser/server.sh (not in project dir)
 ---
 
-## [2026-03-17 19:43] - US-001: DB migration — add variant_group_id and seed known groups
+## [2026-03-17 20:10] - US-002: Independent scroll containers for sidebar and grid
 Thread:
-Run: 20260317-193048-31816 (iteration 2)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-variants/app/.ralph/runs/run-20260317-193048-31816-iter-2.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-variants/app/.ralph/runs/run-20260317-193048-31816-iter-2.md
+Run: 20260317-200352-54964 (iteration 2)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-layout/app/.ralph/runs/run-20260317-200352-54964-iter-2.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-layout/app/.ralph/runs/run-20260317-200352-54964-iter-2.md
 - Guardrails reviewed: yes
 - No-commit run: false
-- Commit: 5c2fd88 chore(ralph): US-001 iter-2 — run artifacts and progress log
+- Commit: 600b97a feat(layout): independent scroll containers for sidebar and grid
+- Post-commit status: remaining ralph/activity files (committed separately)
+- Verification:
+  - `cd client && npx vitest run` -> PASS (46/46)
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS (207 kB)
+  - browser screenshot: layout confirmed (sidebar left, grid right, header fixed)
+- Files changed:
+  - client/src/pages/BrowsePage.jsx
+  - client/src/pages/BrowsePage.test.jsx
+  - client/src/components/FilterSidebar.jsx
+- What was implemented:
+  - Added `sidebarContainer` style to BrowsePage: width:240px, height:100%, overflowY:auto, flexShrink:0
+  - Applied `sidebarContainer` style to `data-testid="sidebar"` wrapper div
+  - Updated `main` style: added height:100% and boxSizing:border-box
+  - FilterSidebar aside: changed width from fixed 260px to 100% (defers to outer container)
+  - New Vitest test "layout renders without body-level overflow" asserts sidebar/main scroll styles and body not scroll
+- **Learnings for future iterations:**
+  - `flex: '1'` in React inline styles expands to `'1 1 0%'` in JSDOM — use `toBeTruthy()` or check specific flex sub-properties
+  - Pre-existing server test failures (enrich.test.js, assets.test.js) are unrelated to layout work — verified by stash test
+  - `client/dist/` is gitignored — don't try to stage it
+  - When browser `data-testid` selectors return null, check if HMR propagated; visual screenshot is sufficient for layout verification
+---
+
+## [2026-03-17 20:13] - US-002: Independent scroll containers for sidebar and grid (iter-3 re-verification)
+Thread:
+Run: 20260317-200352-54964 (iteration 3)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-layout/app/.ralph/runs/run-20260317-200352-54964-iter-3.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-layout/app/.ralph/runs/run-20260317-200352-54964-iter-3.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: (housekeeping only — implementation was committed in iter-2 as 600b97a)
 - Post-commit status: clean
 - Verification:
   - `npm run lint` -> PASS
-  - `npm run build` -> PASS (206 kB bundle)
-  - `npm test` -> PASS (Jest: 73/73, Vitest: 43/43)
-- Files changed:
-  - .ralph/activity.log (appended iter-2 log entries)
-  - .ralph/progress.md (this entry)
-  - .ralph/runs/run-20260317-193048-31816-iter-2.log (run log artifact)
-  - .ralph/.tmp/* (prompt/story run artifacts)
-  - .agents/tasks/prd-variants.json (modified externally; committed as-is per rules)
-  - client/dist/index.html (pre-committed tracked build artifact)
+  - `npm run build` -> PASS (207kB bundle)
+  - `npm test` (client/vitest) -> PASS (46 tests, including layout renders without body-level overflow)
+  - `npm test` (server/jest) -> FAIL on enrich.test.js and assets.test.js — PRE-EXISTING failures unrelated to this story
+  - Browser (port 5177): sidebar overflowY=auto, width=240px, height=789px; main overflowY=auto, flex=1 1 0%; body/html overflow=hidden -> PASS
+- Files changed (this iter):
+  - .ralph/activity.log
+  - .ralph/progress.md
+  - .ralph/runs/run-20260317-200352-54964-iter-3.log (run metadata)
 - What was implemented:
-  - US-001 was fully implemented in iteration 1 (commit 3fc8e23). This iteration committed the remaining run artifacts and log files.
-  - All 73 server tests and 43 client tests pass. Lint clean. Build clean.
+  - iter-3 is a re-verification pass only; all code changes were committed in iter-2 (600b97a)
+  - Confirmed implementation correct: sidebar (240px, overflow-y:auto, height:100%) and main (flex:1, overflow-y:auto) render as independent scroll containers
+  - Confirmed body/html has no scroll overflow
+  - Port disambiguation: active dev server for this repo is on 5177 (5173 was occupied by older sessions)
 - **Learnings for future iterations:**
-  - `ralph log` helper is available in this repo (unlike prior feature worktrees) — use it to log to activity.log
-  - When iteration 1 leaves leftover run artifacts uncommitted, iteration 2 simply verifies all quality gates and commits the artifacts
----
-
-## [2026-03-17 19:51] - US-003: AssetCard — variant count badge
-Thread:
-Run: 20260317-193048-31816 (iteration 4)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-variants/app/.ralph/runs/run-20260317-193048-31816-iter-4.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-variants/app/.ralph/runs/run-20260317-193048-31816-iter-4.md
-- Guardrails reviewed: yes
-- No-commit run: false
-- Commit: 52619ac feat(ui): add variant count badge to AssetCard (US-003)
-- Post-commit status: clean
-- Verification:
-  - `npm run lint` -> PASS
-  - `npm run build` -> PASS (Vite, 207 kB bundle)
-  - `npm test` -> PASS (Jest: 79 passed, Vitest: 47 passed — 6 AssetCard tests including 3 new badge tests)
-  - Browser: badge renders bottom-right of thumbnail, navy bg (#001B6B), white text, 11px, border-radius 10px -> PASS
-- Files changed:
-  - client/src/components/AssetCard.jsx
-  - client/src/components/AssetCard.test.jsx
-- What was implemented:
-  - Added `variantBadge` style to AssetCard (position:absolute, bottom:6px, right:6px, navy bg, white text, 11px, padding 2px 8px, border-radius 10px)
-  - Added `position:relative` to `imageWrapper` style to anchor the badge
-  - Added `showVariantBadge` logic: renders when `variant_count > 1`
-  - Badge text: `+{variant_count - 1} variants`
-  - Badge carries `data-testid="variant-badge"` for test targeting
-  - Three new Vitest tests: badge shown for count=4 with text "+3 variants", no badge for count=1, no badge for undefined
-- **Learnings for future iterations:**
-  - Live DB doesn't have variant_group_id data populated yet (US-002 added schema but no seed data), so browser shows no badges on live assets — verified badge rendering by injecting via evaluate()
-  - dev-browser connect() takes a URL string, not an options object: `connect("http://localhost:9222")` not `connect({ port: 9222 })`
-  - `ralph log` script is not present in this project variant; write directly to activity.log
----
-
-## 2026-03-17 20:05 - US-004: AssetDetailModal — variant thumbnail strip
-Thread:
-Run: 20260317-193048-31816 (iteration 5)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-variants/app/.ralph/runs/run-20260317-193048-31816-iter-5.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-variants/app/.ralph/runs/run-20260317-193048-31816-iter-5.md
-- Guardrails reviewed: yes
-- No-commit run: false
-- Commit: cdb344c feat(ui): add variant thumbnail strip to AssetDetailModal (US-004)
-- Post-commit status: clean (only prd-variants.json + errors.log remain, both managed by loop)
-- Verification:
-  - Command: npm run lint -> PASS
-  - Command: npm run build -> PASS
-  - Command: npm test -> PASS (50 client / 79 server)
-  - Browser: variant strip visible, 30 grouped cards, 4 badge cards, strip header "Variants (3)", 3 thumbs rendered
-- Files changed:
-  - client/src/components/AssetDetailModal.jsx
-  - client/src/components/AssetDetailModal.test.jsx
-  - client/src/api/assets.js
-  - client/src/components/AssetCard.jsx
-  - client/vite.config.js
-- What was implemented:
-  Added variant state (variants + activeVariantId) to AssetDetailModal. On open, if asset.variant_group_id is set, calls getAssetVariants(id) and stores results. If variants.length > 1, renders a scrollable horizontal strip below the main image with 72x72 thumbs, channel labels, and active navy border. Clicking a thumb calls getAsset(variantId) and updates all modal state. Three Vitest tests cover fetch-on-open, click-calls-getAsset, and no-strip-when-empty. Also switched API baseURL to '' and added Vite proxy to /api → localhost:3001, removing hardcoded host from image src attributes.
-- **Learnings for future iterations:**
-  - Dev server port conflicts: when multiple projects are open, the prd-variants server can't bind :3001. Use PORT=3002 + Vite proxy in vite.config.js for isolation.
-  - Browser verification requires both Vite client (with proxy) and the prd-variants API server running simultaneously; the original RC project's server on :3001 will silently serve wrong data.
-  - vi.hoisted() is the correct pattern for mocking new functions in existing Vitest test files — add to the hoisted object and the vi.mock factory simultaneously.
-  - Variant strip header uses data-testid="variant-strip-header" for reliable test targeting.
+  - Multiple stale dev servers from prior runs occupy ports 5173–5177; always detect actual port via `lsof -i :517x` rather than hardcoding 5173
+  - Server test failures in enrich.test.js (ANTHROPIC vs OPENAI key mismatch) and assets.test.js (enriched_channel null) are pre-existing; safe to ignore for layout stories
+  - `client/dist/` is excluded from git; production build artifacts don't need staging
 ---

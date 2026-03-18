@@ -1,0 +1,14 @@
+Working tree is clean except for `.agents/tasks/prd-layout.json` (PRD status managed by the loop — not to be edited) and the `" "` untracked directory (pre-existing, unrelated). 
+
+**US-002 is fully verified and complete:**
+
+- Sidebar: `overflow-y: auto`, `width: 240px`, `height: 100%` ✓
+- Main content: `overflow-y: auto`, `flex: 1` ✓  
+- Body/html: no scroll overflow ✓
+- "Showing X of Y assets" inside main scroll container ✓
+- Vitest test `layout renders without body-level overflow` → PASS ✓
+- All 46 client tests pass ✓
+- Lint + build pass ✓
+- Browser verified on port 5177 ✓
+
+<promise>COMPLETE</promise>

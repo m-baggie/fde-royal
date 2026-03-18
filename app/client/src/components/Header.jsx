@@ -1,18 +1,14 @@
 const styles = {
   header: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '64px',
+    height: '48px',
     backgroundColor: '#001B6B',
     borderBottom: '3px solid #C8960C',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '0 24px',
-    zIndex: 100,
     boxSizing: 'border-box',
+    flexShrink: 0,
   },
   branding: {
     display: 'flex',

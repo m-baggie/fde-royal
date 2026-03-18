@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "project": "Royal Caribbean DAM \u2014 Page Layout Redesign",
-  "overview": "Redesign the browse page layout so the header and search bar are always visible. The page splits into two independent scroll containers: a fixed-height sidebar and a main content area. Neither scrolls the page \u2014 only their own content.",
+  "project": "Royal Caribbean DAM — Page Layout Redesign",
+  "overview": "Redesign the browse page layout so the header and search bar are always visible. The page splits into two independent scroll containers: a fixed-height sidebar and a main content area. Neither scrolls the page — only their own content.",
   "goals": [
     "Header (logo + Upload button) fixed at top of viewport",
-    "Search bar fixed directly below the header \u2014 always visible, prominent",
+    "Search bar fixed directly below the header — always visible, prominent",
     "Sidebar and main grid each scroll independently within the remaining viewport height",
-    "No full-page scroll \u2014 the viewport itself never scrolls"
+    "No full-page scroll — the viewport itself never scrolls"
   ],
   "nonGoals": [
     "No changes to search logic or API",
@@ -21,16 +21,16 @@
     "The viewport body never has a scrollbar"
   ],
   "stack": {
-    "frontend": "React 18 + Vite \u2014 client/src/",
+    "frontend": "React 18 + Vite — client/src/",
     "styling": "Inline styles only (no CSS files)"
   },
   "uiNotes": [
-    "Layout hierarchy: <html>/<body> height:100vh overflow:hidden \u2192 App wrapper flex column height:100vh \u2192 Header (fixed height ~48px) \u2192 SearchBar row (fixed height ~56px, padding) \u2192 Body row (flex:1, overflow:hidden) \u2192 Sidebar (width:240px, overflow-y:auto, height:100%) + Main (flex:1, overflow-y:auto, height:100%)",
+    "Layout hierarchy: <html>/<body> height:100vh overflow:hidden → App wrapper flex column height:100vh → Header (fixed height ~48px) → SearchBar row (fixed height ~56px, padding) → Body row (flex:1, overflow:hidden) → Sidebar (width:240px, overflow-y:auto, height:100%) + Main (flex:1, overflow-y:auto, height:100%)",
     "Header: navy background (#001B6B), Royal Caribbean logo left, Upload button right, height 48px, padding 0 24px",
     "Search bar row: white background, border-bottom 1px solid #e5e7eb, padding 12px 24px, contains the SearchBar component full width",
     "Sidebar: border-right 1px solid #e5e7eb, padding 16px, overflow-y auto",
-    "Main content area: padding 16px 24px, overflow-y auto \u2014 contains results count text + asset grid",
-    "No changes to the visual appearance of any individual component \u2014 only the container layout changes"
+    "Main content area: padding 16px 24px, overflow-y auto — contains results count text + asset grid",
+    "No changes to the visual appearance of any individual component — only the container layout changes"
   ],
   "dataModel": [],
   "rules": [
@@ -48,7 +48,7 @@
     {
       "id": "US-001",
       "title": "Fixed header + search bar layout shell",
-      "status": "done",
+      "status": "open",
       "dependsOn": [],
       "description": "As a user, I want the header and search bar to always be visible so I can search without scrolling back to the top.",
       "acceptanceCriteria": [
@@ -59,18 +59,13 @@
         "body/html overflow:hidden is set on mount and cleaned up on unmount",
         "Vitest test: BrowsePage renders a header element and a search input",
         "Vitest test: sidebar and main content area both exist in the rendered output"
-      ],
-      "startedAt": "2026-03-18T00:03:53.271312+00:00",
-      "completedAt": "2026-03-18T00:06:33.163915+00:00",
-      "updatedAt": "2026-03-18T00:06:33.163462+00:00"
+      ]
     },
     {
       "id": "US-002",
       "title": "Independent scroll containers for sidebar and grid",
-      "status": "done",
-      "dependsOn": [
-        "US-001"
-      ],
+      "status": "open",
+      "dependsOn": ["US-001"],
       "description": "As a user, I want the filter sidebar and asset grid to scroll independently so filters stay accessible while I browse.",
       "acceptanceCriteria": [
         "Sidebar div has overflow-y:auto, height:100%, fixed width 240px",
@@ -80,10 +75,7 @@
         "Results count text ('Showing X of Y assets') is inside the main scroll container, above the grid",
         "No scrollbar appears on the body/html element",
         "Vitest test: layout renders without body-level overflow"
-      ],
-      "startedAt": "2026-03-18T00:12:40.150153+00:00",
-      "completedAt": "2026-03-18T00:16:54.447621+00:00",
-      "updatedAt": "2026-03-18T00:16:54.447457+00:00"
+      ]
     }
   ]
 }

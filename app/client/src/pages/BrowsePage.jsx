@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import Header from '../components/Header';
 import SearchBar from '../components/SearchBar';
 import FilterSidebar from '../components/FilterSidebar';
 import AssetGrid from '../components/AssetGrid';
@@ -9,15 +10,36 @@ import { getAssets, getFilters } from '../api/assets';
 const styles = {
   page: {
     display: 'flex',
-    gap: '24px',
-    padding: '24px',
+    flexDirection: 'column',
+    flex: 1,
+    minHeight: 0,
+  },
+  searchRow: {
+    backgroundColor: '#fff',
+    borderBottom: '1px solid #e5e7eb',
+    padding: '12px 24px',
+    flexShrink: 0,
+  },
+  bodyRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    flex: 1,
+    overflow: 'hidden',
+    minHeight: 0,
+  },
+  sidebarContainer: {
+    width: '240px',
+    flexShrink: 0,
+    height: '100%',
+    overflowY: 'auto',
   },
   main: {
     flex: 1,
     minWidth: 0,
-  },
-  searchRow: {
-    marginBottom: '12px',
+    height: '100%',
+    padding: '16px 24px',
+    overflowY: 'auto',
+    boxSizing: 'border-box',
   },
   activeFiltersRow: {
     display: 'flex',
@@ -93,7 +115,7 @@ function buildParams({ q, category, subcategory, rights, location, metadataQuali
   return params;
 }
 
-export default function BrowsePage({ isUploadOpen = false, onUploadRequestClose = () => {} }) {
+export default function BrowsePage({ isUploadOpen = false, onUploadClick = () => {}, onUploadRequestClose = () => {} }) {
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
@@ -184,63 +206,69 @@ export default function BrowsePage({ isUploadOpen = false, onUploadRequestClose 
 
   return (
     <div style={styles.page}>
-      <FilterSidebar
-        filters={filters}
-        activeCategory={category}
-        activeSubcategory={subcategory}
-        activeRights={rights}
-        activeLocation={location}
-        activeMetadataQuality={metadataQuality}
-        activeChannel={channel}
-        activeScene={scene}
-        onFilterChange={handleFilterChange}
-      />
+      <Header onUploadClick={onUploadClick} />
 
-      <div style={styles.main}>
-        <div style={styles.searchRow}>
-          <SearchBar onChange={setQ} />
+      <div style={styles.searchRow}>
+        <SearchBar onChange={setQ} />
+      </div>
+
+      <div style={styles.bodyRow}>
+        <div style={styles.sidebarContainer} data-testid="sidebar">
+          <FilterSidebar
+            filters={filters}
+            activeCategory={category}
+            activeSubcategory={subcategory}
+            activeRights={rights}
+            activeLocation={location}
+            activeMetadataQuality={metadataQuality}
+            activeChannel={channel}
+            activeScene={scene}
+            onFilterChange={handleFilterChange}
+          />
         </div>
 
-        {activeChips.length > 0 && (
-          <div style={styles.activeFiltersRow}>
-            {activeChips.map((chip) => (
-              <span key={chip.key} style={styles.activeChip} data-testid="active-filter-chip">
-                {chip.label}
-                <button
-                  style={styles.chipRemove}
-                  onClick={chip.clear}
-                  aria-label={`Remove filter ${chip.label}`}
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
+        <div style={styles.main} data-testid="main-content">
+          {activeChips.length > 0 && (
+            <div style={styles.activeFiltersRow}>
+              {activeChips.map((chip) => (
+                <span key={chip.key} style={styles.activeChip} data-testid="active-filter-chip">
+                  {chip.label}
+                  <button
+                    style={styles.chipRemove}
+                    onClick={chip.clear}
+                    aria-label={`Remove filter ${chip.label}`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
 
-        {error && <div style={styles.errorBanner}>{error}</div>}
+          {error && <div style={styles.errorBanner}>{error}</div>}
 
-        {!loading && !error && (
-          <div style={styles.countLabel}>
-            Showing {assets.length} of {total} assets
-          </div>
-        )}
+          {!loading && !error && (
+            <div style={styles.countLabel}>
+              Showing {assets.length} of {total} assets
+            </div>
+          )}
 
-        {!loading && !error && assets.length === 0 && (
-          <div style={styles.emptyState}>
-            No assets match your search.
-            <br />
-            <button style={styles.clearBtn} onClick={clearAllFilters}>
-              Clear all filters
-            </button>
-          </div>
-        )}
+          {!loading && !error && assets.length === 0 && (
+            <div style={styles.emptyState}>
+              No assets match your search.
+              <br />
+              <button style={styles.clearBtn} onClick={clearAllFilters}>
+                Clear all filters
+              </button>
+            </div>
+          )}
 
-        <AssetGrid
-          assets={assets}
-          loading={loading}
-          onSelectAsset={setSelectedAssetId}
-        />
+          <AssetGrid
+            assets={assets}
+            loading={loading}
+            onSelectAsset={setSelectedAssetId}
+          />
+        </div>
       </div>
 
       {selectedAssetId && (

@@ -5,8 +5,8 @@ const QUALITY_OPTIONS = ['Missing Title', 'Missing Rights', 'Release Placeholder
 
 const styles = {
   sidebar: {
-    width: '260px',
-    flexShrink: 0,
+    width: '100%',
+    boxSizing: 'border-box',
     borderRight: '1px solid #e5e7eb',
     paddingRight: '16px',
   },

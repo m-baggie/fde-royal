@@ -129,4 +129,35 @@ describe('BrowsePage', () => {
       ).toBeInTheDocument()
     );
   });
+
+  it('renders a header element and a search input', () => {
+    mockGetAssets.mockReturnValue(new Promise(() => {}));
+    mockGetFilters.mockReturnValue(new Promise(() => {}));
+    render(<BrowsePage />);
+    expect(document.querySelector('header')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search by keyword, location, mood, ship...')).toBeInTheDocument();
+  });
+
+  it('sidebar and main content area both exist in the rendered output', () => {
+    mockGetAssets.mockReturnValue(new Promise(() => {}));
+    mockGetFilters.mockReturnValue(new Promise(() => {}));
+    render(<BrowsePage />);
+    expect(screen.getByTestId('sidebar')).toBeInTheDocument();
+    expect(screen.getByTestId('main-content')).toBeInTheDocument();
+  });
+
+  it('layout renders without body-level overflow', () => {
+    mockGetAssets.mockReturnValue(new Promise(() => {}));
+    mockGetFilters.mockReturnValue(new Promise(() => {}));
+    render(<BrowsePage />);
+    const sidebar = screen.getByTestId('sidebar');
+    const main = screen.getByTestId('main-content');
+    expect(sidebar.style.overflowY).toBe('auto');
+    expect(sidebar.style.height).toBe('100%');
+    expect(sidebar.style.width).toBe('240px');
+    expect(main.style.overflowY).toBe('auto');
+    expect(main.style.flex).toBeTruthy(); // flex:1 (shorthand may expand in JSDOM)
+    expect(document.body.style.overflow).not.toBe('scroll');
+    expect(document.documentElement.style.overflow).not.toBe('scroll');
+  });
 });

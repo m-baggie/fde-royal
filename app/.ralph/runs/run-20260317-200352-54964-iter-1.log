@@ -1,0 +1,14 @@
+Clean (only the loop-managed `prd-layout.json` remains modified — not edited per rules). 
+
+**Summary:**
+
+US-001 was already fully implemented in commit `c4b94ca` from the previous run. This iteration re-verified all acceptance criteria:
+
+- `npm run lint` → PASS
+- `npm run build` → PASS (207 kB, 91 modules)
+- `cd client && npx vitest run` → PASS (45/45 tests including both AC tests)
+- Browser: header 48px ✓, search input ✓, sidebar ✓, main content ✓, `body`/`html` `overflow:hidden` ✓
+
+Committed run artifacts as `c9c403e`.
+
+<promise>COMPLETE</promise>
