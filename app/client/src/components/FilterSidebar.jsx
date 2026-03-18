@@ -103,6 +103,8 @@ export default function FilterSidebar({
   activeMetadataQuality,
   activeChannel,
   activeScene,
+  activeDestinationRegion,
+  activeContentType,
   onFilterChange,
 }) {
   const categories = filters?.categories || [];
@@ -110,6 +112,8 @@ export default function FilterSidebar({
   const locations = filters?.locations || [];
   const channels = filters?.channels || [];
   const scenes = filters?.scenes || [];
+  const destinationRegions = filters?.destination_regions || [];
+  const contentTypes = filters?.content_types || [];
 
   function handleCategoryToggle(val) {
     const next = activeCategory === val ? '' : val;
@@ -145,6 +149,14 @@ export default function FilterSidebar({
       ? activeScene.filter((s) => s !== val)
       : [...activeScene, val];
     onFilterChange('scene', next);
+  }
+
+  function handleDestinationRegionToggle(val) {
+    onFilterChange('destinationRegion', activeDestinationRegion === val ? '' : val);
+  }
+
+  function handleContentTypeToggle(val) {
+    onFilterChange('contentType', activeContentType === val ? '' : val);
   }
 
   return (
@@ -212,6 +224,26 @@ export default function FilterSidebar({
             options={scenes}
             active={activeScene}
             onToggle={handleSceneToggle}
+          />
+        </Section>
+      )}
+
+      {destinationRegions.length > 0 && (
+        <Section title="Destination Region" defaultOpen={false}>
+          <Chips
+            options={destinationRegions}
+            active={activeDestinationRegion}
+            onToggle={handleDestinationRegionToggle}
+          />
+        </Section>
+      )}
+
+      {contentTypes.length > 0 && (
+        <Section title="Content Type" defaultOpen={false}>
+          <Chips
+            options={contentTypes}
+            active={activeContentType}
+            onToggle={handleContentTypeToggle}
           />
         </Section>
       )}

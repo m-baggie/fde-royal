@@ -8,6 +8,8 @@ const BASE_FILTERS = {
   locations: [],
   channels: [],
   scenes: [],
+  destination_regions: [],
+  content_types: [],
 };
 
 function renderSidebar(filterOverrides = {}, props = {}) {
@@ -22,6 +24,8 @@ function renderSidebar(filterOverrides = {}, props = {}) {
       activeMetadataQuality={[]}
       activeChannel={props.activeChannel ?? ''}
       activeScene={props.activeScene ?? []}
+      activeDestinationRegion={props.activeDestinationRegion ?? ''}
+      activeContentType={props.activeContentType ?? ''}
       onFilterChange={props.onFilterChange ?? vi.fn()}
     />
   );
@@ -77,6 +81,54 @@ describe('FilterSidebar — Scene / Mood section', () => {
     fireEvent.click(screen.getByText('Scene / Mood'));
     fireEvent.click(screen.getByText('sunset'));
     expect(onFilterChange).toHaveBeenCalledWith('scene', ['sunset']);
+  });
+});
+
+describe('FilterSidebar — Destination Region section (US-004)', () => {
+  it('renders Destination Region section when destination_regions is non-empty', () => {
+    renderSidebar({ destination_regions: ['Caribbean', 'Europe'] });
+    expect(screen.getByText('Destination Region')).toBeInTheDocument();
+  });
+
+  it('does not render Destination Region section when destination_regions=[]', () => {
+    renderSidebar({ destination_regions: [] });
+    expect(screen.queryByText('Destination Region')).not.toBeInTheDocument();
+  });
+
+  it('clicking a destination region chip calls onFilterChange with key="destinationRegion"', () => {
+    const onFilterChange = vi.fn();
+    renderSidebar({ destination_regions: ['Caribbean', 'Europe'] }, { onFilterChange });
+    fireEvent.click(screen.getByText('Destination Region'));
+    fireEvent.click(screen.getByText('Caribbean'));
+    expect(onFilterChange).toHaveBeenCalledWith('destinationRegion', 'Caribbean');
+  });
+
+  it('clicking an active destination region chip deselects it', () => {
+    const onFilterChange = vi.fn();
+    renderSidebar({ destination_regions: ['Caribbean', 'Europe'] }, { activeDestinationRegion: 'Caribbean', onFilterChange });
+    fireEvent.click(screen.getByText('Destination Region'));
+    fireEvent.click(screen.getByText('Caribbean'));
+    expect(onFilterChange).toHaveBeenCalledWith('destinationRegion', '');
+  });
+});
+
+describe('FilterSidebar — Content Type section (US-004)', () => {
+  it('renders Content Type section when content_types is non-empty', () => {
+    renderSidebar({ content_types: ['ship-exterior', 'lifestyle'] });
+    expect(screen.getByText('Content Type')).toBeInTheDocument();
+  });
+
+  it('does not render Content Type section when content_types=[]', () => {
+    renderSidebar({ content_types: [] });
+    expect(screen.queryByText('Content Type')).not.toBeInTheDocument();
+  });
+
+  it('clicking a content type chip calls onFilterChange with key="contentType"', () => {
+    const onFilterChange = vi.fn();
+    renderSidebar({ content_types: ['ship-exterior', 'lifestyle'] }, { onFilterChange });
+    fireEvent.click(screen.getByText('Content Type'));
+    fireEvent.click(screen.getByText('ship-exterior'));
+    expect(onFilterChange).toHaveBeenCalledWith('contentType', 'ship-exterior');
   });
 });
 

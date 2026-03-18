@@ -88,6 +88,26 @@ router.get('/', (req, res) => {
       .all();
     const scenes = sceneRows.map((r) => r.scene);
 
+    // destination_regions — distinct enriched_destination_region values
+    const destRegionRows = db
+      .prepare(
+        `SELECT DISTINCT enriched_destination_region AS destination_region FROM assets
+         WHERE enriched_destination_region IS NOT NULL
+         ORDER BY enriched_destination_region ASC`
+      )
+      .all();
+    const destination_regions = destRegionRows.map((r) => r.destination_region);
+
+    // content_types — distinct enriched_content_type values
+    const contentTypeRows = db
+      .prepare(
+        `SELECT DISTINCT enriched_content_type AS content_type FROM assets
+         WHERE enriched_content_type IS NOT NULL
+         ORDER BY enriched_content_type ASC`
+      )
+      .all();
+    const content_types = contentTypeRows.map((r) => r.content_type);
+
     // locations — merge original_location and enriched_location, deduplicate
     const locRows = db
       .prepare(
@@ -171,6 +191,8 @@ router.get('/', (req, res) => {
       locations,
       channels,
       scenes,
+      destination_regions,
+      content_types,
       rights_statuses,
       counts: {
         total,

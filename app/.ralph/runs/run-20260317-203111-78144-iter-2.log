@@ -1,0 +1,13 @@
+Clean working tree. All done.
+
+**US-002 Summary:**
+
+- `ENRICH_PROMPT` defined in `server/src/services/enrich.js` and exported — RC taxonomy-aware prompt with ships list, `destination_region` vocabulary, `content_type` vocabulary, RC marketing tone, no `channel_hint`
+- `enrich-all.js` imports and uses `ENRICH_PROMPT` — no duplicate prompt strings; both retry paths use the same constant
+- `persistEnrichment` in both files writes `enriched_destination_region` and `enriched_content_type` to the DB
+- `enrichAsset` switched from OpenAI to Anthropic SDK (matching enrich-all.js and the route which already used `app.locals.anthropic`)
+- `index.js` now initializes `app.locals.anthropic` from `ANTHROPIC_API_KEY`
+- `enrich.test.js` updated with Anthropic-style mocks; new test verifies `POST /api/assets/:id/enrich` returns `enriched_content_type`
+- All 82 server + 53 client tests pass; lint and build pass; committed `13f17d9`
+
+<promise>COMPLETE</promise>

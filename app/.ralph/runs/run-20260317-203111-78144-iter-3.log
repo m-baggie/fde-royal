@@ -1,0 +1,9 @@
+Remaining files are Ralph runner management files (PRD JSON I must not edit, prior iteration run files, and `.tmp/` temp files) — not part of this story's changes.
+
+US-003 is fully implemented and verified:
+- `--reseed` flag wipes all AI-enriched assets (excludes `user-edited`) and prints `Reseed mode: wiped X assets`
+- Normal run unchanged — only enriches `WHERE enrichment_source IS NULL`
+- Final summary: `Enriched: X | Failed: Y | Skipped: Z`
+- All 135 tests pass, lint clean, build clean
+
+<promise>COMPLETE</promise>

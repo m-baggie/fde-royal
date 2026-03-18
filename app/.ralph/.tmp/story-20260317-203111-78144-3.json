@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "total": 4,
+  "remaining": 2,
+  "quality_gates": [
+    "npm run lint",
+    "npm run build",
+    "npm test"
+  ],
+  "id": "US-003",
+  "title": "enrich-all.js reseed mode \u2014 wipe and re-enrich all AI-enriched assets"
+}

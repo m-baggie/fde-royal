@@ -32,6 +32,8 @@ function runMigrations(db) {
       enriched_rights_status TEXT,
       enriched_channel TEXT,
       enriched_format TEXT,
+      enriched_destination_region TEXT,
+      enriched_content_type TEXT,
       enrichment_source TEXT,
       enrichment_confidence REAL,
       width INTEGER,

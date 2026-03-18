@@ -14,6 +14,7 @@ if (!process.env.ANTHROPIC_API_KEY) {
 
 const Database = require('better-sqlite3');
 const Anthropic = require('@anthropic-ai/sdk');
+const { ENRICH_PROMPT } = require('../src/services/enrich');
 
 const ENRICH_DELAY_MS = parseInt(process.env.ENRICH_DELAY_MS || '500', 10);
 
@@ -24,19 +25,6 @@ const DATA_DIR = process.env.DATA_DIR
 
 const db = new Database(path.resolve(__dirname, '../../dam.sqlite'));
 const anthropicClient = new Anthropic.default({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-// ---------------------------------------------------------------------------
-// Prompts
-// ---------------------------------------------------------------------------
-const FULL_PROMPT =
-  'Analyze this image and respond with ONLY valid JSON, no markdown: ' +
-  '{ "title": string, "description": string, "tags": string[], "location": string|null, ' +
-  '"scene": string, "subjects": string[], "mood": string, "channel_hint": string, "confidence": number 0-1 }';
-
-const SIMPLIFIED_PROMPT =
-  'Analyze this image and respond with ONLY valid JSON, no markdown: ' +
-  '{ "title": string, "description": string, "tags": string[], "location": string|null, ' +
-  '"scene": string, "channel_hint": string, "confidence": number 0-1 }';
 
 // ---------------------------------------------------------------------------
 // Fetch a URL and return the body as a Buffer
@@ -127,7 +115,8 @@ function persistEnrichment(asset, parsed) {
       enriched_scene = ?,
       enriched_subjects = ?,
       enriched_mood = ?,
-      enriched_channel = ?,
+      enriched_destination_region = ?,
+      enriched_content_type = ?,
       enrichment_source = 'ai-vision',
       enrichment_confidence = ?,
       updated_at = ?
@@ -140,7 +129,8 @@ function persistEnrichment(asset, parsed) {
     parsed.scene || null,
     JSON.stringify(parsed.subjects || []),
     parsed.mood || null,
-    parsed.channel_hint || null,
+    parsed.destination_region || null,
+    parsed.content_type || null,
     parsed.confidence != null ? parsed.confidence : null,
     now,
     asset.id,
@@ -160,6 +150,27 @@ function sleep(ms) {
 // Main
 // ---------------------------------------------------------------------------
 async function main() {
+  const reseed = process.argv.includes('--reseed');
+
+  if (reseed) {
+    const result = db.prepare(`
+      UPDATE assets SET
+        enriched_title = NULL,
+        enriched_description = NULL,
+        enriched_tags = NULL,
+        enriched_location = NULL,
+        enriched_scene = NULL,
+        enriched_subjects = NULL,
+        enriched_mood = NULL,
+        enriched_destination_region = NULL,
+        enriched_content_type = NULL,
+        enrichment_source = NULL,
+        enrichment_confidence = NULL
+      WHERE enrichment_source IS NOT NULL AND enrichment_source != 'user-edited'
+    `).run();
+    console.log(`Reseed mode: wiped ${result.changes} assets`);
+  }
+
   const assets = db.prepare('SELECT * FROM assets WHERE enrichment_source IS NULL').all();
 
   if (assets.length === 0) {
@@ -191,11 +202,11 @@ async function main() {
     // Attempt full prompt, retry with simplified on error
     let parsed = null;
     try {
-      parsed = await callAnthropic(base64, mimeType, FULL_PROMPT);
+      parsed = await callAnthropic(base64, mimeType, ENRICH_PROMPT);
     } catch (_firstErr) {
       process.stdout.write(prefix + ' retrying...\n');
       try {
-        parsed = await callAnthropic(base64, mimeType, SIMPLIFIED_PROMPT);
+        parsed = await callAnthropic(base64, mimeType, ENRICH_PROMPT);
       } catch (secondErr) {
         console.log(`FAILED ${asset.filename}: ${secondErr.message}`);
         process.stdout.write(prefix + ' failed\n');
@@ -222,7 +233,7 @@ async function main() {
     if (i < assets.length - 1) await sleep(ENRICH_DELAY_MS);
   }
 
-  console.log(`Done. Enriched: ${enriched} | Failed: ${failed} | Skipped: ${skipped}`);
+  console.log(`Enriched: ${enriched} | Failed: ${failed} | Skipped: ${skipped}`);
 }
 
 main().catch((err) => {

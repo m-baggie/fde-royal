@@ -226,6 +226,24 @@ describe('GET /api/assets/:id', () => {
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ error: 'Asset not found' });
   });
+
+  it('returns enriched_destination_region and enriched_content_type fields (US-001)', async () => {
+    const res = await request(app).get(
+      '/api/assets/anthem-of-the-seas-new-york-statue-liberty.jpg'
+    );
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('enriched_destination_region');
+    expect(res.body).toHaveProperty('enriched_content_type');
+    // Values may be null — both null and string are acceptable
+    expect(
+      res.body.enriched_destination_region === null ||
+        typeof res.body.enriched_destination_region === 'string'
+    ).toBe(true);
+    expect(
+      res.body.enriched_content_type === null ||
+        typeof res.body.enriched_content_type === 'string'
+    ).toBe(true);
+  });
 });
 
 describe('GET /api/assets — variant_count (US-002)', () => {
@@ -290,7 +308,6 @@ describe('GET /api/assets/:id/download (US-003)', () => {
   let originalDataRoot;
 
   beforeAll(() => {
-    // Override dataRoot to the real DAM data directory (same path as jest.globalSetup.js)
     originalDataRoot = app.locals.dataRoot;
     app.locals.dataRoot = path.resolve(__dirname, '..', '..', '..', '..', '..', 'Royal Caribbean', 'Data', 'royal');
   });
@@ -300,10 +317,9 @@ describe('GET /api/assets/:id/download (US-003)', () => {
   });
 
   it('returns 200 with Content-Disposition attachment for a valid asset', async () => {
-    // Pick the first asset that has a web_image_path or thumbnail_path
     const list = await request(app).get('/api/assets?show_all_variants=1&limit=200');
     const asset = list.body.assets.find((a) => a.web_image_path || a.thumbnail_path);
-    if (!asset) return; // no asset has a file path — skip
+    if (!asset) return;
     const res = await request(app).get(`/api/assets/${encodeURIComponent(asset.id)}/download`);
     expect(res.status).toBe(200);
     expect(res.headers['content-disposition']).toMatch(/attachment/);
@@ -326,12 +342,56 @@ describe('GET /api/assets — query expansion (US-001)', () => {
   });
 
   it('search works when ANTHROPIC_API_KEY is not set (falls back to plain FTS5)', async () => {
-    // In the test environment app.locals.anthropic is undefined (no key set)
-    // expandQuery must return original q so search still works normally
     expect(app.locals.anthropic).toBeUndefined();
     const res = await request(app).get('/api/assets?q=aerial');
     expect(res.status).toBe(200);
     expect(res.body.total).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('GET /api/assets — destination_region and content_type filters (US-004)', () => {
+  const TEST_IDS = ['__test_dr_ct_1__', '__test_dr_ct_2__'];
+
+  beforeEach(() => {
+    db.prepare(
+      `INSERT OR REPLACE INTO assets (id, filename, enriched_destination_region, enriched_content_type)
+       VALUES (?, ?, ?, ?)`
+    ).run(TEST_IDS[0], 'caribbean-ship.jpg', 'Caribbean', 'ship-exterior');
+    db.prepare(
+      `INSERT OR REPLACE INTO assets (id, filename, enriched_destination_region, enriched_content_type)
+       VALUES (?, ?, ?, ?)`
+    ).run(TEST_IDS[1], 'europe-lifestyle.jpg', 'Europe', 'lifestyle');
+  });
+
+  afterEach(() => {
+    for (const id of TEST_IDS) {
+      db.prepare('DELETE FROM assets WHERE id = ?').run(id);
+    }
+  });
+
+  it('destination_region=Caribbean returns only assets with enriched_destination_region=Caribbean', async () => {
+    const res = await request(app).get('/api/assets?destination_region=Caribbean&show_all_variants=1');
+    expect(res.status).toBe(200);
+    expect(res.body.assets.length).toBeGreaterThan(0);
+    for (const asset of res.body.assets) {
+      expect(asset.enriched_destination_region).toBe('Caribbean');
+    }
+  });
+
+  it('content_type=ship-exterior returns only assets with enriched_content_type=ship-exterior', async () => {
+    const res = await request(app).get('/api/assets?content_type=ship-exterior&show_all_variants=1');
+    expect(res.status).toBe(200);
+    expect(res.body.assets.length).toBeGreaterThan(0);
+    for (const asset of res.body.assets) {
+      expect(asset.enriched_content_type).toBe('ship-exterior');
+    }
+  });
+
+  it('destination_region=nonexistent returns { total: 0, assets: [] }', async () => {
+    const res = await request(app).get('/api/assets?destination_region=nonexistent');
+    expect(res.status).toBe(200);
+    expect(res.body.total).toBe(0);
+    expect(res.body.assets).toEqual([]);
   });
 });
 

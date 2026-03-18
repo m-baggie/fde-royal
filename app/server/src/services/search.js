@@ -24,6 +24,8 @@ function searchAssets(db, params) {
     location,
     channel,
     scene,
+    destination_region,
+    content_type,
     has_title,
     has_rights,
     has_release_placeholder,
@@ -63,6 +65,14 @@ function searchAssets(db, params) {
     conditions.push('a.enriched_scene = ?');
     condArgs.push(scene);
   }
+  if (destination_region !== undefined && destination_region !== null && destination_region !== '') {
+    conditions.push('a.enriched_destination_region = ?');
+    condArgs.push(destination_region);
+  }
+  if (content_type !== undefined && content_type !== null && content_type !== '') {
+    conditions.push('a.enriched_content_type = ?');
+    condArgs.push(content_type);
+  }
   if (has_title === 'true') {
     conditions.push(
       "((a.original_title IS NOT NULL AND a.original_title != '') OR (a.enriched_title IS NOT NULL AND a.enriched_title != ''))"
@@ -87,6 +97,7 @@ function searchAssets(db, params) {
     a.original_tags, a.enriched_tags,
     a.enriched_rights_status, a.enrichment_source,
     a.enriched_channel, a.enriched_scene,
+    a.enriched_destination_region, a.enriched_content_type,
     a.width, a.height,
     a.scene7_file, a.scene7_domain,
     a.s7_sync_error, a.needs_rights_review, a.has_release_placeholder,
@@ -184,6 +195,8 @@ function formatAssets(rows) {
       enrichment_source: row.enrichment_source,
       enriched_channel: row.enriched_channel || normalizeChannel(row.filename, row.width, row.height),
       enriched_scene: row.enriched_scene,
+      enriched_destination_region: row.enriched_destination_region,
+      enriched_content_type: row.enriched_content_type,
       width: row.width,
       height: row.height,
       scene7_file: row.scene7_file,

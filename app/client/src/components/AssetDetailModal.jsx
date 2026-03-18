@@ -23,8 +23,10 @@ const METADATA_ROWS = [
   { label: 'Creator',     origKey: 'original_creator',     enrichedKey: 'enriched_creator_normalized' },
   { label: 'Rights Owner',origKey: 'original_rights_owner',enrichedKey: null },
   { label: 'Usage Terms', origKey: 'original_usage_terms', enrichedKey: null },
-  { label: 'Channel',     origKey: null,                   enrichedKey: 'enriched_channel' },
-  { label: 'Format',      origKey: 'file_format',          enrichedKey: 'enriched_format' },
+  { label: 'Channel',            origKey: null,                   enrichedKey: 'enriched_channel' },
+  { label: 'Format',             origKey: 'file_format',          enrichedKey: 'enriched_format' },
+  { label: 'Destination Region', origKey: null,                   enrichedKey: 'enriched_destination_region' },
+  { label: 'Content Type',       origKey: null,                   enrichedKey: 'enriched_content_type' },
 ];
 
 function formatCellValue(label, value) {

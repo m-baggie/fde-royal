@@ -1,7 +1,5 @@
 'use strict';
 
-jest.mock('openai');
-
 const request = require('supertest');
 const path = require('path');
 const fs = require('fs');
@@ -17,28 +15,28 @@ const minimalJpeg = Buffer.from([
 ]);
 
 // ---------------------------------------------------------------------------
-// Mock OpenAI response factory
+// Mock Anthropic response factory
+// Returns a client shaped like the @anthropic-ai/sdk Anthropic instance.
 // ---------------------------------------------------------------------------
 const mockAiPayload = {
   title: 'Sunset Cruise',
   description: 'A ship sailing into a golden sunset',
   tags: ['ship', 'sunset', 'ocean'],
   location: 'Caribbean Sea',
+  destination_region: 'Caribbean',
+  content_type: 'ship-exterior',
   scene: 'outdoor',
   subjects: ['cruise ship', 'water'],
   mood: 'serene',
-  channel_hint: 'hero',
   confidence: 0.92,
 };
 
-function makeMockOpenAI(payload = mockAiPayload) {
+function makeMockAnthropic(payload = mockAiPayload) {
   return {
-    chat: {
-      completions: {
-        create: jest.fn().mockResolvedValue({
-          choices: [{ message: { content: JSON.stringify(payload) } }],
-        }),
-      },
+    messages: {
+      create: jest.fn().mockResolvedValue({
+        content: [{ type: 'text', text: JSON.stringify(payload) }],
+      }),
     },
   };
 }
@@ -84,11 +82,9 @@ afterAll(() => {
 // ---------------------------------------------------------------------------
 describe('enrichAsset service', () => {
   it('maps all response fields correctly to DB columns', async () => {
-    // Create a real file on disk
     const id = insertTestAsset({ filepath: null });
     insertedIds.push(id);
 
-    // Write a temp file and update filepath
     const fname = `${id}-test.jpg`;
     const fpath = path.join(uploadsDir, fname);
     fs.mkdirSync(uploadsDir, { recursive: true });
@@ -97,7 +93,7 @@ describe('enrichAsset service', () => {
 
     db.prepare('UPDATE assets SET filepath = ? WHERE id = ?').run(`uploads/${fname}`, id);
 
-    const mockClient = makeMockOpenAI();
+    const mockClient = makeMockAnthropic();
     const updated = await enrichAsset(db, id, mockClient);
 
     expect(updated.enriched_title).toBe(mockAiPayload.title);
@@ -107,7 +103,8 @@ describe('enrichAsset service', () => {
     expect(updated.enriched_scene).toBe(mockAiPayload.scene);
     expect(JSON.parse(updated.enriched_subjects)).toEqual(mockAiPayload.subjects);
     expect(updated.enriched_mood).toBe(mockAiPayload.mood);
-    expect(updated.enriched_channel).toBe(mockAiPayload.channel_hint);
+    expect(updated.enriched_destination_region).toBe(mockAiPayload.destination_region);
+    expect(updated.enriched_content_type).toBe(mockAiPayload.content_type);
     expect(updated.enrichment_source).toBe('ai-vision');
     expect(updated.enrichment_confidence).toBeCloseTo(mockAiPayload.confidence);
   });
@@ -124,7 +121,7 @@ describe('enrichAsset service', () => {
 
     db.prepare('UPDATE assets SET filepath = ? WHERE id = ?').run(`uploads/${fname}`, id);
 
-    const mockClient = makeMockOpenAI();
+    const mockClient = makeMockAnthropic();
     await enrichAsset(db, id, mockClient);
 
     const row = db.prepare('SELECT enriched_title FROM assets WHERE id = ?').get(id);
@@ -147,10 +144,9 @@ describe('enrichAsset service', () => {
 
     db.prepare('UPDATE assets SET filepath = ? WHERE id = ?').run(`uploads/${fname}`, id);
 
-    const mockClient = makeMockOpenAI(payload);
+    const mockClient = makeMockAnthropic(payload);
     await enrichAsset(db, id, mockClient);
 
-    // FTS search on the unique title
     const results = db.prepare(`
       SELECT a.id FROM assets a
       JOIN assets_fts fts ON a.rowid = fts.rowid
@@ -158,6 +154,32 @@ describe('enrichAsset service', () => {
     `).all(uniqueTitle);
 
     expect(results.some((r) => r.id === id)).toBe(true);
+  });
+
+  it('writes destination_region and content_type to DB', async () => {
+    const id = insertTestAsset();
+    insertedIds.push(id);
+
+    const fname = `${id}-region.jpg`;
+    const fpath = path.join(uploadsDir, fname);
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    fs.writeFileSync(fpath, minimalJpeg);
+    writtenFiles.push(fpath);
+
+    db.prepare('UPDATE assets SET filepath = ? WHERE id = ?').run(`uploads/${fname}`, id);
+
+    const mockClient = makeMockAnthropic({
+      ...mockAiPayload,
+      destination_region: 'Europe',
+      content_type: 'destination-landscape',
+    });
+    await enrichAsset(db, id, mockClient);
+
+    const row = db.prepare(
+      'SELECT enriched_destination_region, enriched_content_type FROM assets WHERE id = ?'
+    ).get(id);
+    expect(row.enriched_destination_region).toBe('Europe');
+    expect(row.enriched_content_type).toBe('destination-landscape');
   });
 });
 
@@ -169,7 +191,7 @@ describe('enrichAsset — negative cases', () => {
     const id = insertTestAsset({ filepath: null });
     insertedIds.push(id);
 
-    const mockClient = makeMockOpenAI();
+    const mockClient = makeMockAnthropic();
     await expect(enrichAsset(db, id, mockClient)).rejects.toMatchObject({
       message: 'No image file available for enrichment',
       status: 400,
@@ -180,18 +202,18 @@ describe('enrichAsset — negative cases', () => {
     const id = insertTestAsset({ filepath: 'uploads/nonexistent-file.jpg' });
     insertedIds.push(id);
 
-    const mockClient = makeMockOpenAI();
+    const mockClient = makeMockAnthropic();
     await expect(enrichAsset(db, id, mockClient)).rejects.toMatchObject({
       message: 'Image file not found on disk',
       status: 404,
     });
   });
 
-  it('throws and leaves asset unchanged when OpenAI throws', async () => {
+  it('throws and leaves asset unchanged when Anthropic throws', async () => {
     const id = insertTestAsset();
     insertedIds.push(id);
 
-    const fname = `${id}-oai-err.jpg`;
+    const fname = `${id}-ai-err.jpg`;
     const fpath = path.join(uploadsDir, fname);
     fs.mkdirSync(uploadsDir, { recursive: true });
     fs.writeFileSync(fpath, minimalJpeg);
@@ -200,12 +222,11 @@ describe('enrichAsset — negative cases', () => {
     db.prepare('UPDATE assets SET filepath = ? WHERE id = ?').run(`uploads/${fname}`, id);
 
     const errorClient = {
-      chat: { completions: { create: jest.fn().mockRejectedValue(new Error('API rate limit')) } },
+      messages: { create: jest.fn().mockRejectedValue(new Error('API rate limit')) },
     };
 
     await expect(enrichAsset(db, id, errorClient)).rejects.toThrow('API rate limit');
 
-    // Asset row should be unchanged (no enriched_title)
     const row = db.prepare('SELECT enriched_title, enrichment_source FROM assets WHERE id = ?').get(id);
     expect(row.enriched_title).toBeNull();
     expect(row.enrichment_source).toBe('pending');
@@ -213,12 +234,11 @@ describe('enrichAsset — negative cases', () => {
 });
 
 // ---------------------------------------------------------------------------
-// HTTP endpoint tests
+// HTTP endpoint tests — POST /api/assets/:id/enrich
 // ---------------------------------------------------------------------------
 describe('POST /api/assets/:id/enrich', () => {
   beforeEach(() => {
-    // Attach a mock Anthropic client to app.locals for each test
-    app.locals.anthropic = makeMockOpenAI();
+    app.locals.anthropic = makeMockAnthropic();
   });
 
   afterEach(() => {
@@ -250,7 +270,7 @@ describe('POST /api/assets/:id/enrich', () => {
     expect(res.body).toEqual({ error: 'Image file not found on disk' });
   });
 
-  it('returns 502 when OpenAI throws, asset row unchanged', async () => {
+  it('returns 502 when Anthropic throws, asset row unchanged', async () => {
     const id = insertTestAsset();
     insertedIds.push(id);
 
@@ -263,7 +283,7 @@ describe('POST /api/assets/:id/enrich', () => {
     db.prepare('UPDATE assets SET filepath = ? WHERE id = ?').run(`uploads/${fname}`, id);
 
     app.locals.anthropic = {
-      chat: { completions: { create: jest.fn().mockRejectedValue(new Error('Network error')) } },
+      messages: { create: jest.fn().mockRejectedValue(new Error('Network error')) },
     };
 
     const res = await request(app).post(`/api/assets/${encodeURIComponent(id)}/enrich`);
@@ -291,5 +311,29 @@ describe('POST /api/assets/:id/enrich', () => {
     expect(res.body.id).toBe(id);
     expect(res.body.enriched_title).toBe(mockAiPayload.title);
     expect(res.body.enrichment_source).toBe('ai-vision');
+  });
+
+  it('returns 200 with enriched_content_type populated (US-002)', async () => {
+    const id = insertTestAsset();
+    insertedIds.push(id);
+
+    const fname = `${id}-content-type.jpg`;
+    const fpath = path.join(uploadsDir, fname);
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    fs.writeFileSync(fpath, minimalJpeg);
+    writtenFiles.push(fpath);
+
+    db.prepare('UPDATE assets SET filepath = ? WHERE id = ?').run(`uploads/${fname}`, id);
+
+    app.locals.anthropic = makeMockAnthropic({
+      ...mockAiPayload,
+      destination_region: 'Caribbean',
+      content_type: 'ship-exterior',
+    });
+
+    const res = await request(app).post(`/api/assets/${encodeURIComponent(id)}/enrich`);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('enriched_content_type');
+    expect(res.body.enriched_content_type).toBe('ship-exterior');
   });
 });

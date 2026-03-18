@@ -1,13 +1,10 @@
 # Activity Log
 
-- 2026-03-17 20:52:00 | run=20260317-203201-80413 | iter=3 | story=US-003 | commit=1fa6456 | status=success
-
 ## Run Summary
-- 2026-03-17 20:56:23 | run=20260317-203201-80413 | iter=3 | mode=build | story=US-003 | duration=804s | status=success
-- 2026-03-17 20:42:56 | run=20260317-203201-80413 | iter=2 | mode=build | story=US-002 | duration=405s | status=success
-- 2026-03-17 20:36:08 | run=20260317-203201-80413 | iter=1 | mode=build | story=US-001 | duration=247s | status=success
-- 2026-03-17 20:35:30 | run=20260317-203201-80413 | iter=1 | mode=build | story=US-001 | commit=9d1cead | status=success
-- 2026-03-17 20:32:01 | run=20260317-203201-80413 | iter=1 | mode=build | story=US-001 | status=starting
+- 2026-03-17 20:49:20 | run=20260317-203111-78144 | iter=4 | mode=build | story=US-004 | duration=394s | status=success
+- 2026-03-17 20:42:42 | run=20260317-203111-78144 | iter=3 | mode=build | story=US-003 | duration=105s | status=success
+- 2026-03-17 20:40:53 | run=20260317-203111-78144 | iter=2 | mode=build | story=US-002 | duration=393s | status=success
+- 2026-03-17 20:34:17 | run=20260317-203111-78144 | iter=1 | mode=build | story=US-001 | duration=186s | status=success
 - 2026-03-17 20:16:53 | run=20260317-200352-54964 | iter=3 | mode=build | story=US-002 | duration=254s | status=success
 - 2026-03-17 20:13:45 | run=20260317-200352-54964 | iter=3 | mode=build | story=US-002 | status=verifying
 - 2026-03-17 20:12:36 | run=20260317-200352-54964 | iter=2 | mode=build | story=US-002 | duration=361s | status=success
@@ -124,12 +121,17 @@
 [2026-03-17 20:12:36] ITERATION 2 end (duration=361s)
 [2026-03-17 20:12:42] ITERATION 3 start (mode=build story=US-002)
 [2026-03-17 20:16:53] ITERATION 3 end (duration=254s)
-[2026-03-17 20:32:03] ITERATION 1 start (mode=build story=US-001)
-[2026-03-17 20:36:08] ITERATION 1 end (duration=247s)
-[2026-03-17 20:36:13] ITERATION 2 start (mode=build story=US-002)
-[2026-03-17 20:42] [US-002] run-20260317-203201-80413 iter-2: implemented traverseEntry + webkitGetAsEntry drop, Browse files/folder buttons, 17 Vitest tests pass
-[2026-03-17 20:42] [US-002] VERIFY: lint PASS, build PASS (209kB), Jest 81/81 PASS, Vitest 62/62 PASS, browser PASS
-[2026-03-17 20:42] [US-002] COMPLETE: committed 097add9, progress log updated
-[2026-03-17 20:42:56] ITERATION 2 end (duration=405s)
-[2026-03-17 20:43:01] ITERATION 3 start (mode=build story=US-003)
-[2026-03-17 20:56:23] ITERATION 3 end (duration=804s)
+[2026-03-17 20:31:13] ITERATION 1 start (mode=build story=US-001)
+[2026-03-17 20:34:06] [run-20260317-203111-78144 iter-1] US-001 COMPLETE: all ACs met, 80 server + 53 client tests pass, committed b75431d
+[2026-03-17 20:34:17] ITERATION 1 end (duration=186s)
+[2026-03-17 20:34:27] ITERATION 2 start (mode=build story=US-002)
+[2026-03-17 20:40] [run-20260317-203111-78144 iter-2] US-002 COMPLETE: ENRICH_PROMPT shared, Anthropic SDK, destination_region+content_type in DB, 82 server+53 client tests pass, committed 13f17d9
+[2026-03-17 20:40:53] ITERATION 2 end (duration=393s)
+[2026-03-17 20:40:58] ITERATION 3 start (mode=build story=US-003)
+[2026-03-17 20:41:34] US-003: starting work on enrich-all.js --reseed flag
+[2026-03-17 20:42:34] US-003: complete — committed b5acdc1, all tests pass
+[2026-03-17 20:42:41] ITERATION 3 end (duration=105s)
+[2026-03-17 20:42:46] ITERATION 4 start (mode=build story=US-004)
+[2026-03-17 20:43:44] US-004: Starting work — expose destination_region and content_type filters in API and UI
+[2026-03-17 20:48:20] US-004: All code changes complete and browser-verified. Committing.
+[2026-03-17 20:49:20] ITERATION 4 end (duration=394s)

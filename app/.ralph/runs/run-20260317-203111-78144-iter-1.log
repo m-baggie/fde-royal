@@ -1,0 +1,9 @@
+US-001 is complete. Summary:
+
+- **`server/src/db/schema.js`** — added `enriched_destination_region TEXT` and `enriched_content_type TEXT` to the `CREATE TABLE` statement
+- **`server/src/db/index.js`** — added startup `PRAGMA table_info` check + `ALTER TABLE` migration to safely add both columns to existing DBs (NULL default, no data loss)
+- **`server/src/__tests__/assets.test.js`** — added Supertest test verifying `GET /api/assets/:id` returns both new fields (null or string)
+- All gates pass: lint ✓, build 208kB ✓, Jest 80/80 ✓, Vitest 53/53 ✓
+- Committed: `b75431d`
+
+<promise>COMPLETE</promise>

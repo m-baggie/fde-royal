@@ -72,6 +72,49 @@ describe('GET /api/filters', () => {
     expect(Array.isArray(res.body.scenes)).toBe(true);
   });
 
+  it('returns destination_regions as a sorted array (US-004)', async () => {
+    const res = await request(app).get('/api/filters');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.destination_regions)).toBe(true);
+    const dr = res.body.destination_regions;
+    expect(dr).toEqual([...dr].sort());
+  });
+
+  it('returns content_types as a sorted array (US-004)', async () => {
+    const res = await request(app).get('/api/filters');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.content_types)).toBe(true);
+    const ct = res.body.content_types;
+    expect(ct).toEqual([...ct].sort());
+  });
+
+  describe('destination_regions and content_types with enriched data (US-004)', () => {
+    const TEST_ID = '__test_dest_region_content_type__';
+
+    beforeEach(() => {
+      db.prepare(
+        `INSERT OR REPLACE INTO assets (id, filename, enriched_destination_region, enriched_content_type)
+         VALUES (?, ?, ?, ?)`
+      ).run(TEST_ID, 'test.jpg', 'Caribbean', 'ship-exterior');
+    });
+
+    afterEach(() => {
+      db.prepare('DELETE FROM assets WHERE id = ?').run(TEST_ID);
+    });
+
+    it('destination_regions includes Caribbean after inserting enriched asset', async () => {
+      const res = await request(app).get('/api/filters');
+      expect(res.status).toBe(200);
+      expect(res.body.destination_regions).toContain('Caribbean');
+    });
+
+    it('content_types includes ship-exterior after inserting enriched asset', async () => {
+      const res = await request(app).get('/api/filters');
+      expect(res.status).toBe(200);
+      expect(res.body.content_types).toContain('ship-exterior');
+    });
+  });
+
   describe('channels and scenes with enriched data', () => {
     const TEST_ID = '__test_channel_scene__';
 

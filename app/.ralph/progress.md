@@ -4,80 +4,6 @@ Started: Tue Mar 17 11:21:30 EDT 2026
 ## Codebase Patterns
 - (add reusable patterns here)
 
-## [2026-03-17 20:52] - US-003: Asset download from detail modal
-Thread:
-Run: 20260317-203201-80413 (iteration 3)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-features/app/.ralph/runs/run-20260317-203201-80413-iter-3.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-features/app/.ralph/runs/run-20260317-203201-80413-iter-3.md
-- Guardrails reviewed: yes
-- No-commit run: false
-- Commit: 1fa6456 feat(download): add asset download endpoint and UI button
-- Post-commit status: clean
-- Verification:
-  - Command: npm run lint -> PASS
-  - Command: npm run build -> PASS
-  - Command: npm test (83 server + 64 client = 147 total) -> PASS
-  - Browser: Download button visible at http://localhost:5178, navy bg (#001B6B), correct href + download attr -> PASS
-- Files changed:
-  - server/src/index.js
-  - server/src/routes/assets.js
-  - server/src/__tests__/assets.test.js
-  - client/src/api/assets.js
-  - client/src/api/assets.test.js
-  - client/src/components/AssetDetailModal.jsx
-  - client/src/components/AssetDetailModal.test.jsx
-  - client/dist/index.html
-- What was implemented:
-  - GET /api/assets/:id/download endpoint streams the file with Content-Disposition: attachment
-  - Returns 404 { error: 'Asset not found' } for unknown IDs
-  - Returns 404 { error: 'File not found' } if file missing on disk
-  - Path traversal guard: filePath.startsWith(dataRoot + sep)
-  - app.locals.dataRoot set once in index.js (same value as static media route)
-  - getAssetDownloadUrl(id) exported from client/src/api/assets.js
-  - Download button (<a download> with navy style) in AssetDetailModal right panel, always visible
-  - Supertest tests: 200+Content-Disposition for valid asset, 404 for nonexistent (with dataRoot override in beforeAll)
-  - Vitest tests: Download button renders with correct href and download attr
-- **Learnings for future iterations:**
-  - Multiple Vite dev servers run on different ports (5173-5180+) — must identify the correct one for browser testing
-  - app.locals is the right pattern for sharing computed config (like dataRoot) between index.js and route handlers
-  - Test dataRoot override: use beforeAll/afterAll to temporarily set app.locals.dataRoot to the real data path (same as jest.globalSetup.js resolution: path.resolve(__dirname, '../../../../..', 'Royal Caribbean', 'Data', 'royal') from __tests__)
-  - jest.globalSetup.js uses path.resolve(__dirname, '../../../Royal Caribbean/Data/royal') from server/ — always use this as the canonical data dir reference
----
-
-## [2026-03-17 20:35] - US-001: Semantic query expansion via Claude Haiku
-Thread:
-Run: 20260317-203201-80413 (iteration 1)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-features/app/.ralph/runs/run-20260317-203201-80413-iter-1.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-features/app/.ralph/runs/run-20260317-203201-80413-iter-1.md
-- Guardrails reviewed: yes
-- No-commit run: false
-- Commit: 9d1cead feat(search): add semantic query expansion via Claude Haiku
-- Post-commit status: clean
-- Verification:
-  - Command: npm run lint -> PASS
-  - Command: npm run build -> PASS
-  - Command: npm test (81 server + 53 client = 134 total) -> PASS
-- Files changed:
-  - server/src/routes/assets.js
-  - server/src/index.js
-  - server/src/__tests__/assets.test.js
-- What was implemented:
-  - Added `expandQuery(anthropic, q)` async function in routes/assets.js that
-    calls claude-haiku-4-5-20251001 with RC-specific prompt and returns original
-    q joined with expanded terms using FTS5 OR syntax
-  - Returns q unchanged when anthropic is null/undefined
-  - Catches all Claude errors and returns original q (never blocks search)
-  - Made GET /api/assets route async to await expandQuery
-  - Initialized app.locals.anthropic in index.js from ANTHROPIC_API_KEY
-  - Added two Supertest tests in a new describe block for US-001
-- **Learnings for future iterations:**
-  - @anthropic-ai/sdk is already installed; just needs client init in index.js
-  - jest binary lives in root node_modules/.bin/jest, not in server/node_modules
-  - Tests run with ANTHROPIC_API_KEY unset so app.locals.anthropic is undefined;
-    expandQuery correctly falls back to plain q — inherently tests the fallback path
-  - client/dist is gitignored; do not try to stage it
----
-
 ---
 
 ## [2026-03-17 11:25] - US-001: Scaffold monorepo — Express + React Vite
@@ -816,45 +742,127 @@ Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-layout/app/.ralph/runs/r
   - `client/dist/` is excluded from git; production build artifacts don't need staging
 ---
 
-## [2026-03-17 20:42] - US-002: Smart upload — recursive folder and mixed drop support
+## [2026-03-17 20:33] - US-001: DB migration — add enriched_destination_region and enriched_content_type columns
 Thread:
-Run: 20260317-203201-80413 (iteration 2)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-features/app/.ralph/runs/run-20260317-203201-80413-iter-2.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-features/app/.ralph/runs/run-20260317-203201-80413-iter-2.md
+Run: 20260317-203111-78144 (iteration 1)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-enrichment-v2/app/.ralph/runs/run-20260317-203111-78144-iter-1.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-enrichment-v2/app/.ralph/runs/run-20260317-203111-78144-iter-1.md
 - Guardrails reviewed: yes
 - No-commit run: false
-- Commit: 097add9 feat(upload): add recursive folder drop and browse-folder support
-- Post-commit status: clean (ralph logs staged separately)
+- Commit: b75431d feat(db): add enriched_destination_region and enriched_content_type columns
+- Post-commit status: clean
 - Verification:
-  - Command: npm test -> PASS (81 server + 62 client = 143 total)
-  - Command: npm run lint -> PASS
-  - Command: npm run build -> PASS (209kB, 91 modules)
-  - Browser: drop zone label, browse-files btn, browse-folder btn all confirmed
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS (208kB bundle)
+  - `npx jest --runInBand --forceExit` (server) -> PASS (80/80)
+  - `npx vitest run` (client) -> PASS (53/53)
 - Files changed:
-  - client/src/components/UploadModal.jsx
-  - client/src/components/UploadModal.test.jsx
+  - server/src/db/schema.js (added enriched_destination_region TEXT and enriched_content_type TEXT to CREATE TABLE)
+  - server/src/db/index.js (PRAGMA table_info check + ALTER TABLE migration for both columns on startup)
+  - server/src/__tests__/assets.test.js (new test: GET /api/assets/:id returns both fields, null or string)
 - What was implemented:
-  - Exported `isImageFile(file)` helper: checks MIME starts with 'image/' OR
-    extension in {jpg, jpeg, png, gif, webp} (case-insensitive)
-  - Exported `traverseEntry(entry)` async function: recursively walks
-    FileSystemFileEntry and FileSystemDirectoryEntry at any depth; uses
-    readEntries loop to handle >100 entries; silently skips non-image files
-  - Updated `handleDrop` to use `dataTransfer.items[i].webkitGetAsEntry()`
-    synchronously before any await, then processes entries asynchronously
-  - Drop zone label changed to 'Drop images or folders here'
-  - Removed `folderMode` state and toggle button
-  - Added `folderInputRef` + `[data-testid="folder-input"]` (webkitdirectory)
-  - Added `[data-testid="browse-files-btn"]` and `[data-testid="browse-folder-btn"]`
-    buttons both feeding same `handleFileInputChange` queue
-  - Updated all existing drop tests to use async dropFile() + act() since
-    handleDrop is now async (traverseEntry returns Promise)
-  - Added 7 new Vitest tests: traverseEntry unit tests + mixed drop integration
+  - Added two new columns to CREATE TABLE in schema.js (for fresh DBs)
+  - Added startup migration in index.js that reads PRAGMA table_info and ALTERs existing DBs if columns absent — safe/idempotent
+  - GET /api/assets/:id already uses SELECT * so new columns are returned automatically
+  - Supertest test verifies both fields are present and are null or string
 - **Learnings for future iterations:**
-  - handleDrop must be async when using traverseEntry; all drop test helpers
-    need `await act(async () => { fireEvent(...) })` to flush microtasks
-  - DataTransfer.items must be accessed synchronously before any await
-    (collect entries array first, then process asynchronously)
-  - `client/dist/` is gitignored — do not `git add client/dist/`
-  - Function declarations (not arrow functions) are hoisted, so helper
-    ordering in test files doesn't matter for function declarations
+  - `npm install` is needed per workspace (server/, client/) when node_modules are absent; root `npm install` doesn't always propagate
+  - `client/dist/` is gitignored — never try to stage it
+  - The ALTER TABLE migration pattern (PRAGMA table_info → check includes → exec ALTER) is already established in migrate-variants.js; follow the same pattern
+  - GET /api/assets/:id uses SELECT * so new columns in schema are auto-included without route changes
+---
+
+## [2026-03-17 20:40] - US-002: Update enrichment prompt in enrich.js and enrich-all.js
+Thread:
+Run: 20260317-203111-78144 (iteration 2)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-enrichment-v2/app/.ralph/runs/run-20260317-203111-78144-iter-2.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-enrichment-v2/app/.ralph/runs/run-20260317-203111-78144-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 13f17d9 feat(enrich): update prompt to RC taxonomy and switch to Anthropic SDK
+- Post-commit status: clean (activity/log/progress files remain)
+- Verification:
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS (208kB bundle, 91 modules)
+  - `npm test` -> PASS (Jest: 82 passed, Vitest: 53 passed)
+- Files changed:
+  - server/src/services/enrich.js
+  - server/scripts/enrich-all.js
+  - server/src/index.js
+  - server/src/__tests__/enrich.test.js
+- What was implemented:
+  - ENRICH_PROMPT defined in enrich.js with RC ships list, destination_region and
+    content_type controlled vocabularies, RC marketing tone guidance; channel_hint removed
+  - ENRICH_PROMPT exported from enrich.js and imported in enrich-all.js — no duplicate strings
+  - enrichAsset switched from OpenAI SDK to Anthropic messages API (matches enrich-all.js pattern)
+  - persistEnrichment in both enrich.js and enrich-all.js writes enriched_destination_region
+    and enriched_content_type to the DB
+  - app.locals.anthropic initialized in index.js (route already referenced it)
+  - enrich.test.js updated to use Anthropic-style mocks; new test for enriched_content_type
+- **Learnings for future iterations:**
+  - enrich.js previously used OpenAI SDK but the route already expected app.locals.anthropic —
+    this mismatch had to be resolved as part of US-002
+  - The Anthropic import in enrich.js service is not needed (client injected as param) — lint
+    catches unused imports immediately, good gate
+  - jest.mock() at file level works cleanly for service mocks in __tests__ files
+---
+
+## [2026-03-17 20:42] - US-003: enrich-all.js reseed mode — wipe and re-enrich all AI-enriched assets
+Thread:
+Run: 20260317-203111-78144 (iteration 3)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-enrichment-v2/app/.ralph/runs/run-20260317-203111-78144-iter-3.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-enrichment-v2/app/.ralph/runs/run-20260317-203111-78144-iter-3.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: b5acdc1 feat(enrich): add --reseed flag to wipe and re-enrich all AI assets
+- Post-commit status: remaining untracked files are .ralph/.tmp/ and prior-iteration run files; not part of this story
+- Verification:
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS
+  - `npm test` -> PASS (82 server + 53 client = 135 tests)
+- Files changed:
+  - server/scripts/enrich-all.js
+- What was implemented:
+  - Added --reseed flag: reads process.argv for '--reseed'
+  - When set: UPDATE nulls all enriched_* and enrichment_source for assets where enrichment_source IS NOT NULL AND enrichment_source != 'user-edited'
+  - Prints 'Reseed mode: wiped X assets' using result.changes from better-sqlite3
+  - Normal flow then queries WHERE enrichment_source IS NULL (same as before)
+  - Updated final summary to match AC format: 'Enriched: X | Failed: Y | Skipped: Z'
+- **Learnings for future iterations:**
+  - better-sqlite3 .run() returns { changes, lastInsertRowid } — use result.changes for wiped count
+  - process.argv.includes('--reseed') is the cleanest argv check for a single boolean flag
+  - The reseed wipe must exclude 'user-edited' to protect manually curated metadata
+---
+
+## [2026-03-17 20:48] - US-004: API and filters — expose destination_region and content_type
+Thread:
+Run: 20260317-203111-78144 (iteration 4)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-enrichment-v2/app/.ralph/runs/run-20260317-203111-78144-iter-4.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-enrichment-v2/app/.ralph/runs/run-20260317-203111-78144-iter-4.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: f8081a6 feat(filters): expose destination_region and content_type in API and UI
+- Post-commit status: remaining modified files are ralph run logs from prior iterations and prd JSON (managed by loop)
+- Verification:
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS (Vite, 209.97 kB)
+  - `npm test` -> PASS (89 server + 60 client = 149 tests)
+  - Browser: Destination Region and Content Type sections render in FilterSidebar when data present
+- Files changed:
+  - server/src/routes/filters.js — added destination_regions + content_types queries
+  - server/src/services/search.js — added destination_region + content_type filter params in SELECT and WHERE; formatAssets includes both new fields
+  - server/src/__tests__/filters.test.js — added 4 new tests (sorted arrays, data presence)
+  - server/src/__tests__/assets.test.js — added 3 new tests for destination_region + content_type filter params
+  - client/src/components/AssetDetailModal.jsx — added Destination Region + Content Type to METADATA_ROWS
+  - client/src/components/FilterSidebar.jsx — added activeDestinationRegion + activeContentType props, handlers, chip sections
+  - client/src/components/FilterSidebar.test.jsx — added 7 new tests for new sections; updated BASE_FILTERS + renderSidebar
+  - client/src/pages/BrowsePage.jsx — added destinationRegion + contentType state, wired into buildParams, handleFilterChange, clearAllFilters, activeChips, FilterSidebar props
+- What was implemented:
+  - All 9 acceptance criteria fully satisfied
+  - Schema already had enriched_destination_region + enriched_content_type columns (added in US-001)
+  - Sections only render in sidebar when DB has non-null values (same conditional pattern as channels/scenes)
+- **Learnings for future iterations:**
+  - Vite proxies to port 3002 (not 3001) — confirmed in client/vite.config.js; always check this when browser-testing
+  - DB columns existed from US-001 schema — no migration needed, just expose them in routes/search
+  - Browser verification: seeding test data via sqlite before checking sidebar render is the right approach for conditionally-rendered filter sections
 ---
