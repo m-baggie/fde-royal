@@ -19,10 +19,22 @@ const styles = {
     boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
   },
   imageWrapper: {
+    position: 'relative',
     width: '100%',
     aspectRatio: '16/9',
     backgroundColor: '#E8E8E8',
     overflow: 'hidden',
+  },
+  variantBadge: {
+    position: 'absolute',
+    bottom: '6px',
+    right: '6px',
+    backgroundColor: '#001B6B',
+    color: '#fff',
+    fontSize: '11px',
+    padding: '2px 8px',
+    borderRadius: '10px',
+    pointerEvents: 'none',
   },
   image: {
     width: '100%',
@@ -70,7 +82,7 @@ const styles = {
   },
 };
 
-const API_BASE = 'http://localhost:3001';
+const API_BASE = '';
 
 const placeholderStyle = {
   width: '100%',
@@ -93,6 +105,9 @@ export default function AssetCard({ asset, onSelectAsset }) {
 
   const rightsColor = RIGHTS_COLORS[asset.rights_status] || '#9ca3af';
   const hasIssues = Array.isArray(asset.quality_issues) && asset.quality_issues.length > 0;
+
+  const variantCount = asset.variant_count;
+  const showVariantBadge = variantCount > 1;
 
   const thumbnailSrc = asset.thumbnail_path
     ? `${API_BASE}/api/assets/media/${asset.thumbnail_path}`
@@ -120,6 +135,11 @@ export default function AssetCard({ asset, onSelectAsset }) {
             style={styles.image}
             onError={() => setImgError(true)}
           />
+        )}
+        {showVariantBadge && (
+          <span data-testid="variant-badge" style={styles.variantBadge}>
+            +{variantCount - 1} variants
+          </span>
         )}
       </div>
       <div style={styles.body}>

@@ -1,0 +1,12 @@
+US-004 is complete. Summary:
+
+**Implemented:**
+- `AssetDetailModal.jsx`: Added `variants` + `activeVariantId` state; fetches `getAssetVariants(id)` on open when `variant_group_id` is set; renders a scrollable 72×72 thumbnail strip with channel labels and active navy border; clicking a thumb calls `getAsset(variantId)` and updates all modal content
+- `AssetDetailModal.test.jsx`: 3 new Vitest tests (fetch-on-open, click-calls-getAsset, no-strip-when-empty) — all 11 tests pass
+- `assets.js`: Changed `baseURL` to `''` (relative paths via Vite proxy)
+- `vite.config.js`: Added `server.proxy` `/api → localhost:3001`
+- `AssetCard.jsx`: Removed hardcoded `http://localhost:3001` from `API_BASE`
+
+**Quality gates:** lint ✓ · build ✓ · 50 client + 79 server tests ✓ · browser verified (30 grouped cards, 4 badge cards, strip renders with 3 thumbs, "Variants (3)" header)
+
+<promise>COMPLETE</promise>

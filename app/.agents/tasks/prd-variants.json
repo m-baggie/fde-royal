@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "project": "Royal Caribbean DAM — Variant Grouping",
+  "project": "Royal Caribbean DAM \u2014 Variant Grouping",
   "overview": "Group related asset variants (e.g. hero/banner/mobile sizes of the same image) so the browse grid shows one representative card per content family instead of flooding the grid with near-identical thumbnails. Clicking a grouped card opens the detail modal with a variant switcher strip.",
   "goals": [
     "Browse grid defaults to showing one primary asset per variant group, with a '+N variants' badge",
@@ -9,7 +9,7 @@
     "Four known variant groups are seeded in the existing dataset"
   ],
   "nonGoals": [
-    "No automatic variant detection for future uploads — grouping is set via the variant_group_id field",
+    "No automatic variant detection for future uploads \u2014 grouping is set via the variant_group_id field",
     "No UI to create or edit variant groups",
     "No changes to the upload flow",
     "No changes to enrichment"
@@ -22,8 +22,8 @@
     "The 'Show All Variants' toggle on the card expands to flat view"
   ],
   "stack": {
-    "backend": "Express.js (Node 20) — server/src/",
-    "frontend": "React 18 + Vite — client/src/",
+    "backend": "Express.js (Node 20) \u2014 server/src/",
+    "frontend": "React 18 + Vite \u2014 client/src/",
     "database": "SQLite via better-sqlite3"
   },
   "routes": [
@@ -38,15 +38,15 @@
     "AssetDetailModal left panel: when variants array has length > 1, render a horizontal thumbnail strip below the main image. Strip is scrollable (overflow-x:auto), shows up to 5 thumbs at once. Each thumb: 72px square, object-fit:cover, border-radius 4px, cursor:pointer. Active thumb has 2px navy border. Below each thumb: a channel/format label in 10px grey text (e.g. 'hero', 'banner', 'landscape').",
     "Switching variant: clicking a thumb re-fetches GET /api/assets/:id for that variant, updates all modal state (image, title, metadata rows, quality issues, CDN URL). The selected asset id changes.",
     "Variant strip header: small label 'Variants (N)' in grey 12px text above the strip",
-    "No 'Show All Variants' toggle needed on the card — grouped mode is the default view"
+    "No 'Show All Variants' toggle needed on the card \u2014 grouped mode is the default view"
   ],
   "dataModel": [
     {
       "entity": "assets (existing)",
       "description": "Add two columns for variant grouping",
       "fields": [
-        "variant_group_id TEXT — shared ID for all variants in a group, NULL if no variants",
-        "is_primary_variant INTEGER DEFAULT 0 — 1 for the card shown in the browse grid"
+        "variant_group_id TEXT \u2014 shared ID for all variants in a group, NULL if no variants",
+        "is_primary_variant INTEGER DEFAULT 0 \u2014 1 for the card shown in the browse grid"
       ]
     }
   ],
@@ -57,12 +57,12 @@
     "Group grp-star-icon: all assets with subcategory='star-and-icon'. Primary: 1040x520-2x.jpg",
     "Group grp-bankroll: filenames starting with 'Bankroll' or 'BankrollBlitz'. Primary: BankrollBlitz_Desktop .jpg",
     "Group grp-naples: filenames containing 'naples-italy'. Primary: allure-of-the-seas-naples-italy.jpg (landscape)",
-    "GET /api/assets default behaviour: WHERE (is_primary_variant = 1 OR variant_group_id IS NULL) — returns one card per group plus all ungrouped assets",
+    "GET /api/assets default behaviour: WHERE (is_primary_variant = 1 OR variant_group_id IS NULL) \u2014 returns one card per group plus all ungrouped assets",
     "Each asset in the default response includes variant_count: count of assets sharing the same variant_group_id (1 if no group)",
     "GET /api/assets?show_all_variants=1 returns all assets flat (existing behaviour)",
     "GET /api/assets/:id/variants returns all assets WHERE variant_group_id = (SELECT variant_group_id FROM assets WHERE id = ?) AND variant_group_id IS NOT NULL, ordered by is_primary_variant DESC then filename ASC",
     "variant_count is computed in the search service via a subquery or join, not stored",
-    "FTS5 index does not need to be updated — variant_group_id is not a searchable field"
+    "FTS5 index does not need to be updated \u2014 variant_group_id is not a searchable field"
   ],
   "qualityGates": [
     "npm run lint",
@@ -72,8 +72,8 @@
   "stories": [
     {
       "id": "US-001",
-      "title": "DB migration — add variant_group_id and seed known groups",
-      "status": "open",
+      "title": "DB migration \u2014 add variant_group_id and seed known groups",
+      "status": "done",
       "dependsOn": [],
       "description": "As a developer, I want variant group IDs stored in the database so the API can filter and group assets reliably.",
       "acceptanceCriteria": [
@@ -83,13 +83,18 @@
         "After migration: 4 assets have is_primary_variant=1, all galveston assets share grp-galveston, all star-and-icon assets share grp-star-icon, all bankroll assets share grp-bankroll, both naples assets share grp-naples",
         "Supertest test: GET /api/assets returns fewer than 50 assets by default (grouped mode)",
         "Supertest test: GET /api/assets?show_all_variants=1 returns all 50 assets"
-      ]
+      ],
+      "startedAt": "2026-03-17T23:43:30.027019+00:00",
+      "completedAt": "2026-03-17T23:45:22.612837+00:00",
+      "updatedAt": "2026-03-17T23:45:22.612397+00:00"
     },
     {
       "id": "US-002",
-      "title": "API — grouped browse and variants endpoint",
-      "status": "open",
-      "dependsOn": ["US-001"],
+      "title": "API \u2014 grouped browse and variants endpoint",
+      "status": "done",
+      "dependsOn": [
+        "US-001"
+      ],
       "description": "As a developer, I want the search API to default to grouped mode and expose a variants endpoint so the UI can show grouped cards and a variant switcher.",
       "acceptanceCriteria": [
         "GET /api/assets default: WHERE (is_primary_variant = 1 OR variant_group_id IS NULL)",
@@ -100,44 +105,57 @@
         "Supertest test: GET /api/assets returns asset with variant_count=4 for the galveston primary",
         "Supertest test: GET /api/assets/:id/variants for a galveston asset returns 4 items",
         "Supertest test: GET /api/assets/:id/variants for an ungrouped asset returns []"
-      ]
+      ],
+      "startedAt": "2026-03-17T23:45:25.238338+00:00",
+      "completedAt": "2026-03-17T23:49:15.966661+00:00",
+      "updatedAt": "2026-03-17T23:49:15.966495+00:00"
     },
     {
       "id": "US-003",
-      "title": "AssetCard — variant count badge",
-      "status": "open",
-      "dependsOn": ["US-002"],
+      "title": "AssetCard \u2014 variant count badge",
+      "status": "done",
+      "dependsOn": [
+        "US-002"
+      ],
       "description": "As a content author, I want to see how many variants an asset has so I know there are more options available.",
       "acceptanceCriteria": [
         "AssetCard renders a '+N variants' badge when asset.variant_count > 1",
         "Badge positioned bottom-right of the thumbnail, overlaid with position:absolute",
         "Badge style: navy background (#001B6B), white text, font-size 11px, padding 2px 8px, border-radius 10px",
-        "Badge text: '+N variants' where N = variant_count - 1 (e.g. 4 total → '+3 variants')",
+        "Badge text: '+N variants' where N = variant_count - 1 (e.g. 4 total \u2192 '+3 variants')",
         "No badge shown when variant_count === 1 or variant_count is undefined",
         "Vitest test: card with variant_count=4 renders badge with text '+3 variants'",
         "Vitest test: card with variant_count=1 does not render a badge"
-      ]
+      ],
+      "startedAt": "2026-03-17T23:49:18.645552+00:00",
+      "completedAt": "2026-03-17T23:54:46.015181+00:00",
+      "updatedAt": "2026-03-17T23:54:46.014483+00:00"
     },
     {
       "id": "US-004",
-      "title": "AssetDetailModal — variant thumbnail strip",
-      "status": "open",
-      "dependsOn": ["US-002"],
+      "title": "AssetDetailModal \u2014 variant thumbnail strip",
+      "status": "done",
+      "dependsOn": [
+        "US-002"
+      ],
       "description": "As a content author, I want to see and switch between all variants of an asset in the detail modal so I can find the right format without closing the modal.",
       "acceptanceCriteria": [
         "On open, if asset has variant_group_id set, call getAssetVariants(id) and store variants in local state",
         "If variants.length > 1, render a variant strip in the left panel below the main image",
         "Strip header: 'Variants (N)' label, 12px grey text",
         "Strip: horizontal scrollable row (overflow-x:auto, display:flex, gap:8px)",
-        "Each thumb: 72px × 72px img (object-fit:cover, border-radius:4px, cursor:pointer), with a channel label below (10px, #6b7280)",
+        "Each thumb: 72px \u00d7 72px img (object-fit:cover, border-radius:4px, cursor:pointer), with a channel label below (10px, #6b7280)",
         "Active/selected thumb has 2px solid navy border",
-        "Clicking a thumb calls getAsset(variantId), updates asset state — all modal content updates (image, title, metadata, CDN URL, quality issues)",
+        "Clicking a thumb calls getAsset(variantId), updates asset state \u2014 all modal content updates (image, title, metadata, CDN URL, quality issues)",
         "Initially selected thumb is the currently opened asset",
         "If getAssetVariants returns [] or errors, strip is not rendered",
         "Vitest test: modal fetches variants on open when asset has variant_group_id",
         "Vitest test: clicking a variant thumb calls getAsset with the variant's id",
         "Vitest test: no strip rendered when variants array is empty"
-      ]
+      ],
+      "startedAt": "2026-03-17T23:54:48.780890+00:00",
+      "completedAt": "2026-03-18T00:03:21.068350+00:00",
+      "updatedAt": "2026-03-18T00:03:21.067558+00:00"
     }
   ]
 }

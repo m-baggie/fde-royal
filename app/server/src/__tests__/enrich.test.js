@@ -217,19 +217,19 @@ describe('enrichAsset — negative cases', () => {
 // ---------------------------------------------------------------------------
 describe('POST /api/assets/:id/enrich', () => {
   beforeEach(() => {
-    // Attach a mock OpenAI client to app.locals for each test
-    app.locals.openai = makeMockOpenAI();
+    // Attach a mock Anthropic client to app.locals for each test
+    app.locals.anthropic = makeMockOpenAI();
   });
 
   afterEach(() => {
-    delete app.locals.openai;
+    delete app.locals.anthropic;
   });
 
-  it('returns 503 when OPENAI_API_KEY not configured', async () => {
-    delete app.locals.openai;
+  it('returns 503 when ANTHROPIC_API_KEY not configured', async () => {
+    delete app.locals.anthropic;
     const res = await request(app).post('/api/assets/nonexistent/enrich');
     expect(res.status).toBe(503);
-    expect(res.body).toEqual({ error: 'AI enrichment unavailable — OPENAI_API_KEY not configured' });
+    expect(res.body).toEqual({ error: 'AI enrichment unavailable — ANTHROPIC_API_KEY not configured' });
   });
 
   it('returns 400 when asset has no filepath', async () => {
@@ -262,7 +262,7 @@ describe('POST /api/assets/:id/enrich', () => {
 
     db.prepare('UPDATE assets SET filepath = ? WHERE id = ?').run(`uploads/${fname}`, id);
 
-    app.locals.openai = {
+    app.locals.anthropic = {
       chat: { completions: { create: jest.fn().mockRejectedValue(new Error('Network error')) } },
     };
 

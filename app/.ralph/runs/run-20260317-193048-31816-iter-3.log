@@ -1,0 +1,11 @@
+Clean working tree (only the ralph-managed PRD JSON remains modified, per rules).
+
+US-002 is fully implemented and verified:
+
+- **`variant_count`** added to all list responses via correlated subquery — galveston primary correctly shows `4`
+- **`GET /api/assets/:id/variants`** route returns all group members, `[]` for ungrouped, `404` for unknown
+- **`getAssetVariants(id)`** exported from `client/src/api/assets.js`
+- All acceptance criteria covered by tests: 79 server (Jest) + 44 client (Vitest) — all passing
+- Lint clean, build clean
+
+<promise>COMPLETE</promise>

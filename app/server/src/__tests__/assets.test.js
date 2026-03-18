@@ -5,8 +5,8 @@ const app = require('../index');
 const db = require('../db');
 
 describe('GET /api/assets', () => {
-  it('returns 200 with total 49 when no params given', async () => {
-    const res = await request(app).get('/api/assets');
+  it('returns 200 with total 49 when show_all_variants=1', async () => {
+    const res = await request(app).get('/api/assets?show_all_variants=1');
     expect(res.status).toBe(200);
     expect(res.body.total).toBe(49);
     expect(Array.isArray(res.body.assets)).toBe(true);
@@ -29,15 +29,15 @@ describe('GET /api/assets', () => {
     }
   });
 
-  it('rights_status=none returns exactly 27 assets', async () => {
-    const res = await request(app).get('/api/assets?rights_status=none');
+  it('rights_status=none returns exactly 27 assets when show_all_variants=1', async () => {
+    const res = await request(app).get('/api/assets?rights_status=none&show_all_variants=1');
     expect(res.status).toBe(200);
     expect(res.body.total).toBe(27);
     expect(res.body.assets.length).toBe(27);
   });
 
-  it('limit=5&offset=0 returns 5 assets with total=49', async () => {
-    const res = await request(app).get('/api/assets?limit=5&offset=0');
+  it('limit=5&offset=0 with show_all_variants=1 returns 5 assets with total=49', async () => {
+    const res = await request(app).get('/api/assets?limit=5&offset=0&show_all_variants=1');
     expect(res.status).toBe(200);
     expect(res.body.total).toBe(49);
     expect(res.body.assets.length).toBe(5);
@@ -224,5 +224,108 @@ describe('GET /api/assets/:id', () => {
     const res = await request(app).get('/api/assets/does-not-exist');
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ error: 'Asset not found' });
+  });
+});
+
+describe('GET /api/assets — variant_count (US-002)', () => {
+  it('galveston primary asset has variant_count=4', async () => {
+    const res = await request(app).get('/api/assets');
+    expect(res.status).toBe(200);
+    const galveston = res.body.assets.find(
+      (a) => a.id === 'allure-of-the-seas-aerial-sailing-sea-day-galveston-texas-hero.jpg'
+    );
+    expect(galveston).toBeDefined();
+    expect(galveston.variant_count).toBe(4);
+  });
+
+  it('ungrouped asset has variant_count=1', async () => {
+    // anthem-of-the-seas-new-york-statue-liberty.jpg is not in any group
+    const res = await request(app).get(
+      '/api/assets?show_all_variants=1'
+    );
+    expect(res.status).toBe(200);
+    const anthem = res.body.assets.find(
+      (a) => a.id === 'anthem-of-the-seas-new-york-statue-liberty.jpg'
+    );
+    expect(anthem).toBeDefined();
+    expect(anthem.variant_count).toBe(1);
+  });
+});
+
+describe('GET /api/assets/:id/variants (US-002)', () => {
+  it('galveston primary returns 4 variants', async () => {
+    const res = await request(app).get(
+      '/api/assets/allure-of-the-seas-aerial-sailing-sea-day-galveston-texas-hero.jpg/variants'
+    );
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(4);
+  });
+
+  it('any galveston variant returns 4 items', async () => {
+    const res = await request(app).get(
+      '/api/assets/allure-of-the-seas-aerial-sailing-sea-day-galveston-texas-banner.jpg/variants'
+    );
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(4);
+  });
+
+  it('ungrouped asset returns empty array', async () => {
+    const res = await request(app).get(
+      '/api/assets/anthem-of-the-seas-new-york-statue-liberty.jpg/variants'
+    );
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
+  it('non-existent asset returns 404', async () => {
+    const res = await request(app).get('/api/assets/does-not-exist-ever/variants');
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('GET /api/assets — variant grouping (US-001)', () => {
+  it('default (no params) returns fewer than 49 assets due to grouping', async () => {
+    const res = await request(app).get('/api/assets');
+    expect(res.status).toBe(200);
+    expect(res.body.total).toBeLessThan(49);
+    expect(Array.isArray(res.body.assets)).toBe(true);
+  });
+
+  it('show_all_variants=1 returns all 49 assets (no grouping filter)', async () => {
+    const res = await request(app).get('/api/assets?show_all_variants=1');
+    expect(res.status).toBe(200);
+    expect(res.body.total).toBe(49);
+  });
+
+  it('default mode returns fewer assets than show_all_variants=1', async () => {
+    const grouped = await request(app).get('/api/assets');
+    const flat = await request(app).get('/api/assets?show_all_variants=1');
+    expect(grouped.body.total).toBeLessThan(flat.body.total);
+  });
+
+  it('galveston primary asset appears in default mode', async () => {
+    const res = await request(app).get('/api/assets');
+    expect(res.status).toBe(200);
+    const ids = res.body.assets.map((a) => a.id);
+    expect(ids).toContain('allure-of-the-seas-aerial-sailing-sea-day-galveston-texas-hero.jpg');
+  });
+
+  it('non-primary galveston asset does not appear in default mode', async () => {
+    const res = await request(app).get('/api/assets');
+    expect(res.status).toBe(200);
+    const ids = res.body.assets.map((a) => a.id);
+    // These are non-primary galveston variants — should be hidden in grouped mode
+    expect(ids).not.toContain('allure-of-the-seas-aerial-sailing-sea-day-galveston-texas-banner.jpg');
+    expect(ids).not.toContain('allure-of-the-seas-aerial-sailing-sea-day-galveston-texas-banner-height.jpg');
+  });
+
+  it('non-primary galveston assets appear with show_all_variants=1', async () => {
+    const res = await request(app).get('/api/assets?show_all_variants=1');
+    expect(res.status).toBe(200);
+    const ids = res.body.assets.map((a) => a.id);
+    expect(ids).toContain('allure-of-the-seas-aerial-sailing-sea-day-galveston-texas-banner.jpg');
+    expect(ids).toContain('allure-of-the-seas-aerial-sailing-sea-day-galveston-texas-hero.jpg');
   });
 });

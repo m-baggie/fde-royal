@@ -27,6 +27,7 @@ function searchAssets(db, params) {
     has_title,
     has_rights,
     has_release_placeholder,
+    show_all_variants,
     limit: rawLimit,
     offset: rawOffset,
   } = params;
@@ -73,6 +74,10 @@ function searchAssets(db, params) {
   if (has_release_placeholder === 'true') {
     conditions.push('a.has_release_placeholder = 1');
   }
+  if (!show_all_variants) {
+    // Default: grouped mode — show one card per variant group plus all ungrouped assets
+    conditions.push('(a.is_primary_variant = 1 OR a.variant_group_id IS NULL)');
+  }
 
   const SELECT_FIELDS = `
     a.id, a.filename, a.category, a.subcategory,
@@ -84,7 +89,10 @@ function searchAssets(db, params) {
     a.enriched_channel, a.enriched_scene,
     a.width, a.height,
     a.scene7_file, a.scene7_domain,
-    a.s7_sync_error, a.needs_rights_review, a.has_release_placeholder
+    a.s7_sync_error, a.needs_rights_review, a.has_release_placeholder,
+    CASE WHEN a.variant_group_id IS NULL THEN 1
+         ELSE (SELECT COUNT(*) FROM assets v WHERE v.variant_group_id = a.variant_group_id)
+    END AS variant_count
   `;
 
   if (q) {
@@ -174,7 +182,7 @@ function formatAssets(rows) {
       web_image_path: row.web_image_path,
       enriched_rights_status: row.enriched_rights_status,
       enrichment_source: row.enrichment_source,
-      enriched_channel: normalizeChannel(row.filename, row.width, row.height),
+      enriched_channel: row.enriched_channel || normalizeChannel(row.filename, row.width, row.height),
       enriched_scene: row.enriched_scene,
       width: row.width,
       height: row.height,
@@ -183,6 +191,7 @@ function formatAssets(rows) {
       s7_sync_error: row.s7_sync_error,
       needs_rights_review: row.needs_rights_review,
       has_release_placeholder: row.has_release_placeholder,
+      variant_count: row.variant_count != null ? row.variant_count : 1,
     };
   });
 }

@@ -24,6 +24,26 @@ router.get('/', (req, res) => {
 });
 
 /**
+ * GET /api/assets/:id/variants
+ * Returns all assets in the same variant group as :id.
+ * Returns [] if the asset has no variant_group_id.
+ * Returns 404 if the asset does not exist.
+ */
+router.get('/:id/variants', (req, res) => {
+  const row = db.prepare('SELECT variant_group_id FROM assets WHERE id = ?').get(req.params.id);
+  if (!row) {
+    return res.status(404).json({ error: 'Asset not found' });
+  }
+  if (!row.variant_group_id) {
+    return res.json([]);
+  }
+  const variants = db
+    .prepare('SELECT * FROM assets WHERE variant_group_id = ? ORDER BY is_primary_variant DESC, id ASC')
+    .all(row.variant_group_id);
+  res.json(variants);
+});
+
+/**
  * GET /api/assets/:id
  * Returns the full asset row plus computed fields:
  *   cdn_url, quality_issues, display_title, display_description, display_tags

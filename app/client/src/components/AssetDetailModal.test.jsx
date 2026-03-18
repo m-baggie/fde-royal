@@ -2,17 +2,62 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 
 // Hoist mock functions so they are available inside the vi.mock factory
-const { mockGetAsset, mockEnrichAsset } = vi.hoisted(() => ({
+const { mockGetAsset, mockEnrichAsset, mockGetAssetVariants } = vi.hoisted(() => ({
   mockGetAsset: vi.fn(),
   mockEnrichAsset: vi.fn(),
+  mockGetAssetVariants: vi.fn(),
 }));
 
 vi.mock('../api/assets', () => ({
   getAsset: mockGetAsset,
   enrichAsset: mockEnrichAsset,
+  getAssetVariants: mockGetAssetVariants,
 }));
 
 import AssetDetailModal from './AssetDetailModal';
+
+// Asset with variant group
+const ASSET_WITH_GROUP = {
+  id: 'asset-1',
+  filename: 'allure-sunset.jpg',
+  display_title: 'Allure of the Seas Sunset',
+  variant_group_id: 'grp-naples',
+  web_image_path: null,
+  thumbnail_path: '/thumbnails/allure-sunset.jpg',
+  width: 1920,
+  height: 1080,
+  file_size: 2048000,
+  file_format: 'JPEG',
+  original_title: 'Allure Sunset',
+  original_description: null,
+  original_creator: null,
+  original_rights_owner: null,
+  original_usage_terms: null,
+  original_tags: null,
+  original_location: null,
+  enriched_title: null,
+  enriched_description: null,
+  enriched_tags: null,
+  enriched_location: null,
+  enriched_creator_normalized: null,
+  enriched_channel: 'hero',
+  enriched_format: null,
+  enrichment_source: 'openai',
+  quality_issues: [],
+  cdn_url: null,
+  rights_status: null,
+};
+
+const VARIANT_B = {
+  id: 'asset-2',
+  filename: 'allure-naples-landscape.jpg',
+  display_title: 'Allure of the Seas Naples Landscape',
+  variant_group_id: 'grp-naples',
+  web_image_path: null,
+  thumbnail_path: '/thumbnails/allure-naples-landscape.jpg',
+  enriched_channel: 'landscape',
+  file_format: 'JPEG',
+};
 
 // Default asset returned by getAsset
 const ASSET = {
@@ -48,6 +93,7 @@ const ASSET = {
 beforeEach(() => {
   mockGetAsset.mockResolvedValue(ASSET);
   mockEnrichAsset.mockResolvedValue({});
+  mockGetAssetVariants.mockResolvedValue([]);
   // Mock clipboard API
   Object.defineProperty(navigator, 'clipboard', {
     value: { writeText: vi.fn().mockResolvedValue(undefined) },
@@ -133,5 +179,32 @@ describe('AssetDetailModal', () => {
     );
     // Modal still open
     expect(screen.getByTestId('asset-detail-modal')).toBeInTheDocument();
+  });
+
+  it('fetches variants on open when asset has variant_group_id', async () => {
+    mockGetAsset.mockResolvedValue(ASSET_WITH_GROUP);
+    mockGetAssetVariants.mockResolvedValue([ASSET_WITH_GROUP, VARIANT_B]);
+    await renderModal({ selectedAssetId: 'asset-1' });
+    await waitFor(() => expect(mockGetAssetVariants).toHaveBeenCalledWith('asset-1'));
+    expect(screen.getByTestId('variant-strip')).toBeInTheDocument();
+  });
+
+  it('clicking a variant thumb calls getAsset with the variant id', async () => {
+    mockGetAsset.mockResolvedValue(ASSET_WITH_GROUP);
+    mockGetAssetVariants.mockResolvedValue([ASSET_WITH_GROUP, VARIANT_B]);
+    await renderModal({ selectedAssetId: 'asset-1' });
+    await waitFor(() => expect(screen.getByTestId('variant-strip')).toBeInTheDocument());
+
+    mockGetAsset.mockResolvedValue({ ...VARIANT_B, quality_issues: [], cdn_url: null });
+    fireEvent.click(screen.getByTestId('variant-thumb-asset-2').querySelector('img'));
+    await waitFor(() => expect(mockGetAsset).toHaveBeenCalledWith('asset-2'));
+  });
+
+  it('no variant strip rendered when variants array is empty', async () => {
+    mockGetAsset.mockResolvedValue({ ...ASSET, variant_group_id: 'grp-naples' });
+    mockGetAssetVariants.mockResolvedValue([]);
+    await renderModal({ selectedAssetId: 'asset-1' });
+    await waitFor(() => expect(mockGetAssetVariants).toHaveBeenCalled());
+    expect(screen.queryByTestId('variant-strip')).not.toBeInTheDocument();
   });
 });

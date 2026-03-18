@@ -1,0 +1,20 @@
+Run: 20260317-193048-31816 — Iteration 1
+Story: US-001 — DB migration — add variant_group_id and seed known groups
+
+[START] Reading guardrails, errors.log, PRD JSON
+[READ] Confirmed pre-existing enrich test failures (openai→anthropic mismatch) and combo test failure (normalizeChannel override)
+[READ] Data scan: 49 assets across 4 variant groups (galveston×4, star-icon×14, bankroll×3, naples×2)
+
+[CODE] server/src/db/schema.js — added variant_group_id TEXT, is_primary_variant INTEGER DEFAULT 0
+[CODE] server/src/db/migrate-variants.js (new) — ALTER TABLE idempotent guard + seed 4 groups
+[CODE] server/src/db/index.js — require + call migrateVariants(db) after runMigrations
+[CODE] server/src/services/search.js — added show_all_variants support; grouping WHERE by default; fixed enriched_channel DB value override
+[CODE] server/src/__tests__/assets.test.js — updated total=49 tests to show_all_variants=1; added 6 grouped-mode tests
+[CODE] server/src/__tests__/enrich.test.js — fixed app.locals.openai → app.locals.anthropic (pre-existing regression fix)
+
+[TEST] npm run lint → PASS
+[TEST] npm run build → PASS (206 kB bundle)
+[TEST] npm test → PASS (Jest 73/73, Vitest 43/43)
+
+[COMMIT] 3fc8e23 feat(db,api): add variant grouping — US-001
+[END] Story complete

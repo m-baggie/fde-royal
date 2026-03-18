@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getAsset, enrichAsset as enrichAssetApi } from '../api/assets';
+import { getAsset, enrichAsset as enrichAssetApi, getAssetVariants } from '../api/assets';
 
 const NAVY = '#001B6B';
 const GOLD = '#C8A84B';
@@ -51,6 +51,8 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
   const [copyLabel, setCopyLabel] = useState('Copy');
   const [toast, setToast] = useState(null);
   const [showOriginal, setShowOriginal] = useState(false);
+  const [variants, setVariants] = useState([]);
+  const [activeVariantId, setActiveVariantId] = useState(null);
   const copyTimeoutRef = useRef(null);
   const toastTimeoutRef = useRef(null);
 
@@ -60,10 +62,17 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
     setLoading(true);
     setAsset(null);
     setShowOriginal(false);
+    setVariants([]);
+    setActiveVariantId(selectedAssetId);
     getAsset(selectedAssetId)
       .then((data) => {
         setAsset(data);
         setLoading(false);
+        if (data.variant_group_id) {
+          getAssetVariants(data.id)
+            .then((v) => setVariants(Array.isArray(v) ? v : []))
+            .catch(() => setVariants([]));
+        }
       })
       .catch(() => {
         setLoading(false);
@@ -121,6 +130,12 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
           toastTimeoutRef.current = setTimeout(() => setToast(null), 4000);
         }
       });
+  }
+
+  function handleVariantClick(variantId) {
+    if (variantId === activeVariantId) return;
+    setActiveVariantId(variantId);
+    getAsset(variantId).then((data) => setAsset(data));
   }
 
   const showEnrichButton =
@@ -217,7 +232,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
               >
                 {(asset.web_image_path || asset.thumbnail_path) ? (
                   <img
-                    src={`http://localhost:3001/api/assets/media/${asset.web_image_path || asset.thumbnail_path}`}
+                    src={`/api/assets/media/${asset.web_image_path || asset.thumbnail_path}`}
                     alt={asset.display_title || 'Asset'}
                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />
@@ -265,6 +280,69 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                 >
                   {asset.file_format}
                 </span>
+              )}
+
+              {/* Variant thumbnail strip */}
+              {variants.length > 1 && (
+                <div style={{ marginTop: '16px' }} data-testid="variant-strip">
+                  <p
+                    style={{
+                      fontSize: '12px',
+                      color: '#6b7280',
+                      margin: '0 0 8px 0',
+                      fontWeight: '500',
+                    }}
+                    data-testid="variant-strip-header"
+                  >
+                    Variants ({variants.length})
+                  </p>
+                  <div
+                    style={{
+                      display: 'flex',
+                      overflowX: 'auto',
+                      gap: '8px',
+                    }}
+                  >
+                    {variants.map((v) => {
+                      const isActive = v.id === activeVariantId;
+                      const channelLabel = v.enriched_channel || v.file_format || '';
+                      return (
+                        <div
+                          key={v.id}
+                          style={{ flexShrink: 0, textAlign: 'center' }}
+                          data-testid={`variant-thumb-${v.id}`}
+                        >
+                          <img
+                            src={`/api/assets/media/${v.web_image_path || v.thumbnail_path}`}
+                            alt={v.display_title || v.filename}
+                            onClick={() => handleVariantClick(v.id)}
+                            style={{
+                              width: '72px',
+                              height: '72px',
+                              objectFit: 'cover',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              border: isActive ? `2px solid ${NAVY}` : '2px solid transparent',
+                              display: 'block',
+                            }}
+                          />
+                          {channelLabel && (
+                            <span
+                              style={{
+                                display: 'block',
+                                fontSize: '10px',
+                                color: '#6b7280',
+                                marginTop: '2px',
+                              }}
+                            >
+                              {channelLabel}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
             </div>
 

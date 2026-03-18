@@ -45,6 +45,8 @@ function runMigrations(db) {
       s7_sync_error INTEGER DEFAULT 0,
       needs_rights_review INTEGER DEFAULT 0,
       has_release_placeholder INTEGER DEFAULT 0,
+      variant_group_id TEXT,
+      is_primary_variant INTEGER DEFAULT 0,
       dam_last_modified TEXT,
       dam_last_replicated TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: 'http://localhost:3001' });
+const api = axios.create({ baseURL: '' });
 
 export function getAssets(params = {}) {
   const query = new URLSearchParams(params).toString();
@@ -22,6 +22,10 @@ export function uploadFiles(formData) {
 
 export function enrichAsset(id) {
   return api.post(`/api/assets/${id}/enrich`).then((res) => res.data);
+}
+
+export function getAssetVariants(id) {
+  return api.get(`/api/assets/${id}/variants`).then((res) => res.data);
 }
 
 export default api;

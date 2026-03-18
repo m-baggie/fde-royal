@@ -11,7 +11,7 @@ vi.mock('axios', () => ({
   },
 }));
 
-import { getAssets, getAsset, getFilters, uploadFiles, enrichAsset } from './assets.js';
+import { getAssets, getAsset, getFilters, uploadFiles, enrichAsset, getAssetVariants } from './assets.js';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -56,5 +56,13 @@ describe('assets API', () => {
     const result = await enrichAsset('5');
     expect(mockPost).toHaveBeenCalledWith('/api/assets/5/enrich');
     expect(result).toEqual({ id: '5', enriched: true });
+  });
+
+  it('getAssetVariants(id) calls GET /api/assets/:id/variants', async () => {
+    const variants = [{ id: 'a.jpg' }, { id: 'b.jpg' }];
+    mockGet.mockResolvedValueOnce({ data: variants });
+    const result = await getAssetVariants('a.jpg');
+    expect(mockGet).toHaveBeenCalledWith('/api/assets/a.jpg/variants');
+    expect(result).toEqual(variants);
   });
 });

@@ -1,0 +1,11 @@
+Clean. US-003 is complete.
+
+**Summary:**
+- Added `variantBadge` style to `AssetCard.jsx` — `position:absolute`, bottom-right, navy `#001B6B` background, white text, 11px, `padding:2px 8px`, `border-radius:10px`
+- Added `position:relative` to `imageWrapper` to anchor the badge
+- Badge renders `+{N-1} variants` when `variant_count > 1`; hidden when `=== 1` or `undefined`
+- 3 new Vitest tests pass (6 total for AssetCard)
+- All quality gates pass: lint ✓, build ✓, test (79 Jest + 47 Vitest) ✓
+- Browser verified: correct styles confirmed via computed style inspection
+
+<promise>COMPLETE</promise>

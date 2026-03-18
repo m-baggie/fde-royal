@@ -1,6 +1,11 @@
 # Activity Log
 
 ## Run Summary
+- 2026-03-17 20:03:20 | run=20260317-193048-31816 | iter=5 | mode=build | story=US-004 | duration=512s | status=success
+- 2026-03-17 19:54:45 | run=20260317-193048-31816 | iter=4 | mode=build | story=US-003 | duration=327s | status=success
+- 2026-03-17 19:49:15 | run=20260317-193048-31816 | iter=3 | mode=build | story=US-002 | duration=231s | status=success
+- 2026-03-17 19:45:21 | run=20260317-193048-31816 | iter=2 | mode=build | story=US-001 | duration=112s | status=success
+- 2026-03-17 19:43:25 | run=20260317-193048-31816 | iter=1 | mode=build | story=US-001 | duration=757s | status=success
 - 2026-03-17 14:08:10 | run=20260317-135226-8143 | iter=4 | mode=build | story=US-004 | duration=224s | status=success
 - 2026-03-17 14:04:22 | run=20260317-135226-8143 | iter=3 | mode=build | story=US-003 | duration=279s | status=success
 - 2026-03-17 13:59:40 | run=20260317-135226-8143 | iter=2 | mode=build | story=US-002 | duration=141s | status=success
@@ -105,3 +110,20 @@
 [2026-03-17 14:06:47] US-004: Replaced OpenAI with Anthropic SDK in enrich-all.js; all 110 tests pass
 [2026-03-17 14:07:50] US-004: Complete - all ACs met, 110 tests pass, committed f270d54
 [2026-03-17 14:08:09] ITERATION 4 end (duration=224s)
+[2026-03-17 19:30:49] ITERATION 1 start (mode=build story=US-001)
+[2026-03-17 19:36:58] US-001: Starting DB migration - add variant_group_id and seed known groups (run 20260317-193048-31816)
+[2026-03-17 19:41:41] US-001: All quality gates pass (lint, build, 73+43 tests). Committing.
+[2026-03-17 19:43:16] US-001: Progress log updated. Committing run artifacts.
+[2026-03-17 19:43:25] ITERATION 1 end (duration=757s)
+[2026-03-17 19:43:32] ITERATION 2 start (mode=build story=US-001)
+[2026-03-17 19:44:21] US-001 iter-2: all tests pass (73 server + 43 client), lint clean, build clean — committing run artifacts
+[2026-03-17 19:44:42] US-001 iter-2: verified all quality gates pass, appending progress entry and committing run artifacts
+[2026-03-17 19:45:21] ITERATION 2 end (duration=112s)
+[2026-03-17 19:45:26] ITERATION 3 start (mode=build story=US-002)
+[2026-03-17 19:48:07] US-002: implemented variant_count in search results, GET /api/assets/:id/variants endpoint, getAssetVariants client fn; all tests pass (79 server, 44 client)
+[2026-03-17 19:49:15] ITERATION 3 end (duration=231s)
+[2026-03-17 19:49:20] ITERATION 4 start (mode=build story=US-003)
+[2026-03-17 19:54:45] ITERATION 4 end (duration=327s)
+[2026-03-17 19:54:50] ITERATION 5 start (mode=build story=US-004)
+[2026-03-17 20:03:08] US-004 complete: variant strip implemented, all tests pass, browser verified
+[2026-03-17 20:03:20] ITERATION 5 end (duration=512s)

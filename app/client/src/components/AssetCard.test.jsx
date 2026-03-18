@@ -29,6 +29,25 @@ describe('AssetCard', () => {
     expect(screen.getByTestId('asset-placeholder')).toBeInTheDocument();
   });
 
+  it('renders variant badge with "+3 variants" when variant_count=4', () => {
+    const asset = { ...baseAsset, variant_count: 4 };
+    render(<AssetCard asset={asset} />);
+    const badge = screen.getByTestId('variant-badge');
+    expect(badge).toBeInTheDocument();
+    expect(badge.textContent).toBe('+3 variants');
+  });
+
+  it('does not render a variant badge when variant_count=1', () => {
+    const asset = { ...baseAsset, variant_count: 1 };
+    render(<AssetCard asset={asset} />);
+    expect(screen.queryByTestId('variant-badge')).toBeNull();
+  });
+
+  it('does not render a variant badge when variant_count is undefined', () => {
+    render(<AssetCard asset={baseAsset} />);
+    expect(screen.queryByTestId('variant-badge')).toBeNull();
+  });
+
   it('swaps to placeholder when image fails to load (onError)', () => {
     const asset = {
       ...baseAsset,
