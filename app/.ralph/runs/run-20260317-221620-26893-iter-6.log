@@ -1,0 +1,10 @@
+US-005 is complete. Here's a summary:
+
+**What was implemented:**
+- `SearchBar.jsx` — wrapped input in a relative div; added SVG magnifier icon (absolute, 14px inset left); `useState(focused)` drives focus/blur transitions; height 52px, border-radius 10px, 1.5px solid grey at rest → navy border + glow on focus; icon grey → navy on focus; left padding 44px
+- `index.css` — `.search-input::placeholder` rule for `#9CA3AF`, `font-style: normal`
+- `BrowsePage.jsx` — `searchRow` padding `12px 24px` → `10px 24px`
+
+**Verification:** lint ✅ · build ✅ · browser (Playwright computed styles confirmed exact values) ✅
+
+<promise>COMPLETE</promise>

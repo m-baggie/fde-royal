@@ -7,6 +7,7 @@ vi.mock('./api/assets', () => ({
   getFilters: vi.fn(() => new Promise(() => {})),
   uploadFiles: vi.fn(() => new Promise(() => {})),
   enrichAsset: vi.fn(() => new Promise(() => {})),
+  getAssetDownloadUrl: (id) => `/api/assets/${id}/download`,
 }));
 
 import App from './App';

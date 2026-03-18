@@ -9,6 +9,7 @@ const { mockGetAssets, mockGetFilters } = vi.hoisted(() => ({
 vi.mock('../api/assets', () => ({
   getAssets: mockGetAssets,
   getFilters: mockGetFilters,
+  getAssetDownloadUrl: (id) => `/api/assets/${id}/download`,
 }));
 
 import BrowsePage from './BrowsePage';

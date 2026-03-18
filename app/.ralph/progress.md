@@ -866,3 +866,228 @@ Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-enrichment-v2/app/.ralph
   - DB columns existed from US-001 schema — no migration needed, just expose them in routes/search
   - Browser verification: seeding test data via sqlite before checking sidebar render is the right approach for conditionally-rendered filter sections
 ---
+
+## [2026-03-17 22:16] - US-001: Global design tokens and page background
+Thread:
+Run: 20260317-221620-26893 (iteration 1)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-1.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-1.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: f7af213 feat(tokens): add design tokens and apply SURFACE background to BrowsePage
+- Post-commit status: clean (only .agents/tasks/prd-ui-redesign.json remains modified — per rules, not edited)
+- Verification:
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS (vite build, 211 kB bundle)
+  - Browser: sidebar bg rgb(247,248,251), main bg rgb(247,248,251) = #F7F8FB -> PASS
+- Files changed:
+  - client/src/styles/tokens.js (new)
+  - client/src/pages/BrowsePage.jsx (import SURFACE, apply to sidebarContainer + main)
+- What was implemented:
+  - Created client/src/styles/tokens.js exporting NAVY, GOLD, SURFACE (#F7F8FB), BORDER, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED
+  - BrowsePage.jsx imports SURFACE and applies it as backgroundColor to sidebarContainer and main style objects
+  - Cards (white #FFFFFF) are unaffected — only container backgrounds changed
+  - Browser verification confirmed both containers render rgb(247,248,251)
+- **Learnings for future iterations:**
+  - `ralph log` script does not exist in this repo; write to activity.log directly
+  - Client dev server may start on port >5173 if lower ports are in use (found on 5181)
+  - Run dev-browser scripts from ~/.claude/skills/dev-browser/ dir to resolve @/ alias
+---
+
+## [2026-03-17 22:30] - US-002: Global typography hierarchy
+Thread:
+Run: 20260317-221620-26893 (iteration 2)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-2.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: b955768 feat(typography): apply visual hierarchy to cards, sidebar, modal
+- Post-commit status: clean
+- Verification:
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS (vite build, 211 kB bundle)
+  - Browser computed styles — card title 14px/600/#111827 -> PASS
+  - Browser computed styles — category pill 12px/400/#6B7280 -> PASS
+  - Browser computed styles — sidebar header 11px/700/uppercase/0.06em/#9CA3AF -> PASS
+  - Browser computed styles — chip 12px/500 -> PASS
+  - Browser computed styles — modal field label 11px/600/uppercase/0.04em/#9CA3AF -> PASS
+  - Browser computed styles — modal value 13px/400 -> PASS
+  - Browser computed styles — h2 display title 16px/700 (unchanged) -> PASS
+- Files changed:
+  - client/src/styles/tokens.js (TEXT_SECONDARY #6B7280, TEXT_MUTED #9CA3AF)
+  - client/src/components/AssetCard.jsx (title 14px/600/TEXT_PRIMARY; pill 12px/400/TEXT_SECONDARY)
+  - client/src/components/FilterSidebar.jsx (section headers 11px/700/uppercase/0.06em/TEXT_MUTED; chips fontWeight 500)
+  - client/src/components/AssetDetailModal.jsx (field labels 11px/600/uppercase/0.04em/TEXT_MUTED; values 13px/400)
+- What was implemented:
+  - Updated design token values to align with AC color spec (TEXT_SECONDARY=#6B7280, TEXT_MUTED=#9CA3AF)
+  - Applied token imports to AssetCard, FilterSidebar, AssetDetailModal
+  - Card title: 14px semi-bold dark (#111827) vs category pill 12px regular muted (#6B7280)
+  - Sidebar section headers: 11px bold uppercase spaced muted — clearly smaller than chip options below
+  - Modal field labels: 11px bold uppercase spaced muted (#9CA3AF); values remain 13px/regular
+  - h2 asset display title: no change (16px bold)
+- **Learnings for future iterations:**
+  - tokens.js values may not match AC color labels — always verify hex against token name before using
+  - Existing components don't import tokens; import must be added explicitly
+  - Dev server uses sequential ports when lower ones are in use (5182 was live port)
+  - `dist/` is gitignored — do not stage dist files
+---
+
+## [2026-03-17 22:26] - US-003: Asset card visual redesign — thumbnail, footer, rights pill, variant badge
+Thread:
+Run: 20260317-221620-26893 (iteration 3)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-3.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-3.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: b9fdf38 feat(asset-card): redesign thumbnail, footer, rights pill, variant badge
+- Post-commit status: untracked .ralph/.tmp/* and run logs remain (per rules, not edited)
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS (211.86 kB bundle)
+  - Command: npm test -> PASS (server: 93 tests, client: 75 tests incl 10 AssetCard tests)
+  - Browser (localhost:5183): cardBorderRadius=10px, aspectRatio=4/3, boxShadow=rgba(0,0,0,0.08) -> PASS
+- Files changed:
+  - client/src/components/AssetCard.jsx
+  - client/src/components/AssetCard.test.jsx
+  - .ralph/activity.log
+  - .ralph/errors.log
+- What was implemented:
+  - Thumbnail aspect ratio changed 16/9 → 4/3
+  - Card: border-radius 10px, box-shadow rgba(0,0,0,0.08), bg #FFFFFF
+  - Footer padding: 10px 12px
+  - Rights colored dot removed; replaced with pill (Owned/Unclear/No Rights with spec colors)
+  - Null rights_status renders no pill (negative case confirmed in tests)
+  - Variant badge: dark frosted glass bg rgba(0,0,0,0.55), backdrop-filter blur(4px), top-right, font-weight 600
+  - Category pill: rgba(0,27,107,0.07) bg, #001B6B text, border-radius 100px, font-size 11px, font-weight 500
+  - Title: WebkitLineClamp 2 (was already present, retained)
+  - 4 new tests added: owned/unclear/none pills + null rights case
+- **Learnings for future iterations:**
+  - Multiple Vite dev servers run across branches — always identify the correct port by checking process CWD (lsof -p PID | grep cwd). Our repo's newest Vite instance was on 5183.
+  - Inline React styles (no CSS files) do NOT hot-reload via page.reload() alone when the Vite instance differs from the one the browser initially connected to — navigate explicitly to the correct port.
+  - `backdropFilter` (camelCase) maps to `backdrop-filter` in inline React styles — works correctly in Chromium.
+---
+
+## [2026-03-17 22:31] - US-003: Asset card visual redesign — thumbnail, footer, rights pill, variant badge
+Thread:
+Run: 20260317-221620-26893 (iteration 4)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-4.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-4.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: see below (run artifacts only)
+- Post-commit status: clean
+- Verification:
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS (211.86 kB bundle)
+- Files changed:
+  - .ralph/activity.log
+  - .ralph/progress.md
+- What was implemented:
+  - iter-4 found all US-003 AC already implemented in iter-3 commit b9fdf38. No additional code changes needed.
+  - Verified lint and build still pass.
+  - Committed run artifacts (logs, temp files).
+- **Learnings for future iterations:**
+  - When a prior iteration reports "success" and commits the story, subsequent iterations only need to verify quality gates and commit remaining run artifacts.
+  - Story AC fully covered: 4/3 aspect ratio, card border-radius/shadow, footer padding, rights pill with correct colors, variant badge with blur, category pill, title 2-line clamp, null rights_status hides pill.
+---
+
+### Browser Verification (iter-4 addendum)
+- Navigated to http://localhost:5183
+- 30 cards rendered
+- cardBorderRadius: 10px ✅
+- cardBoxShadow: rgba(0,0,0,0.08) 0px 1px 3px ✅
+- imgAspectRatio: 4/3 ✅
+- footerPadding: 10px 12px ✅
+- Variant badges visible (+2, +13, +1, +3 variants) ✅
+- Category pills visible (promotions, ships) ✅
+- No rights pills shown (all assets have rights_status=null — correct, no pill shown) ✅
+- Screenshot: /Users/mbaggie/.claude/skills/dev-browser/tmp/rc-cards-verify.png
+
+## [2026-03-17 22:37] - US-004: Asset card hover states and action overlay
+Thread:
+Run: 20260317-221620-26893 (iteration 5)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-5.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-5.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: c0aa82d feat(asset-card): add hover overlay with download and copy-cdn actions
+- Post-commit status: clean (run artifacts committed separately)
+- Verification:
+  - `npm run lint` -> PASS
+  - `npm run build` -> PASS
+  - `npm test` -> PASS (81 tests, 8 suites)
+  - Browser: overlay opacity 0 at rest, 1 on hover; download href correct; no CDN button without cdn_url -> PASS
+- Files changed:
+  - client/src/components/AssetCard.jsx
+  - client/src/components/AssetCard.test.jsx
+  - client/src/pages/BrowsePage.test.jsx
+  - client/src/App.test.jsx
+- What was implemented:
+  - Card transition changed to `transform 200ms ease, box-shadow 200ms ease`
+  - Hover state: translateY(-2px), box-shadow 0 8px 24px rgba(0,0,0,0.12)
+  - Hover overlay: absolute, bottom 0, rgba(0,0,0,0.6) bg, flex, opacity 0→1 on hover, 150ms ease
+  - Download button: <a> tag, href=getAssetDownloadUrl(asset.id), download attr, icon style
+  - Copy CDN button: conditional on asset.cdn_url, swaps ⎘→✓ for 2000ms on click
+  - Imported getAssetDownloadUrl from ../api/assets
+  - Updated vi.mock stubs in BrowsePage.test.jsx and App.test.jsx to include getAssetDownloadUrl
+- **Learnings for future iterations:**
+  - When AssetCard imports a new function from api/assets, ALL test files that vi.mock('../api/assets') need that function added to their mock factory or tests crash with "VitestMocker.createError"
+  - The first card in the live DB has no cdn_url, confirming the negative case correctly renders only the Download button
+  - client/dist/ is gitignored; don't attempt to stage it
+---
+
+## [2026-03-17 22:46] - US-005: Search bar refinement
+Thread:
+Run: 20260317-221620-26893 (iteration 6)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-6.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-6.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 790199e feat(search-bar): refine input with icon, focus states, and sizing
+- Post-commit status: clean
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS
+  - Browser (Playwright): height=52px, borderRadius=10px, border rest/focused, boxShadow on focus -> PASS
+- Files changed:
+  - client/src/components/SearchBar.jsx
+  - client/src/index.css
+  - client/src/pages/BrowsePage.jsx
+- What was implemented:
+  Rewrote SearchBar.jsx to wrap input in a relative-positioned div with an absolutely positioned SVG magnifier icon (14px inset from left). Input height set to 52px, border-radius 10px, 1.5px solid #E5E7EB at rest. useState(focused) drives border-color (#001B6B), box-shadow glow, and icon color (#9CA3AF → #001B6B) on focus/blur with 150ms ease transition. Left padding bumped to 44px to accommodate icon. Added .search-input::placeholder CSS rule in index.css for grey (#9CA3AF), non-italic placeholder. Updated BrowsePage.jsx searchRow padding from 12px to 10px to accommodate taller input.
+- **Learnings for future iterations:**
+  - For placeholder pseudo-element styling, add a CSS class + rule in index.css (can't do ::placeholder via inline styles)
+  - dev-browser tsx scripts must use an async function wrapper (not top-level await) with Node 18
+  - `git add client/dist/` fails due to gitignore; previously committed dist files still show as modified — they may be picked up via other staged state from prior iterations
+---
+
+## [2026-03-17 22:50] - US-006: Sidebar filter visual restyle
+Thread:
+Run: 20260317-221620-26893 (iteration 7)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-7.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/runs/run-20260317-221620-26893-iter-7.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 2844e4f feat(filter-sidebar): restyle sidebar for US-006
+- Post-commit status: clean (only .agents/tasks/prd-ui-redesign.json modified by loop, not committed per rules)
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS
+  - Browser: active chip navy bg/white text, inactive chip white bg/grey border, −/+ indicators, no right border -> PASS
+- Files changed:
+  - client/src/components/FilterSidebar.jsx
+- What was implemented:
+  - Sidebar container: background #F7F8FB, padding 16px 12px, removed borderRight
+  - Section divider: removed borderBottom + paddingBottom, changed marginBottom to 8px
+  - Section toggle indicator: ▲/▼ → −/+ at fontSize 10px, color #9CA3AF
+  - Chip resting: white bg, #E5E7EB border, borderRadius 8px, transition 120ms ease
+  - Chip hover: #F3F4F6 bg, #D1D5DB border via Chip sub-component with useState hover
+  - Chip active: #001B6B bg/border, white text (unchanged)
+  - Location select: borderRadius 8px, border #E5E7EB, padding 7px 10px
+  - Chips guard: returns null when options=[] to prevent blank space
+- **Learnings for future iterations:**
+  - Inline-style hover in React requires a Chip sub-component with useState; can't do :hover in style objects
+  - The dev server binds on sequential ports (5173+) if prior sessions are running — check logs for actual port
+  - dev-browser scripts must be written to a .ts file and run with `npx tsx <file>` from the skills dir; heredoc approach fails with Node 18 ESM
+  - `client/dist/` is gitignored — never try to stage build output
+---

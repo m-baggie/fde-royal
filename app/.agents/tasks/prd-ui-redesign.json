@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "project": "Royal Caribbean DAM — UI Visual Redesign",
-  "overview": "Incrementally redesign the DAM Asset Intelligence UI to feel premium and brand-aligned with Royal Caribbean's identity. Covers global typography hierarchy, page background, asset cards (larger thumbnails, hover actions, rights pill, variant badge), search bar refinement, and sidebar filter restyle. No layout restructuring — all changes are visual and interaction polish on existing components.",
+  "project": "Royal Caribbean DAM \u2014 UI Visual Redesign",
+  "overview": "Incrementally redesign the DAM Asset Intelligence UI to feel premium and brand-aligned with Royal Caribbean's identity. Covers global typography hierarchy, page background, asset cards (larger thumbnails, hover actions, rights pill, variant badge), search bar refinement, and sidebar filter restyle. No layout restructuring \u2014 all changes are visual and interaction polish on existing components.",
   "goals": [
     "Make the interface feel premium and brand-aligned with Royal Caribbean's identity",
     "Improve visual hierarchy so users can scan and act faster",
@@ -9,7 +9,7 @@
     "Restyle filters and search bar to feel intentional rather than utilitarian"
   ],
   "nonGoals": [
-    "No layout restructuring — sidebar stays as sidebar, no horizontal filter bar",
+    "No layout restructuring \u2014 sidebar stays as sidebar, no horizontal filter bar",
     "No new features or API changes",
     "No font import (keep system font stack)",
     "No mobile/responsive layout changes",
@@ -19,16 +19,16 @@
   "successMetrics": [
     "Cards show a visible lift and action overlay on hover",
     "Rights status is readable as a pill label on every card without hovering",
-    "Page background is off-white (#F7F8FB) — visually distinct from white card surfaces",
+    "Page background is off-white (#F7F8FB) \u2014 visually distinct from white card surfaces",
     "Sidebar section headers are visually distinct from chip options",
     "Search bar focus state shows a navy border and soft shadow",
-    "Typography hierarchy is legible at a glance — card titles clearly heavier than metadata"
+    "Typography hierarchy is legible at a glance \u2014 card titles clearly heavier than metadata"
   ],
   "openQuestions": [],
   "stack": {
-    "frontend": "React 18 + Vite — client/src/",
+    "frontend": "React 18 + Vite \u2014 client/src/",
     "styling": "Inline styles only (no CSS files, no CSS modules)",
-    "font": "System font stack — no Google Fonts import"
+    "font": "System font stack \u2014 no Google Fonts import"
   },
   "routes": [],
   "uiNotes": [
@@ -36,11 +36,11 @@
     "Typography scale: card title 14px/600/#111827, card meta 12px/400/#6B7280, sidebar section header 11px/700 uppercase letter-spacing 0.06em, sidebar chip 12px/500, modal field label 11px/600 uppercase #9CA3AF",
     "Card thumbnail aspect ratio: change from 16/9 to 4/3 for more image real estate",
     "Card hover: translateY(-2px) + box-shadow upgrade + action overlay at bottom of image",
-    "Action overlay on card hover: pill strip with Download (↓) and Copy CDN (⎘) icon buttons, dark translucent background, appears with opacity transition",
-    "Rights pill: small colored pill in card footer — owned=green bg #DCFCE7 text #166534, unclear=amber bg #FEF3C7 text #92400E, none=red bg #FEE2E2 text #991B1B",
+    "Action overlay on card hover: pill strip with Download (\u2193) and Copy CDN (\u2398) icon buttons, dark translucent background, appears with opacity transition",
+    "Rights pill: small colored pill in card footer \u2014 owned=green bg #DCFCE7 text #166534, unclear=amber bg #FEF3C7 text #92400E, none=red bg #FEE2E2 text #991B1B",
     "Variant badge: keep overlay position (top-right of image), restyle to translucent dark background with blur, white text, rounded pill",
-    "Search bar: height 52px, border-radius 10px, border 1.5px solid #E5E7EB at rest → 1.5px solid #001B6B on focus, box-shadow 0 0 0 3px rgba(0,27,107,0.08) on focus, search icon left-inset",
-    "Sidebar section header: 11px/700 uppercase, letter-spacing 0.06em, color #9CA3AF (muted label style), no arrow icon — use +/- or keep chevron but style consistently",
+    "Search bar: height 52px, border-radius 10px, border 1.5px solid #E5E7EB at rest \u2192 1.5px solid #001B6B on focus, box-shadow 0 0 0 3px rgba(0,27,107,0.08) on focus, search icon left-inset",
+    "Sidebar section header: 11px/700 uppercase, letter-spacing 0.06em, color #9CA3AF (muted label style), no arrow icon \u2014 use +/- or keep chevron but style consistently",
     "Sidebar chip resting: border-radius 8px, bg #FFFFFF, border 1px solid #E5E7EB, color #374151, font 12px/500",
     "Sidebar chip active: bg #001B6B, border #001B6B, color #FFFFFF",
     "Page background: BrowsePage main area and sidebar container background #F7F8FB",
@@ -48,14 +48,14 @@
   ],
   "dataModel": [],
   "rules": [
-    "All color and spacing values must use the constants defined in uiNotes — no new hardcoded hex values",
+    "All color and spacing values must use the constants defined in uiNotes \u2014 no new hardcoded hex values",
     "Hover transitions use transition: all 200ms ease on cards",
-    "Action overlay uses opacity: 0 at rest → opacity: 1 on card hover, transition 150ms ease",
-    "Copy CDN button in overlay: on click, copies asset cdn_url to clipboard and swaps icon to ✓ for 2000ms, then reverts",
-    "Download button in overlay: renders as <a href={getAssetDownloadUrl(id)} download> — no JS required",
-    "Rights pill text: 'Owned' / 'Unclear' / 'No Rights' — sentence case, not uppercase",
+    "Action overlay uses opacity: 0 at rest \u2192 opacity: 1 on card hover, transition 150ms ease",
+    "Copy CDN button in overlay: on click, copies asset cdn_url to clipboard and swaps icon to \u2713 for 2000ms, then reverts",
+    "Download button in overlay: renders as <a href={getAssetDownloadUrl(id)} download> \u2014 no JS required",
+    "Rights pill text: 'Owned' / 'Unclear' / 'No Rights' \u2014 sentence case, not uppercase",
     "Card title: max 2 lines with ellipsis overflow",
-    "If asset has no cdn_url, Copy CDN button is hidden from the hover overlay (not greyed out — just absent)",
+    "If asset has no cdn_url, Copy CDN button is hidden from the hover overlay (not greyed out \u2014 just absent)",
     "Sidebar chips remain single-select per section (existing behavior unchanged)"
   ],
   "qualityGates": [
@@ -66,7 +66,7 @@
     {
       "id": "US-001",
       "title": "Global design tokens and page background",
-      "status": "open",
+      "status": "done",
       "dependsOn": [],
       "description": "As a developer, I want shared color and spacing constants defined in one place so all redesign stories use consistent values without scattered hardcoded hex codes.",
       "acceptanceCriteria": [
@@ -74,18 +74,23 @@
         "BrowsePage.jsx imports SURFACE and applies it as the background color of the main content area and sidebar container (replacing any #fff or white backgrounds on those containers)",
         "The sidebar container background is #F7F8FB (#SURFACE)",
         "The main grid container background is #F7F8FB (#SURFACE)",
-        "Cards themselves remain white (#FFFFFF) — only the page/container background changes",
+        "Cards themselves remain white (#FFFFFF) \u2014 only the page/container background changes",
         "Example: visiting the browse page shows a subtle off-white page background with white cards sitting on top",
-        "Negative case: no other component colors are changed in this story — only page/sidebar container backgrounds",
+        "Negative case: no other component colors are changed in this story \u2014 only page/sidebar container backgrounds",
         "npm run lint passes",
         "npm run build passes"
-      ]
+      ],
+      "startedAt": "2026-03-18T02:16:21.305518+00:00",
+      "completedAt": "2026-03-18T02:20:07.416773+00:00",
+      "updatedAt": "2026-03-18T02:20:07.416326+00:00"
     },
     {
       "id": "US-002",
       "title": "Global typography hierarchy",
-      "status": "open",
-      "dependsOn": ["US-001"],
+      "status": "done",
+      "dependsOn": [
+        "US-001"
+      ],
       "description": "As a user, I want clear visual hierarchy across cards, sidebar, and modal so I can scan information at a glance without all text feeling the same weight.",
       "acceptanceCriteria": [
         "AssetCard.jsx: card title font-size 14px, font-weight 600, color #111827 (TEXT_PRIMARY)",
@@ -94,92 +99,117 @@
         "FilterSidebar.jsx: chip option text 12px, font-weight 500",
         "AssetDetailModal.jsx: metadata table field labels (Title, Description, Tags etc.) styled as 11px, font-weight 600, text-transform uppercase, letter-spacing 0.04em, color #9CA3AF",
         "AssetDetailModal.jsx: metadata table values remain 13px, font-weight 400",
-        "AssetDetailModal.jsx: asset display title (h2) remains 16px bold — no change",
+        "AssetDetailModal.jsx: asset display title (h2) remains 16px bold \u2014 no change",
         "Example: sidebar section header 'Category' renders noticeably smaller and muted compared to the chip options below it",
-        "Negative case: no font-family changes — system font stack unchanged",
+        "Negative case: no font-family changes \u2014 system font stack unchanged",
         "npm run lint passes",
         "npm run build passes"
-      ]
+      ],
+      "startedAt": "2026-03-18T02:20:10.105348+00:00",
+      "completedAt": "2026-03-18T02:24:43.067712+00:00",
+      "updatedAt": "2026-03-18T02:24:43.067057+00:00"
     },
     {
       "id": "US-003",
-      "title": "Asset card visual redesign — thumbnail, footer, rights pill, variant badge",
-      "status": "open",
-      "dependsOn": ["US-001", "US-002"],
+      "title": "Asset card visual redesign \u2014 thumbnail, footer, rights pill, variant badge",
+      "status": "done",
+      "dependsOn": [
+        "US-001",
+        "US-002"
+      ],
       "description": "As a content author, I want asset cards to show larger images, clearer rights status, and a more refined variant badge so I can evaluate assets at a glance.",
       "acceptanceCriteria": [
         "Card thumbnail aspect ratio changed from 16/9 to 4/3",
         "Card container: border-radius 10px, background #FFFFFF, box-shadow '0 1px 3px rgba(0,0,0,0.08)', overflow hidden",
         "Card footer padding: 10px 12px (was less padded)",
-        "Rights status: replace the colored dot with a small pill — border-radius 100px, font-size 11px, font-weight 500, padding 2px 8px. Colors: owned → bg #DCFCE7 color #166534 label 'Owned'; unclear → bg #FEF3C7 color #92400E label 'Unclear'; none → bg #FEE2E2 color #991B1B label 'No Rights'",
-        "Variant badge (existing +N variants overlay): restyled to background rgba(0,0,0,0.55), backdrop-filter blur(4px), color #FFFFFF, border-radius 100px, font-size 11px, font-weight 600, padding 3px 8px — position remains top-right of image",
+        "Rights status: replace the colored dot with a small pill \u2014 border-radius 100px, font-size 11px, font-weight 500, padding 2px 8px. Colors: owned \u2192 bg #DCFCE7 color #166534 label 'Owned'; unclear \u2192 bg #FEF3C7 color #92400E label 'Unclear'; none \u2192 bg #FEE2E2 color #991B1B label 'No Rights'",
+        "Variant badge (existing +N variants overlay): restyled to background rgba(0,0,0,0.55), backdrop-filter blur(4px), color #FFFFFF, border-radius 100px, font-size 11px, font-weight 600, padding 3px 8px \u2014 position remains top-right of image",
         "Category tag pill (promotions/ships/uploaded): border-radius 100px, font-size 11px, font-weight 500, padding 2px 8px, bg rgba(0,27,107,0.07), color #001B6B",
         "Card title max 2 lines with overflow ellipsis (-webkit-line-clamp: 2)",
         "Example: a card with enriched_rights_status='owned' shows a green 'Owned' pill in the footer",
-        "Negative case: card with no rights status (null) shows no rights pill at all — not an empty space",
+        "Negative case: card with no rights status (null) shows no rights pill at all \u2014 not an empty space",
         "npm run lint passes",
         "npm run build passes"
-      ]
+      ],
+      "startedAt": "2026-03-18T02:31:06.852560+00:00",
+      "completedAt": "2026-03-18T02:34:52.801128+00:00",
+      "updatedAt": "2026-03-18T02:34:52.800742+00:00"
     },
     {
       "id": "US-004",
       "title": "Asset card hover states and action overlay",
-      "status": "open",
-      "dependsOn": ["US-003"],
+      "status": "done",
+      "dependsOn": [
+        "US-003"
+      ],
       "description": "As a content author, I want to hover a card and see quick download and copy actions so I can act without opening the detail modal.",
       "acceptanceCriteria": [
         "Card wrapper gets transition: 'transform 200ms ease, box-shadow 200ms ease'",
         "On hover: transform translateY(-2px), box-shadow '0 8px 24px rgba(0,0,0,0.12)'",
         "A hover overlay div appears at the bottom of the image zone (position absolute, bottom 0, left 0, right 0)",
         "Overlay background: rgba(0,0,0,0.6), padding 8px 10px, display flex, gap 8px, justify-content flex-end",
-        "Overlay entrance: opacity 0 at rest → opacity 1 on card hover, transition 150ms ease",
-        "Overlay contains a Download button: rendered as <a> tag with href={getAssetDownloadUrl(asset.id)} and download attribute, styled as icon button (↓ symbol), color white, font-size 14px, background rgba(255,255,255,0.15), border-radius 6px, padding 4px 8px, no underline",
-        "Overlay contains a Copy CDN button: only rendered when asset.cdn_url is present. On click: copies cdn_url to clipboard, button content swaps to ✓ for 2000ms then reverts to ⎘ symbol",
+        "Overlay entrance: opacity 0 at rest \u2192 opacity 1 on card hover, transition 150ms ease",
+        "Overlay contains a Download button: rendered as <a> tag with href={getAssetDownloadUrl(asset.id)} and download attribute, styled as icon button (\u2193 symbol), color white, font-size 14px, background rgba(255,255,255,0.15), border-radius 6px, padding 4px 8px, no underline",
+        "Overlay contains a Copy CDN button: only rendered when asset.cdn_url is present. On click: copies cdn_url to clipboard, button content swaps to \u2713 for 2000ms then reverts to \u2398 symbol",
         "Card thumbnail image container must have position: relative to contain the overlay",
         "Example: hovering a card with a cdn_url shows both Download and Copy CDN buttons in the overlay",
-        "Negative case: hovering a card with no cdn_url shows only the Download button — no Copy CDN button",
+        "Negative case: hovering a card with no cdn_url shows only the Download button \u2014 no Copy CDN button",
         "npm run lint passes",
         "npm run build passes"
-      ]
+      ],
+      "startedAt": "2026-03-18T02:34:55.643963+00:00",
+      "completedAt": "2026-03-18T02:39:17.082037+00:00",
+      "updatedAt": "2026-03-18T02:39:17.081218+00:00"
     },
     {
       "id": "US-005",
       "title": "Search bar refinement",
-      "status": "open",
-      "dependsOn": ["US-001"],
+      "status": "done",
+      "dependsOn": [
+        "US-001"
+      ],
       "description": "As a user, I want the search bar to feel more intentional and premium so the primary action of the page gets appropriate visual weight.",
       "acceptanceCriteria": [
         "SearchBar.jsx input element: height 52px (was shorter), border-radius 10px, border '1.5px solid #E5E7EB' at rest",
         "On focus: border-color changes to #001B6B, box-shadow '0 0 0 3px rgba(0,27,107,0.08)', background #FFFFFF, transition 150ms ease",
-        "A search icon (🔍 or SVG magnifier) is rendered inside the input on the left side, inset 14px from left edge, color #9CA3AF at rest → #001B6B on focus",
+        "A search icon (\ud83d\udd0d or SVG magnifier) is rendered inside the input on the left side, inset 14px from left edge, color #9CA3AF at rest \u2192 #001B6B on focus",
         "Input left padding increased to 44px to accommodate the icon (was ~12px)",
         "Placeholder text color: #9CA3AF, font-style normal (not italic)",
         "The search bar container row in BrowsePage.jsx: padding updated to 10px 24px to accommodate the taller input",
         "Example: clicking the search bar shows a navy border glow and the search icon turns navy",
-        "Negative case: unfocused search bar with no text shows grey border and grey icon — no navy color applied",
+        "Negative case: unfocused search bar with no text shows grey border and grey icon \u2014 no navy color applied",
         "npm run lint passes",
         "npm run build passes"
-      ]
+      ],
+      "startedAt": "2026-03-18T02:39:19.896589+00:00",
+      "completedAt": "2026-03-18T02:43:04.895182+00:00",
+      "updatedAt": "2026-03-18T02:43:04.894665+00:00"
     },
     {
       "id": "US-006",
       "title": "Sidebar filter visual restyle",
-      "status": "open",
-      "dependsOn": ["US-001", "US-002"],
+      "status": "done",
+      "dependsOn": [
+        "US-001",
+        "US-002"
+      ],
       "description": "As a user, I want the sidebar filters to feel refined and consistent with the rest of the redesigned UI so it doesn't look like a legacy widget stuck on the left.",
       "acceptanceCriteria": [
-        "Sidebar container: background #F7F8FB (from US-001), padding 16px 12px, no right border (remove the dividing border — let the background color difference create separation)",
-        "Section divider: change from bottom border to 8px margin gap between sections — lighter visual separation",
-        "Section header chevron (▲/▼): replaced with a simpler − / + indicator, font-size 10px, color #9CA3AF",
+        "Sidebar container: background #F7F8FB (from US-001), padding 16px 12px, no right border (remove the dividing border \u2014 let the background color difference create separation)",
+        "Section divider: change from bottom border to 8px margin gap between sections \u2014 lighter visual separation",
+        "Section header chevron (\u25b2/\u25bc): replaced with a simpler \u2212 / + indicator, font-size 10px, color #9CA3AF",
         "Chip resting state: background #FFFFFF, border '1px solid #E5E7EB', border-radius 8px, color #374151, font-size 12px, font-weight 500, padding 4px 10px",
         "Chip hover: background #F3F4F6, border-color #D1D5DB, transition 120ms ease",
         "Chip active: background #001B6B, border-color #001B6B, color #FFFFFF",
         "Location dropdown select: border-radius 8px, border '1px solid #E5E7EB', font-size 13px, padding 7px 10px, background #FFFFFF",
         "Example: an active 'ships' chip shows navy background and white text; an inactive chip shows white background with grey border",
-        "Negative case: section with no options (empty array) renders nothing — no empty chip row or blank space",
+        "Negative case: section with no options (empty array) renders nothing \u2014 no empty chip row or blank space",
         "npm run lint passes",
         "npm run build passes"
-      ]
+      ],
+      "startedAt": "2026-03-18T02:43:07.713414+00:00",
+      "completedAt": "2026-03-18T02:47:04.677672+00:00",
+      "updatedAt": "2026-03-18T02:47:04.677493+00:00"
     }
   ]
 }

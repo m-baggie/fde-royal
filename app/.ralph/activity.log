@@ -1,6 +1,13 @@
 # Activity Log
 
 ## Run Summary
+- 2026-03-17 22:47:04 | run=20260317-221620-26893 | iter=7 | mode=build | story=US-006 | duration=236s | status=success
+- 2026-03-17 22:43:04 | run=20260317-221620-26893 | iter=6 | mode=build | story=US-005 | duration=224s | status=success
+- 2026-03-17 22:39:16 | run=20260317-221620-26893 | iter=5 | mode=build | story=US-004 | duration=261s | status=success
+- 2026-03-17 22:34:51 | run=20260317-221620-26893 | iter=4 | mode=build | story=US-003 | duration=225s | status=success
+- 2026-03-17 22:31:03 | run=20260317-221620-26893 | iter=3 | mode=build | story=US-003 | duration=378s | status=success
+- 2026-03-17 22:24:42 | run=20260317-221620-26893 | iter=2 | mode=build | story=US-002 | duration=273s | status=success
+- 2026-03-17 22:20:06 | run=20260317-221620-26893 | iter=1 | mode=build | story=US-001 | duration=226s | status=success
 - 2026-03-17 20:49:20 | run=20260317-203111-78144 | iter=4 | mode=build | story=US-004 | duration=394s | status=success
 - 2026-03-17 20:42:42 | run=20260317-203111-78144 | iter=3 | mode=build | story=US-003 | duration=105s | status=success
 - 2026-03-17 20:40:53 | run=20260317-203111-78144 | iter=2 | mode=build | story=US-002 | duration=393s | status=success
@@ -135,3 +142,25 @@
 [2026-03-17 20:43:44] US-004: Starting work — expose destination_region and content_type filters in API and UI
 [2026-03-17 20:48:20] US-004: All code changes complete and browser-verified. Committing.
 [2026-03-17 20:49:20] ITERATION 4 end (duration=394s)
+[2026-03-17 22:16:22] ITERATION 1 start (mode=build story=US-001)
+[2026-03-17 22:20:06] ITERATION 1 end (duration=226s)
+[2026-03-17 22:20:11] ITERATION 2 start (mode=build story=US-002)
+[2026-03-17 22:21:17] US-002: Starting implementation of global typography hierarchy
+[2026-03-17 22:23:39] US-002: Typography changes verified in browser — all computed styles match ACs
+[2026-03-17 22:24:35] US-002: Complete — commit b955768, all ACs verified in browser
+[2026-03-17 22:24:42] ITERATION 2 end (duration=273s)
+[2026-03-17 22:24:47] ITERATION 3 start (mode=build story=US-003)
+[2026-03-17 22:25:19] [US-003] Starting asset card visual redesign — thumbnail, footer, rights pill, variant badge
+[2026-03-17 22:30:37] [US-003] Committed b9fdf38 — card redesign complete. lint/build/tests PASS. Browser verified on port 5183.
+[2026-03-17 22:31:03] ITERATION 3 end (duration=378s)
+[2026-03-17 22:31:08] ITERATION 4 start (mode=build story=US-003)
+[2026-03-17 22:31:58] [US-003] iter-4 verification: lint/build PASS. AC fully implemented in b9fdf38. Committing run artifacts.
+[2026-03-17 22:34:39] [US-003] Browser verification PASS: 30 cards, 4/3 ratio, category pills, variant badges all confirmed
+[2026-03-17 22:34:51] ITERATION 4 end (duration=225s)
+[2026-03-17 22:34:57] ITERATION 5 start (mode=build story=US-004)
+[2026-03-17 22:39:10] US-004: Hover overlay and action buttons implemented and verified
+[2026-03-17 22:39:16] ITERATION 5 end (duration=261s)
+[2026-03-17 22:39:21] ITERATION 6 start (mode=build story=US-005)
+[2026-03-17 22:43:03] ITERATION 6 end (duration=224s)
+[2026-03-17 22:43:08] ITERATION 7 start (mode=build story=US-006)
+[2026-03-17 22:47:03] ITERATION 7 end (duration=236s)

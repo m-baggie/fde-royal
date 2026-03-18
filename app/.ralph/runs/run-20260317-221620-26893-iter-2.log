@@ -1,0 +1,16 @@
+US-002 is complete. Summary:
+
+**Verified ACs (computed styles in browser):**
+- AssetCard title: 14px / 600 / #111827 ✓
+- AssetCard category pill: 12px / 400 / #6B7280 ✓
+- FilterSidebar section headers: 11px / 700 / uppercase / 0.06em letter-spacing / #9CA3AF ✓
+- FilterSidebar chips: 12px / 500 ✓
+- AssetDetailModal field labels: 11px / 600 / uppercase / 0.04em / #9CA3AF ✓
+- AssetDetailModal values: 13px / 400 ✓
+- h2 display title: 16px / bold — unchanged ✓
+- `npm run lint` / `npm run build` — both PASS ✓
+- No font-family changes ✓
+
+Commit: `b955768 feat(typography): apply visual hierarchy to cards, sidebar, modal`
+
+<promise>COMPLETE</promise>

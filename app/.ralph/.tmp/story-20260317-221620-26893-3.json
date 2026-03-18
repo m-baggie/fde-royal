@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "total": 6,
+  "remaining": 4,
+  "quality_gates": [
+    "npm run lint",
+    "npm run build"
+  ],
+  "id": "US-003",
+  "title": "Asset card visual redesign \u2014 thumbnail, footer, rights pill, variant badge"
+}

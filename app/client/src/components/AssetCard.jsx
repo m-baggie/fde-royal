@@ -1,39 +1,67 @@
 import { useState } from 'react';
+import { TEXT_PRIMARY } from '../styles/tokens';
+import { getAssetDownloadUrl } from '../api/assets';
 
-const RIGHTS_COLORS = {
-  owned: '#22c55e',
-  unclear: '#f59e0b',
-  none: '#ef4444',
+const RIGHTS_PILLS = {
+  owned: { bg: '#DCFCE7', color: '#166534', label: 'Owned' },
+  unclear: { bg: '#FEF3C7', color: '#92400E', label: 'Unclear' },
+  none: { bg: '#FEE2E2', color: '#991B1B', label: 'No Rights' },
 };
 
 const styles = {
   card: {
-    backgroundColor: '#fff',
-    borderRadius: '8px',
+    backgroundColor: '#FFFFFF',
+    borderRadius: '10px',
     overflow: 'hidden',
     cursor: 'pointer',
-    transition: 'box-shadow 0.2s',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    transition: 'transform 200ms ease, box-shadow 200ms ease',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
   },
   cardHover: {
-    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
   },
   imageWrapper: {
     position: 'relative',
     width: '100%',
-    aspectRatio: '16/9',
+    aspectRatio: '4/3',
     backgroundColor: '#E8E8E8',
     overflow: 'hidden',
   },
+  hoverOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: '8px 10px',
+    display: 'flex',
+    gap: '8px',
+    justifyContent: 'flex-end',
+    transition: 'opacity 150ms ease',
+  },
+  actionBtn: {
+    color: '#FFFFFF',
+    fontSize: '14px',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: '6px',
+    padding: '4px 8px',
+    textDecoration: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    lineHeight: 1,
+  },
   variantBadge: {
     position: 'absolute',
-    bottom: '6px',
+    top: '6px',
     right: '6px',
-    backgroundColor: '#001B6B',
-    color: '#fff',
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    backdropFilter: 'blur(4px)',
+    color: '#FFFFFF',
     fontSize: '11px',
-    padding: '2px 8px',
-    borderRadius: '10px',
+    fontWeight: '600',
+    padding: '3px 8px',
+    borderRadius: '100px',
     pointerEvents: 'none',
   },
   image: {
@@ -43,12 +71,12 @@ const styles = {
     display: 'block',
   },
   body: {
-    padding: '10px',
+    padding: '10px 12px',
   },
   title: {
-    fontSize: '13px',
-    fontWeight: 'bold',
-    color: '#1A1A2E',
+    fontSize: '14px',
+    fontWeight: '600',
+    color: TEXT_PRIMARY,
     margin: '0 0 6px 0',
     display: '-webkit-box',
     WebkitLineClamp: 2,
@@ -64,17 +92,18 @@ const styles = {
   },
   categoryPill: {
     fontSize: '11px',
-    padding: '2px 7px',
-    borderRadius: '10px',
-    backgroundColor: '#e8eaf6',
-    color: '#3949ab',
     fontWeight: '500',
+    padding: '2px 8px',
+    borderRadius: '100px',
+    backgroundColor: 'rgba(0,27,107,0.07)',
+    color: '#001B6B',
   },
-  rightsDot: {
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    flexShrink: 0,
+  rightsPill: {
+    borderRadius: '100px',
+    fontSize: '11px',
+    fontWeight: '500',
+    padding: '2px 8px',
+    display: 'inline-block',
   },
   warningIcon: {
     fontSize: '13px',
@@ -102,8 +131,18 @@ const placeholderStyle = {
 export default function AssetCard({ asset, onSelectAsset }) {
   const [hovered, setHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const rightsColor = RIGHTS_COLORS[asset.rights_status] || '#9ca3af';
+  function handleCopy(e) {
+    e.stopPropagation();
+    if (!asset.cdn_url) return;
+    navigator.clipboard.writeText(asset.cdn_url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  const rightsPill = RIGHTS_PILLS[asset.rights_status] || null;
   const hasIssues = Array.isArray(asset.quality_issues) && asset.quality_issues.length > 0;
 
   const variantCount = asset.variant_count;
@@ -141,6 +180,29 @@ export default function AssetCard({ asset, onSelectAsset }) {
             +{variantCount - 1} variants
           </span>
         )}
+        <div
+          data-testid="hover-overlay"
+          style={{ ...styles.hoverOverlay, opacity: hovered ? 1 : 0 }}
+        >
+          <a
+            data-testid="download-btn"
+            href={getAssetDownloadUrl(asset.id)}
+            download
+            style={styles.actionBtn}
+            onClick={(e) => e.stopPropagation()}
+          >
+            ↓
+          </a>
+          {asset.cdn_url && (
+            <button
+              data-testid="copy-cdn-btn"
+              style={styles.actionBtn}
+              onClick={handleCopy}
+            >
+              {copied ? '✓' : '⎘'}
+            </button>
+          )}
+        </div>
       </div>
       <div style={styles.body}>
         <p style={styles.title}>{asset.display_title || 'Untitled'}</p>
@@ -148,10 +210,14 @@ export default function AssetCard({ asset, onSelectAsset }) {
           {asset.category && (
             <span style={styles.categoryPill}>{asset.category}</span>
           )}
-          <span
-            style={{ ...styles.rightsDot, backgroundColor: rightsColor }}
-            title={asset.rights_status || 'unknown'}
-          />
+          {rightsPill && (
+            <span
+              data-testid="rights-pill"
+              style={{ ...styles.rightsPill, backgroundColor: rightsPill.bg, color: rightsPill.color }}
+            >
+              {rightsPill.label}
+            </span>
+          )}
           {hasIssues && <span style={styles.warningIcon}>⚠</span>}
         </div>
       </div>

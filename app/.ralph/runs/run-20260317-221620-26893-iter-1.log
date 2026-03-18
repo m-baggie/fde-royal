@@ -1,0 +1,10 @@
+Clean. Only the PRD JSON (loop-managed) remains. US-001 is complete.
+
+**Summary:**
+- Created `client/src/styles/tokens.js` exporting `NAVY`, `GOLD`, `SURFACE` (`#F7F8FB`), `BORDER`, `TEXT_PRIMARY`, `TEXT_SECONDARY`, `TEXT_MUTED`
+- Updated `BrowsePage.jsx` to import `SURFACE` and apply it as `backgroundColor` on both `sidebarContainer` and `main` — cards remain white
+- `npm run lint` → PASS, `npm run build` → PASS
+- Browser verified: both containers render `rgb(247, 248, 251)` = `#F7F8FB`
+- Committed: `f7af213`
+
+<promise>COMPLETE</promise>

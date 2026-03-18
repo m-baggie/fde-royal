@@ -1,0 +1,10 @@
+Clean — only the PRD JSON remains modified (intentionally not committed per rules).
+
+**US-003 is fully complete and verified:**
+
+- All 8 acceptance criteria implemented in commit `b9fdf38`
+- `npm run lint` → PASS
+- `npm run build` → PASS (211.86 kB)  
+- Browser verification → PASS (30 cards, 4/3 ratio, category pills, variant badges, null rights = no pill)
+
+<promise>COMPLETE</promise>

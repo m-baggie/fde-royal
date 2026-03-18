@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { TEXT_MUTED } from '../styles/tokens';
 import { getAsset, enrichAsset as enrichAssetApi, getAssetVariants, getAssetDownloadUrl } from '../api/assets';
 
 const NAVY = '#001B6B';
@@ -456,7 +457,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                     const isImproved = enrichedVal !== null && enrichedVal !== origVal;
                     return (
                       <tr key={label} style={{ borderTop: '1px solid #f3f4f6' }}>
-                        <td style={{ padding: '6px 8px', color: '#6b7280', fontWeight: '500', verticalAlign: 'top' }}>
+                        <td style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_MUTED, verticalAlign: 'top' }}>
                           {label}
                         </td>
                         {showOriginal && (
@@ -467,6 +468,8 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                         <td
                           style={{
                             padding: '6px 8px',
+                            fontSize: '13px',
+                            fontWeight: '400',
                             color: enrichedVal != null ? NAVY : '#9ca3af',
                             verticalAlign: 'top',
                             borderLeft: showOriginal && isImproved ? `3px solid ${GOLD}` : undefined,

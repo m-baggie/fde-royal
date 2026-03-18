@@ -1,0 +1,16 @@
+Clean (only the PRD JSON which belongs to the loop). US-006 is complete.
+
+**Summary of what was implemented:**
+
+- **Sidebar container**: background `#F7F8FB`, padding `16px 12px`, right border removed
+- **Section divider**: dropped `borderBottom` + `paddingBottom`, `marginBottom` reduced to `8px`
+- **Toggle indicator**: `▲`/`▼` → `−`/`+` at `font-size: 10px`, color `#9CA3AF`
+- **Chip resting**: white bg, `#E5E7EB` border, `8px` radius, `120ms ease` transition
+- **Chip hover**: `#F3F4F6` bg, `#D1D5DB` border — implemented via a `Chip` sub-component with `useState` (required for inline-style hover)
+- **Chip active**: `#001B6B` bg/border, white text ✓
+- **Location select**: `8px` radius, `#E5E7EB` border, `7px 10px` padding
+- **Empty guard**: `Chips` returns `null` when `options.length === 0`
+
+Browser verified: active "ships" chip shows navy/white; inactive chips show white/grey border; `−`/`+` indicators visible.
+
+<promise>COMPLETE</promise>

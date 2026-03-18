@@ -6,6 +6,7 @@ import AssetGrid from '../components/AssetGrid';
 import AssetDetailModal from '../components/AssetDetailModal';
 import UploadModal from '../components/UploadModal';
 import { getAssets, getFilters } from '../api/assets';
+import { SURFACE } from '../styles/tokens';
 
 const styles = {
   page: {
@@ -17,7 +18,7 @@ const styles = {
   searchRow: {
     backgroundColor: '#fff',
     borderBottom: '1px solid #e5e7eb',
-    padding: '12px 24px',
+    padding: '10px 24px',
     flexShrink: 0,
   },
   bodyRow: {
@@ -32,6 +33,7 @@ const styles = {
     flexShrink: 0,
     height: '100%',
     overflowY: 'auto',
+    backgroundColor: SURFACE,
   },
   main: {
     flex: 1,
@@ -40,6 +42,7 @@ const styles = {
     padding: '16px 24px',
     overflowY: 'auto',
     boxSizing: 'border-box',
+    backgroundColor: SURFACE,
   },
   activeFiltersRow: {
     display: 'flex',
