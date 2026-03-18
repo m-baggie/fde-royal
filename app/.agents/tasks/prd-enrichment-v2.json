@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "project": "Royal Caribbean DAM — Enrichment Prompt V2 + DB Reseed",
+  "overview": "Upgrade the AI enrichment prompt to use Royal Caribbean's real content taxonomy (ship classes, destination regions, content types, RC brand language). Apply the new prompt to both the single-asset API endpoint and the bulk enrichment script. Add two new enriched fields to the DB (destination_region, content_type). Then clean all existing AI-generated enrichment data from the DB and re-run bulk enrichment so all 49 assets reflect the improved metadata.",
+  "goals": [
+    "Enrichment prompt is grounded in RC's actual taxonomy — ship names, destination regions, content types",
+    "Both enrich.js (POST /api/assets/:id/enrich) and enrich-all.js use the identical updated prompt",
+    "Two new fields added: enriched_destination_region and enriched_content_type",
+    "All existing enrichment wiped and re-run with the new prompt so the DB is clean and consistent",
+    "destination_region and content_type are exposed as filters in GET /api/filters"
+  ],
+  "nonGoals": [
+    "No changes to original_* fields — only enriched_* fields are updated",
+    "No changes to the upload flow or UI beyond filters",
+    "No changes to variant grouping or layout"
+  ],
+  "successMetrics": [
+    "After reseed: enriched_destination_region is populated for all ship/destination assets (Caribbean, Asia, Europe, etc.)",
+    "After reseed: enriched_content_type is populated for all assets (ship-exterior, onboard-lifestyle, destination, promotional, etc.)",
+    "After reseed: enriched_tags contain RC-relevant terms (ship names, activities, RC destination names)",
+    "After reseed: enriched_description reads in a marketing-ready, aspirational tone",
+    "GET /api/filters returns destination_regions and content_types arrays",
+    "FilterSidebar shows Destination Region and Content Type filter sections"
+  ],
+  "stack": {
+    "backend": "Express.js (Node 20) — server/src/",
+    "database": "SQLite via better-sqlite3",
+    "ai": "Claude Opus (claude-opus-4-6) — same model as existing enrichment",
+    "scripts": "server/scripts/enrich-all.js"
+  },
+  "uiNotes": [
+    "FilterSidebar: add 'Destination Region' section with chips for each distinct enriched_destination_region value (Caribbean, Asia, Europe, Mexico, Alaska, South Pacific, North America)",
+    "FilterSidebar: add 'Content Type' section with chips for each distinct enriched_content_type value (ship-exterior, onboard-lifestyle, destination, promotional, aerial, entertainment, dining, people)",
+    "Both new filter sections collapsed by default, same style as existing Channel and Scene sections",
+    "AssetDetailModal METADATA_ROWS: add rows for Destination Region and Content Type using enriched_destination_region and enriched_content_type"
+  ],
+  "dataModel": [
+    {
+      "entity": "assets (existing)",
+      "description": "Add two new enriched columns",
+      "fields": [
+        "enriched_destination_region TEXT — one of: Caribbean, Bahamas, Mexico, Alaska, Europe, Asia, South Pacific, North America, or null if onboard/unknown",
+        "enriched_content_type TEXT — one of: ship-exterior, onboard-lifestyle, destination, promotional, aerial, entertainment, dining, people"
+      ]
+    }
+  ],
+  "prompt": {
+    "description": "The new enrichment prompt to use in both enrich.js and enrich-all.js",
+    "value": "You are tagging assets for Royal Caribbean Group's digital asset library. These images are used by web and email content authors to build cruise marketing campaigns.\n\nKnown ships: Utopia of the Seas, Icon of the Seas, Star of the Seas, Wonder of the Seas, Symphony of the Seas, Harmony of the Seas, Allure of the Seas, Oasis of the Seas, Anthem of the Seas, Grandeur of the Seas, Legend of the Seas.\n\nAnalyze this image and respond with ONLY valid JSON, no markdown:\n{\n  \"title\": string (5-10 words, specific and descriptive, do not start with Royal Caribbean),\n  \"description\": string (1-2 sentences, marketing-ready tone — exciting and aspirational),\n  \"tags\": string[] (10-15 lowercase tags: include ship name if visible, destination region, activity types from [dining, entertainment, water slides, pools, adventure, relaxation, shore excursion, nightlife, family, aerial, sunset, sailing], mood, season),\n  \"location\": string|null (city and country, OR ship name if at sea, else null),\n  \"destination_region\": string|null (one of: Caribbean, Bahamas, Mexico, Alaska, Europe, Asia, South Pacific, North America — or null if onboard ship with no destination context),\n  \"content_type\": string (one of: ship-exterior, onboard-lifestyle, destination, promotional, aerial, entertainment, dining, people),\n  \"subjects\": string[] (what is visible: ship name if identifiable, landmark names, activities, people types),\n  \"mood\": string (one of: adventurous, luxurious, relaxing, exciting, romantic, family, festive),\n  \"confidence\": number 0-1\n}"
+  },
+  "rules": [
+    "Migration: ALTER TABLE assets ADD COLUMN enriched_destination_region TEXT; ALTER TABLE assets ADD COLUMN enriched_content_type TEXT; — run on startup if columns don't exist",
+    "enrich.js and enrich-all.js must use the identical prompt string defined above",
+    "enrich-all.js reseed mode: before re-enriching, run UPDATE assets SET enriched_title=NULL, enriched_description=NULL, enriched_tags=NULL, enriched_location=NULL, enriched_scene=NULL, enriched_subjects=NULL, enriched_mood=NULL, enriched_channel=NULL, enriched_destination_region=NULL, enriched_content_type=NULL, enrichment_source=NULL, enrichment_confidence=NULL WHERE enrichment_source IS NOT NULL AND enrichment_source != 'user-edited'",
+    "enrich-all.js: after wipe, selects all assets WHERE enrichment_source IS NULL and processes them with the new prompt",
+    "persistEnrichment in enrich-all.js must write destination_region and content_type to DB",
+    "enrichAsset in enrich.js must write destination_region and content_type to DB",
+    "GET /api/filters must return destination_regions: string[] and content_types: string[] from distinct non-null values",
+    "GET /api/assets must support ?destination_region=Caribbean and ?content_type=ship-exterior filter params",
+    "searchAssets() in search.js must add WHERE conditions for destination_region and content_type when provided",
+    "FTS5 triggers handle index updates automatically on UPDATE — no manual FTS sync needed"
+  ],
+  "qualityGates": [
+    "npm run lint",
+    "npm run build",
+    "npm test"
+  ],
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "DB migration — add enriched_destination_region and enriched_content_type columns",
+      "status": "open",
+      "dependsOn": [],
+      "description": "As a developer, I want two new enriched fields in the DB so the improved prompt output can be stored and filtered.",
+      "acceptanceCriteria": [
+        "server/src/db/schema.js adds enriched_destination_region TEXT and enriched_content_type TEXT to the CREATE TABLE statement",
+        "A migration runs on startup (in server/src/db/index.js) that ALTERs the table to add these columns if they don't exist",
+        "No data loss — existing rows are unaffected, new columns default to NULL",
+        "Supertest test: GET /api/assets/:id returns enriched_destination_region and enriched_content_type fields (may be null)"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Update enrichment prompt in enrich.js and enrich-all.js",
+      "status": "open",
+      "dependsOn": ["US-001"],
+      "description": "As a developer, I want both the single-asset and bulk enrichment to use the RC taxonomy-aware prompt so all enriched data is consistent and brand-aligned.",
+      "acceptanceCriteria": [
+        "A shared prompt constant ENRICH_PROMPT is defined in server/src/services/enrich.js and exported",
+        "enrich-all.js imports and uses the same ENRICH_PROMPT constant — no duplicate prompt strings",
+        "The prompt includes the known ships list, destination_region controlled vocabulary, content_type controlled vocabulary, and RC marketing tone guidance",
+        "enrich.js persistEnrichment writes parsed.destination_region and parsed.content_type to the DB",
+        "enrich-all.js persistEnrichment writes parsed.destination_region and parsed.content_type to the DB",
+        "Both files remove channel_hint from the prompt — channel is derived from filename, not AI",
+        "Supertest test: POST /api/assets/:id/enrich on a test asset returns a record with enriched_content_type populated"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "enrich-all.js reseed mode — wipe and re-enrich all AI-enriched assets",
+      "status": "open",
+      "dependsOn": ["US-002"],
+      "description": "As a developer, I want to run the bulk enrichment script to wipe all existing AI enrichment and re-run with the new prompt so the DB is clean and consistent.",
+      "acceptanceCriteria": [
+        "enrich-all.js accepts a --reseed flag: node enrich-all.js --reseed",
+        "When --reseed is passed: first runs UPDATE to NULL all enriched_* fields and set enrichment_source=NULL for all assets where enrichment_source IS NOT NULL AND enrichment_source != 'user-edited'",
+        "After wipe, proceeds to enrich all assets where enrichment_source IS NULL (same as normal run)",
+        "Prints 'Reseed mode: wiped X assets' before starting enrichment",
+        "Normal run (no --reseed) skips wipe — only enriches assets where enrichment_source IS NULL",
+        "Script prints final summary: Enriched: X | Failed: Y | Skipped: Z"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "API and filters — expose destination_region and content_type",
+      "status": "open",
+      "dependsOn": ["US-001"],
+      "description": "As a content author, I want to filter by destination region and content type so I can quickly find the right assets for my campaign.",
+      "acceptanceCriteria": [
+        "GET /api/filters returns destination_regions: string[] (sorted distinct non-null enriched_destination_region values)",
+        "GET /api/filters returns content_types: string[] (sorted distinct non-null enriched_content_type values)",
+        "GET /api/assets?destination_region=Caribbean returns only assets with enriched_destination_region='Caribbean'",
+        "GET /api/assets?content_type=ship-exterior returns only assets with enriched_content_type='ship-exterior'",
+        "searchAssets() in search.js handles destination_region and content_type filter params",
+        "FilterSidebar renders a 'Destination Region' chip section and a 'Content Type' chip section using the new filter values",
+        "AssetDetailModal METADATA_ROWS includes Destination Region and Content Type rows",
+        "Supertest test: GET /api/filters returns destination_regions array",
+        "Supertest test: GET /api/assets?destination_region=Caribbean returns subset of assets"
+      ]
+    }
+  ]
+}

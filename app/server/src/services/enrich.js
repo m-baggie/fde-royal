@@ -9,15 +9,15 @@ const ENRICH_PROMPT =
   '"scene": string, "subjects": string[], "mood": string, "channel_hint": string, "confidence": number 0-1 }';
 
 /**
- * enrichAsset — calls OpenAI Vision on the asset's image file and writes
+ * enrichAsset — calls Claude Vision on the asset's image file and writes
  * the AI-generated metadata back to the assets table.
  *
  * @param {import('better-sqlite3').Database} db
  * @param {string} id - asset UUID
- * @param {import('openai').OpenAI} openaiClient
+ * @param {import('@anthropic-ai/sdk').Anthropic} anthropicClient
  * @returns {object} updated full asset row
  */
-async function enrichAsset(db, id, openaiClient) {
+async function enrichAsset(db, id, anthropicClient) {
   const asset = db.prepare('SELECT * FROM assets WHERE id = ?').get(id);
 
   if (!asset) {
@@ -47,15 +47,20 @@ async function enrichAsset(db, id, openaiClient) {
   const base64Data = imageBuffer.toString('base64');
   const mimeType = asset.mime_type || 'image/jpeg';
 
-  const response = await openaiClient.chat.completions.create({
-    model: 'gpt-4o',
+  const response = await anthropicClient.messages.create({
+    model: 'claude-opus-4-6',
+    max_tokens: 1024,
     messages: [
       {
         role: 'user',
         content: [
           {
-            type: 'image_url',
-            image_url: { url: `data:${mimeType};base64,${base64Data}` },
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: mimeType,
+              data: base64Data,
+            },
           },
           {
             type: 'text',
@@ -66,7 +71,7 @@ async function enrichAsset(db, id, openaiClient) {
     ],
   });
 
-  const rawContent = response.choices[0].message.content;
+  const rawContent = response.content[0].text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
   const parsed = JSON.parse(rawContent);
   const now = new Date().toISOString();
 

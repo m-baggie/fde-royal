@@ -108,7 +108,8 @@ async function callAnthropic(base64, mimeType, prompt) {
       },
     ],
   });
-  return JSON.parse(response.content[0].text);
+  const raw = response.content[0].text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  return JSON.parse(raw);
 }
 
 // ---------------------------------------------------------------------------
@@ -145,22 +146,7 @@ function persistEnrichment(asset, parsed) {
     asset.id,
   );
 
-  // Sync FTS5 manually (triggers also fire, but AC requires explicit sync)
-  db.prepare('DELETE FROM assets_fts WHERE id = ?').run(asset.id);
-  db.prepare(`
-    INSERT INTO assets_fts(id, title, description, tags, location, creator, category, subcategory, filename)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    asset.id,
-    parsed.title || null,
-    parsed.description || null,
-    JSON.stringify(parsed.tags || []),
-    parsed.location || null,
-    asset.enriched_creator_normalized || null,
-    asset.category || null,
-    asset.subcategory || null,
-    asset.filename || null,
-  );
+  // FTS5 sync is handled automatically by the assets_au trigger on UPDATE
 }
 
 // ---------------------------------------------------------------------------
