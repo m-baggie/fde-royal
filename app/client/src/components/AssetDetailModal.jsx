@@ -33,7 +33,27 @@ function formatCellValue(label, value) {
   if (label === 'Tags' && value) {
     try {
       const arr = typeof value === 'string' ? JSON.parse(value) : value;
-      if (Array.isArray(arr)) return arr.join(', ');
+      if (Array.isArray(arr)) {
+        return (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+            {arr.map((tag) => (
+              <span
+                key={tag}
+                style={{
+                  fontSize: '11px',
+                  padding: '2px 8px',
+                  borderRadius: '100px',
+                  backgroundColor: 'rgba(0, 32, 91, 0.07)',
+                  color: '#00205B',
+                  fontWeight: '500',
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        );
+      }
     } catch {}
   }
   return value;
@@ -350,18 +370,41 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
 
             {/* Right panel — 60% */}
             <div style={{ flex: 1, padding: '24px', overflowY: 'auto', paddingTop: '40px' }}>
-              {/* Asset title */}
-              <h2
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  color: '#1A1A2E',
-                  margin: '0 0 16px 0',
-                }}
-                data-testid="modal-display-title"
-              >
-                {asset.display_title || asset.filename}
-              </h2>
+              {/* Asset title + Download */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '16px' }}>
+                <h2
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    color: '#1A1A2E',
+                    margin: 0,
+                    flex: 1,
+                  }}
+                  data-testid="modal-display-title"
+                >
+                  {asset.display_title || asset.filename}
+                </h2>
+                <a
+                  href={getAssetDownloadUrl(asset.id)}
+                  download
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '6px 14px',
+                    backgroundColor: NAVY,
+                    color: '#fff',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                  }}
+                  data-testid="download-btn"
+                >
+                  ↓ Download
+                </a>
+              </div>
 
               {/* Metadata table — enriched-first with Show Original toggle */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -437,43 +480,6 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                 </tbody>
               </table>
 
-              {/* Quality Issues */}
-              {Array.isArray(asset.quality_issues) && asset.quality_issues.length > 0 && (
-                <div style={{ marginBottom: '24px' }}>
-                  <p
-                    style={{
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      color: '#374151',
-                      margin: '0 0 8px 0',
-                    }}
-                  >
-                    Quality Issues
-                  </p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                    {asset.quality_issues.map((issue) => {
-                      const isRed = RED_ISSUES.includes(issue);
-                      return (
-                        <span
-                          key={issue}
-                          data-testid={`quality-badge-${issue}`}
-                          style={{
-                            fontSize: '12px',
-                            padding: '3px 10px',
-                            borderRadius: '12px',
-                            backgroundColor: isRed ? '#fee2e2' : '#fef3c7',
-                            color: isRed ? '#dc2626' : '#92400e',
-                            fontWeight: '500',
-                          }}
-                        >
-                          {QUALITY_BADGE_LABELS[issue] || issue}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
               {/* CDN URL */}
               {asset.cdn_url && (
                 <div style={{ marginBottom: '24px' }}>
@@ -523,29 +529,6 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                   </div>
                 </div>
               )}
-
-              {/* Download */}
-              <div style={{ marginBottom: '16px' }}>
-                <a
-                  href={getAssetDownloadUrl(asset.id)}
-                  download
-                  style={{
-                    display: 'inline-block',
-                    padding: '6px 14px',
-                    backgroundColor: NAVY,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    textDecoration: 'none',
-                    whiteSpace: 'nowrap',
-                  }}
-                  data-testid="download-btn"
-                >
-                  Download
-                </a>
-              </div>
 
               {/* Enrich with AI */}
               {showEnrichButton && (

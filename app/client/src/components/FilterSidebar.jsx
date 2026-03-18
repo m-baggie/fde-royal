@@ -200,30 +200,12 @@ export default function FilterSidebar({
         </select>
       </Section>
 
-      <Section title="Metadata Quality">
-        <Chips
-          options={QUALITY_OPTIONS}
-          active={activeMetadataQuality}
-          onToggle={handleQualityToggle}
-        />
-      </Section>
-
       {channels.length > 0 && (
         <Section title="Channel" defaultOpen={false}>
           <Chips
             options={channels}
             active={activeChannel}
             onToggle={handleChannelToggle}
-          />
-        </Section>
-      )}
-
-      {scenes.length > 0 && (
-        <Section title="Scene / Mood" defaultOpen={false}>
-          <Chips
-            options={scenes}
-            active={activeScene}
-            onToggle={handleSceneToggle}
           />
         </Section>
       )}
