@@ -1,8 +1,8 @@
-require('dotenv').config();
 const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const express = require('express');
 const cors = require('cors');
-const OpenAI = require('openai');
+const Anthropic = require('@anthropic-ai/sdk');
 const db = require('./db'); // initialize SQLite and run migrations on startup
 const { ingestAssets } = require('./services/ingest');
 
@@ -27,10 +27,10 @@ app.use('/api/assets', uploadRouter);
 app.use('/api/assets', assetsRouter);
 app.use('/api/filters', filtersRouter);
 
-if (process.env.OPENAI_API_KEY) {
-  app.locals.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+if (process.env.ANTHROPIC_API_KEY) {
+  app.locals.anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 } else {
-  console.warn('AI enrichment disabled: OPENAI_API_KEY not set');
+  console.warn('AI enrichment disabled: ANTHROPIC_API_KEY not set');
 }
 
 // Ingest assets on first startup (only if the table is empty)
