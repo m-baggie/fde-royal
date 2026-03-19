@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:dam="http://www.day.com/dam/1.0" xmlns:tiff="http://ns.adobe.com/tiff/1.0/" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:stEvt="http://ns.adobe.com/xap/1.0/sType/ResourceEvent#" xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:exif="http://ns.adobe.com/exif/1.0/"
+    jcr:mixinTypes="[mix:referenceable]"
+    jcr:primaryType="dam:Asset"
+    jcr:uuid="d855e6ea-dab4-4998-8045-ae63eb238254">
+    <jcr:content
+        cq:lastReplicated="{Date}2025-04-21T10:58:47.044-04:00"
+        cq:lastReplicatedBy="t22cd"
+        cq:lastReplicationAction="Activate"
+        dam:assetState="processed"
+        dam:imageServerAsset="{Boolean}true"
+        dam:s7damType="Image"
+        jcr:lastModified="{Date}2025-04-21T10:44:48.306-04:00"
+        jcr:lastModifiedBy="t22cd"
+        jcr:mixinTypes="[cq:ReplicationStatus]"
+        jcr:primaryType="dam:AssetContent"
+        ips-job-handle="[j|239426||CQ5_batch_upload_default_publish___1745246653155|859396977]"
+        status="Finished">
+        <metadata
+            dam:Bitsperpixel="{Long}24"
+            dam:extracted="{Date}2025-04-21T10:44:12.654-04:00"
+            dam:Fileformat="JPEG"
+            dam:MIMEtype="image/jpeg"
+            dam:Numberofimages="{Long}1"
+            dam:Numberoftextualcomments="{Long}0"
+            dam:Physicalheightindpi="{Long}300"
+            dam:Physicalheightininches="{Decimal}1.7333333492279053"
+            dam:Physicalwidthindpi="{Long}300"
+            dam:Physicalwidthininches="{Decimal}10.399999618530273"
+            dam:Progressive="yes"
+            dam:scene7APIServer="https://s7sps1apissl.scene7.com"
+            dam:scene7CloudConfigPath="/conf/global/settings/cloudconfigs/dmscene7"
+            dam:scene7CompanyID="c|239426"
+            dam:scene7Domain="https://assets.dm.rccl.com/"
+            dam:scene7File="RoyalCaribbeanCruises/icon-star-kicker-banner-sp-1560x260-2x"
+            dam:scene7FileStatus="PublishComplete"
+            dam:scene7Folder="RoyalCaribbeanCruises/royal/promotions/star-and-icon/"
+            dam:scene7ID="a|2311218878"
+            dam:scene7JobStartDate="{Long}1745246653570"
+            dam:scene7LastModified="{Long}1745246685458"
+            dam:scene7Name="icon-star-kicker-banner-sp-1560x260-2x"
+            dam:scene7PublishedBy="t22cd"
+            dam:scene7PublishTimeStamp="{Date}2025-04-21T10:58:47.746-04:00"
+            dam:scene7Type="Image"
+            dam:scene7UploadTimeStamp="{Date}2025-04-21T10:44:45.458-04:00"
+            dam:sha1="e4df00dfec6bdda18dab4a8a8e3a1c42bf38bbc4"
+            dam:size="{Long}491584"
+            dc:creator="[Royal Carribean]"
+            dc:creator_xmpArrayType="rdf:Seq"
+            dc:format="image/jpeg"
+            dc:rights="Royal Carribean"
+            dc:title="Icon and Star Kicker banner Spanish 1560 x 260 2x"
+            exif:ColorSpace="{Long}1"
+            exif:ExifVersion="0231"
+            jcr:mixinTypes="[cq:Taggable]"
+            jcr:primaryType="nt:unstructured"
+            jcr:title="Icon and Star Kicker banner Spanish 1560 x 260 2x"
+            tiff:ImageLength="{Long}520"
+            tiff:ImageWidth="{Long}3120"
+            tiff:Orientation="{Long}1"
+            tiff:ResolutionUnit="{Long}2"
+            tiff:XResolution="3000000/10000"
+            tiff:YResolution="3000000/10000"
+            xmp:MetadataDate="{Date}2025-04-21T22:43:47.000+08:00"
+            xmpMM:DocumentID="2415CF61F72234264A607A1326E6C496"
+            xmpMM:InstanceID="xmp.iid:10afde3d-e59b-428f-a125-867e5663531f"
+            xmpMM:OriginalDocumentID="2415CF61F72234264A607A1326E6C496">
+            <xmpMM:History
+                jcr:primaryType="nt:unstructured"
+                xmpArraySize="{Long}2"
+                xmpArrayType="rdf:Seq"
+                xmpNodeType="xmpArray">
+                <_x0031_
+                    jcr:primaryType="nt:unstructured"
+                    stEvt:action="saved"
+                    stEvt:changed="/metadata"
+                    stEvt:instanceID="xmp.iid:ba82bacb-c326-4ce5-b97e-c69153da44a2"
+                    stEvt:softwareAgent="Adobe Photoshop Camera Raw 17.2"
+                    stEvt:when="{Date}2025-04-21T22:43:35.000+08:00"
+                    xmpNodeType="xmpStruct"/>
+                <_x0032_
+                    jcr:primaryType="nt:unstructured"
+                    stEvt:action="saved"
+                    stEvt:changed="/metadata"
+                    stEvt:instanceID="xmp.iid:10afde3d-e59b-428f-a125-867e5663531f"
+                    stEvt:softwareAgent="Adobe Photoshop Camera Raw 17.2 (Macintosh)"
+                    stEvt:when="{Date}2025-04-21T22:43:47.000+08:00"
+                    xmpNodeType="xmpStruct"/>
+            </xmpMM:History>
+        </metadata>
+        <related jcr:primaryType="nt:unstructured"/>
+    </jcr:content>
+</jcr:root>

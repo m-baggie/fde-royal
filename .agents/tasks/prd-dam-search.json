@@ -1,0 +1,418 @@
+{
+  "version": 1,
+  "project": "Royal Caribbean DAM Asset Search",
+  "overview": "A local-first web app that lets Royal Caribbean content authors search, browse, and upload digital assets from the AEM DAM export. A React frontend communicates with an Express backend backed by SQLite. Assets are ingested from existing .content.xml metadata files, enriched with AI vision (OpenAI GPT-4o) on upload, and made searchable via natural language full-text search and structured filters.",
+  "goals": [
+    "Ingest all 49 existing DAM assets (XML metadata + thumbnails) into SQLite on startup",
+    "Provide natural language full-text search across all metadata fields",
+    "Support structured filters: category, subcategory, rights status, location, metadata quality flags",
+    "Show asset detail popup with original metadata vs AI-enriched metadata side by side",
+    "Allow upload of single images or folders — auto-enrich with OpenAI Vision on upload",
+    "Highlight metadata quality issues (missing fields, rights problems, sync errors, release placeholders)"
+  ],
+  "nonGoals": [
+    "No user authentication or session management",
+    "No production deployment — localhost only",
+    "No editing or updating of existing .content.xml files",
+    "No Celebrity Cruises assets in scope",
+    "No DAM write-back to AEM",
+    "No bulk export or download features"
+  ],
+  "successMetrics": [
+    "All 49 existing assets appear in the browse grid on first load",
+    "Natural language query returns relevant results within 200ms",
+    "Uploaded image is enriched and searchable within 10 seconds",
+    "Asset detail modal shows original and enriched fields side by side",
+    "All quality gates pass: npm test, npm run lint, npm run build"
+  ],
+  "openQuestions": [
+    "Should uploaded assets be stored inside Data/royal/ to match existing structure, or in a separate uploads/ directory?",
+    "Should the AI enrichment call happen synchronously on upload (blocking response) or asynchronously (polling)?",
+    "What OpenAI model version should be used — gpt-4o or gpt-4o-mini for cost efficiency?"
+  ],
+  "stack": {
+    "frontend": "React 18 + Vite",
+    "backend": "Express.js (Node 20)",
+    "database": "SQLite via better-sqlite3",
+    "search": "SQLite FTS5 full-text search",
+    "ai": "OpenAI GPT-4o Vision API (OPENAI_API_KEY env var)",
+    "testing_backend": "Jest + Supertest",
+    "testing_frontend": "Vitest + React Testing Library",
+    "linting": "ESLint",
+    "auth": "None"
+  },
+  "projectStructure": {
+    "root": "app/",
+    "layout": [
+      "app/client/          - React + Vite frontend",
+      "app/client/src/components/  - Reusable UI components",
+      "app/client/src/pages/       - Page-level components",
+      "app/client/src/hooks/       - Custom React hooks",
+      "app/client/src/api/         - Fetch wrapper for Express API",
+      "app/server/          - Express backend",
+      "app/server/src/routes/      - Express route handlers",
+      "app/server/src/services/    - Business logic (ingest, enrich, search)",
+      "app/server/src/db/          - SQLite setup and migrations",
+      "app/server/src/__tests__/   - Jest + Supertest tests",
+      "app/uploads/         - Uploaded image files (gitignored)",
+      "app/dam.sqlite        - SQLite database file (gitignored)",
+      "app/package.json      - Root workspace with scripts"
+    ]
+  },
+  "routes": [
+    { "path": "GET /",                          "name": "React App Shell",     "purpose": "Serve the React SPA (Vite dev server in development)" },
+    { "path": "GET /api/assets",               "name": "Search Assets",       "purpose": "Full-text + structured filter search. Query params: q, category, subcategory, rights_status, location, has_title, has_rights, has_location, limit, offset" },
+    { "path": "GET /api/assets/:id",           "name": "Asset Detail",        "purpose": "Return single asset with all original and enriched metadata fields" },
+    { "path": "GET /api/filters",              "name": "Filter Options",      "purpose": "Return all distinct filter values: categories, subcategories, locations, rights statuses" },
+    { "path": "POST /api/assets/upload",       "name": "Upload Asset(s)",     "purpose": "Accept multipart/form-data with one or more image files. Save to uploads/, insert to DB, trigger AI enrichment, return enriched asset records" },
+    { "path": "POST /api/assets/:id/enrich",   "name": "Re-enrich Asset",     "purpose": "Trigger AI enrichment for an existing asset by ID. Useful for re-processing." }
+  ],
+  "uiNotes": [
+    "Brand colors: Navy #001B6B (primary), Gold #C8960C (accent), white backgrounds",
+    "Header: Royal Caribbean wordmark + app title + upload button",
+    "Main layout: left filter sidebar (260px) + right asset grid (fluid)",
+    "Asset grid: responsive CSS grid, min 200px cards, 16:9 thumbnail aspect ratio",
+    "Asset card: thumbnail, title (or filename fallback), category badge, rights status indicator (green/amber/red dot)",
+    "Asset detail: modal/drawer overlay, left side = large image, right side = two-column metadata (Original | Enriched)",
+    "Quality issue badges: missing title, missing rights, S7 sync error, release placeholder — shown as small icons on card and detailed in modal",
+    "Upload component: drag-and-drop zone + file picker button, supports multiple files and folder selection (webkitdirectory), shows progress per file",
+    "Search bar: prominent at top, natural language placeholder text, debounced 300ms",
+    "Filter sidebar sections: Category, Subcategory, Rights Status, Location, Metadata Quality (toggle chips)",
+    "Active filters shown as removable chips below search bar",
+    "Empty state: friendly message when no results with suggested filters to clear"
+  ],
+  "dataModel": [
+    {
+      "entity": "assets",
+      "description": "Main table storing all asset metadata — both original from XML and AI-enriched",
+      "fields": [
+        "id TEXT PRIMARY KEY",
+        "filename TEXT NOT NULL",
+        "filepath TEXT",
+        "thumbnail_path TEXT",
+        "web_image_path TEXT",
+        "category TEXT",
+        "subcategory TEXT",
+        "subsubcategory TEXT",
+        "original_title TEXT",
+        "original_description TEXT",
+        "original_creator TEXT",
+        "original_rights_owner TEXT",
+        "original_dc_rights TEXT",
+        "original_usage_terms TEXT",
+        "original_location TEXT",
+        "original_tags TEXT",
+        "enriched_title TEXT",
+        "enriched_description TEXT",
+        "enriched_tags TEXT",
+        "enriched_location TEXT",
+        "enriched_scene TEXT",
+        "enriched_subjects TEXT",
+        "enriched_mood TEXT",
+        "enriched_creator_normalized TEXT",
+        "enriched_rights_status TEXT",
+        "enriched_channel TEXT",
+        "enriched_format TEXT",
+        "enrichment_source TEXT",
+        "enrichment_confidence REAL",
+        "width INTEGER",
+        "height INTEGER",
+        "file_size INTEGER",
+        "file_format TEXT",
+        "mime_type TEXT",
+        "scene7_file TEXT",
+        "scene7_domain TEXT",
+        "scene7_status TEXT",
+        "s7_sync_error INTEGER DEFAULT 0",
+        "needs_rights_review INTEGER DEFAULT 0",
+        "has_release_placeholder INTEGER DEFAULT 0",
+        "dam_last_modified TEXT",
+        "dam_last_replicated TEXT",
+        "created_at TEXT DEFAULT CURRENT_TIMESTAMP",
+        "updated_at TEXT DEFAULT CURRENT_TIMESTAMP"
+      ]
+    },
+    {
+      "entity": "assets_fts (virtual)",
+      "description": "SQLite FTS5 virtual table for natural language full-text search",
+      "fields": [
+        "id",
+        "title (enriched_title ?? original_title)",
+        "description (enriched_description ?? original_description)",
+        "tags (enriched_tags ?? original_tags)",
+        "location (enriched_location ?? original_location)",
+        "creator",
+        "category",
+        "subcategory",
+        "filename"
+      ]
+    }
+  ],
+  "rules": [
+    "Display title: use enriched_title if present, else original_title, else filename (without extension)",
+    "Display description: use enriched_description if present, else original_description",
+    "Display tags: merge enriched_tags and original_tags, deduplicate",
+    "Rights status: 'owned' if rights_owner contains 'Royal Caribbean' (case-insensitive, trimmed); 'unclear' if rights data present but has typo or inconsistency; 'none' if no rights data",
+    "Channel inference (deterministic): if filename contains 'hero' → hero; 'banner' → banner; 'mobile' or height > width → mobile/vertical; 'desktop' → desktop",
+    "Dimensions → format: width > height → landscape; height > width → portrait; width == height → square",
+    "Creator normalization: '[Royal Carribean]', 'Brand Team', 'Brand Team ', '[Brand Team]', '[Production Team ]' → 'Royal Caribbean Brand Team'",
+    "Release placeholder detection: if any field value contains 'Selecione' → set has_release_placeholder = 1",
+    "FTS sync: after any insert or update to assets table, sync the corresponding FTS row",
+    "Uploaded files are stored in app/uploads/<uuid>-<originalname>",
+    "On server startup, run XML ingest if assets table is empty"
+  ],
+  "qualityGates": [
+    "npm run lint",
+    "npm run build",
+    "npm test"
+  ],
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Scaffold project structure",
+      "status": "open",
+      "dependsOn": [],
+      "description": "As a developer, I want a working monorepo with Express backend and React Vite frontend so that I can build and test both apps from a single root.",
+      "acceptanceCriteria": [
+        "Root app/ directory contains package.json with workspaces: ['client', 'server']",
+        "app/server/ is an Express app: npm install express better-sqlite3 multer cors dotenv openai",
+        "app/server/ dev script uses nodemon, test script uses jest",
+        "app/client/ is a React + Vite app: npm create vite@latest with react template",
+        "app/client/ installs: npm install axios",
+        "app/client/ test script uses vitest and @testing-library/react",
+        "Root package.json has scripts: dev (runs both client and server concurrently), test (runs both test suites), lint, build",
+        "npm install concurrently at root for parallel dev",
+        "app/server/src/index.js starts Express on port 3001 with a GET /api/health → { status: 'ok' }",
+        "app/client/src/App.jsx renders <h1>Royal Caribbean DAM</h1>",
+        ".env.example at root with OPENAI_API_KEY=, PORT=3001, DATA_DIR=../Data/royal",
+        ".gitignore includes: node_modules, dam.sqlite, uploads/, .env",
+        "Example: running npm run dev from app/ starts both servers without error",
+        "Negative case: missing OPENAI_API_KEY in .env does not crash startup — server logs a warning and disables AI enrichment"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Database schema and migrations",
+      "status": "open",
+      "dependsOn": ["US-001"],
+      "description": "As a developer, I want SQLite tables created automatically on startup so that the app has persistent storage without manual setup.",
+      "acceptanceCriteria": [
+        "app/server/src/db/schema.js exports a runMigrations(db) function",
+        "runMigrations creates the assets table with all fields defined in the data model",
+        "runMigrations creates the assets_fts FTS5 virtual table with content='assets'",
+        "runMigrations is idempotent — running it twice does not error or duplicate tables (use CREATE TABLE IF NOT EXISTS)",
+        "app/server/src/db/index.js opens dam.sqlite, calls runMigrations, and exports the db instance",
+        "Jest test: runMigrations on an in-memory SQLite DB creates both tables successfully",
+        "Jest test: inserting a row into assets and querying assets_fts returns the same row",
+        "Negative case: if dam.sqlite directory is not writable, server logs a clear error and exits with code 1"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "XML ingest service — parse DAM export into SQLite",
+      "status": "open",
+      "dependsOn": ["US-002"],
+      "description": "As a developer, I want all existing .content.xml asset files parsed and loaded into SQLite on startup so that the 49 DAM assets are immediately available.",
+      "acceptanceCriteria": [
+        "app/server/src/services/ingest.js exports an ingestAssets(db, dataDir) function",
+        "Function recursively walks dataDir, finds all .content.xml files where the parent directory name ends in .jpg, .jpeg, or .png and the path does not contain _jcr_content",
+        "For each XML file, parses dc:title, dc:description, dc:creator, dc:rights, xmpRights:Owner, xmpRights:UsageTerms, Iptc4xmpExt:LocationShown, tiff:ImageWidth, tiff:ImageLength, dam:size, dam:Fileformat, dam:MIMEtype, dam:scene7File, dam:scene7Domain, dam:scene7FileStatus, dam:lastS7SyncStatus, cq:parentPath, cq:name, cq:tags",
+        "Strips JCR type wrappers: {Long}1920 → 1920, {Boolean}true → true, {Date}2021-... → string",
+        "Infers category, subcategory, subsubcategory from folder path segments",
+        "Applies deterministic enrichment: creator normalization, rights reconciliation, channel/format inference from filename and dimensions, release placeholder detection",
+        "Sets thumbnail_path and web_image_path relative to DATA_DIR if those rendition files exist on disk",
+        "Inserts using INSERT OR IGNORE so re-running ingest does not duplicate rows",
+        "On server startup (server/src/index.js), calls ingestAssets if SELECT COUNT(*) FROM assets returns 0",
+        "Jest test: ingestAssets on the real Data/royal directory inserts exactly 49 rows into assets",
+        "Jest test: asset 'anthem-of-the-seas-new-york-statue-liberty.jpg' has original_title 'Anthem of the Seas Sightseeing the Statue of Liberty, New York'",
+        "Jest test: creator '[Royal Carribean]' is normalized to 'Royal Caribbean Brand Team'",
+        "Jest test: 7 assets have has_release_placeholder = 1",
+        "Jest test: 6 assets have s7_sync_error = 1",
+        "Negative case: malformed XML file is skipped with a console.warn, not a thrown error"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "GET /api/assets — search and filter endpoint",
+      "status": "open",
+      "dependsOn": ["US-003"],
+      "description": "As a content author, I want to search and filter assets via the API so that I can find relevant images for my campaign.",
+      "acceptanceCriteria": [
+        "GET /api/assets returns { total, assets: [...] } with all 49 assets when no query params",
+        "Query param q performs FTS5 full-text search across title, description, tags, location, creator, category, subcategory, filename",
+        "Query param category filters by exact category value (ships or promotions)",
+        "Query param subcategory filters by exact subcategory (allure, anthem, grandeur, asia, casino, star-and-icon)",
+        "Query param rights_status filters by: owned, unclear, none",
+        "Query param location filters by exact LocationShown value",
+        "Query param has_title=true/false filters assets with/without a title",
+        "Query param has_rights=true/false filters assets with/without any rights data",
+        "Query param has_release_placeholder=true filters the 7 flagged assets",
+        "Query params limit (default 100, max 200) and offset (default 0) for pagination",
+        "Response asset objects include: id, filename, category, subcategory, display_title, display_description, display_tags, thumbnail_path, web_image_path, rights_status, enrichment_source, width, height, scene7_file, scene7_domain, s7_sync_error, needs_rights_review, has_release_placeholder",
+        "Supertest test: GET /api/assets?q=sunset returns assets containing 'sunset' in any text field",
+        "Supertest test: GET /api/assets?category=ships returns only ship assets",
+        "Supertest test: GET /api/assets?rights_status=none returns exactly 27 assets",
+        "Supertest test: GET /api/assets?limit=5&offset=0 returns 5 assets with total=49",
+        "Negative case: GET /api/assets?q=zzznomatch returns { total: 0, assets: [] } with 200 status"
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "GET /api/assets/:id — asset detail endpoint",
+      "status": "open",
+      "dependsOn": ["US-003"],
+      "description": "As a content author, I want to retrieve full metadata for a single asset so that I can review all original and enriched fields.",
+      "acceptanceCriteria": [
+        "GET /api/assets/:id returns the full asset record with all fields including original_* and enriched_* columns",
+        "Response includes a cdn_url field constructed as scene7_domain + 'is/image/' + scene7_file",
+        "Response includes a quality_issues array listing any problems: 'missing_title', 'missing_description', 'missing_rights', 'missing_location', 'title_equals_description', 's7_sync_error', 'release_placeholder'",
+        "Supertest test: GET /api/assets/anthem-of-the-seas-new-york-statue-liberty.jpg returns original_title correctly",
+        "Supertest test: returned quality_issues for an asset with no rights data includes 'missing_rights'",
+        "Negative case: GET /api/assets/nonexistent-id returns 404 { error: 'Asset not found' }"
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "GET /api/filters — available filter values endpoint",
+      "status": "open",
+      "dependsOn": ["US-003"],
+      "description": "As a frontend developer, I want a filters endpoint so that the UI can dynamically populate filter options without hardcoding.",
+      "acceptanceCriteria": [
+        "GET /api/filters returns { categories, subcategories, locations, rights_statuses, counts }",
+        "categories is a sorted array of distinct category values",
+        "subcategories is an object keyed by category with arrays of subcategory values",
+        "locations is a sorted array of distinct non-null LocationShown values",
+        "rights_statuses is ['owned', 'unclear', 'none'] with counts for each",
+        "counts object includes: total, missing_title, missing_rights, has_release_placeholder, s7_sync_error",
+        "Supertest test: categories contains 'ships' and 'promotions'",
+        "Supertest test: subcategories.ships contains 'allure', 'anthem', 'grandeur'",
+        "Negative case: if database is empty, returns empty arrays with all counts as 0"
+      ]
+    },
+    {
+      "id": "US-007",
+      "title": "POST /api/assets/upload — image upload endpoint",
+      "status": "open",
+      "dependsOn": ["US-003"],
+      "description": "As a content author, I want to upload image files to the DAM so that new assets are stored and made searchable.",
+      "acceptanceCriteria": [
+        "npm install multer at server level",
+        "POST /api/assets/upload accepts multipart/form-data with field name 'files' (supports multiple files)",
+        "Each uploaded file is saved to app/uploads/<uuid>-<sanitized-originalname>",
+        "For each file, a new asset row is inserted into assets with: id=uuid, filename=originalname, filepath=uploads path, category='uploaded', enrichment_source='pending'",
+        "Response is { uploaded: N, assets: [{ id, filename, filepath }] } with 201 status",
+        "Supported MIME types: image/jpeg, image/png, image/webp — reject others with 400",
+        "Max file size per upload: 20MB — reject with 413 if exceeded",
+        "Supertest test: uploading a valid JPEG returns 201 with asset id",
+        "Supertest test: uploaded asset is retrievable via GET /api/assets/:id",
+        "Supertest test: uploaded file exists on disk at the returned filepath",
+        "Negative case: uploading a .txt file returns 400 { error: 'Unsupported file type' }",
+        "Negative case: uploading a file >20MB returns 413"
+      ]
+    },
+    {
+      "id": "US-008",
+      "title": "POST /api/assets/:id/enrich — AI vision enrichment endpoint",
+      "status": "open",
+      "dependsOn": ["US-007"],
+      "description": "As a content author, I want uploaded images to be enriched with AI-generated metadata so that new assets are immediately searchable and described.",
+      "acceptanceCriteria": [
+        "POST /api/assets/:id/enrich reads the asset's filepath, sends the image to OpenAI GPT-4o Vision as base64",
+        "Prompt instructs model to return JSON with: title, description, tags (array), location (or null), scene, subjects (array), mood, channel_hint, confidence (0-1)",
+        "On success, updates assets table: enriched_title, enriched_description, enriched_tags (JSON string), enriched_location, enriched_scene, enriched_subjects (JSON string), enriched_mood, enriched_channel, enrichment_source='ai-vision', enrichment_confidence",
+        "FTS table is updated after enrichment so new asset appears in natural language search",
+        "Response is the updated full asset record with 200 status",
+        "If OPENAI_API_KEY is not set, returns 503 { error: 'AI enrichment unavailable — OPENAI_API_KEY not configured' }",
+        "Jest test: enrichment service called with a mock OpenAI client correctly maps response fields to DB columns",
+        "Jest test: after enrichment, GET /api/assets/:id returns non-null enriched_title",
+        "Negative case: if OpenAI API returns an error, returns 502 { error: 'Enrichment failed', detail: '...' } — asset row is not corrupted",
+        "Negative case: if asset has no filepath (XML-ingested asset without local image), returns 400 { error: 'No image file available for enrichment' }"
+      ]
+    },
+    {
+      "id": "US-009",
+      "title": "React app shell, layout, and API client",
+      "status": "open",
+      "dependsOn": ["US-001"],
+      "description": "As a developer, I want a React app shell with a branded header, layout, and typed API client so that all pages share a consistent structure.",
+      "acceptanceCriteria": [
+        "App.jsx renders a top-level layout with: <Header />, <main> content area",
+        "Header component shows 'Royal Caribbean' wordmark in navy, 'DAM Asset Intelligence' subtitle in gold, and an Upload button on the right",
+        "Layout uses CSS: navy header (#001B6B), gold accent bar, white/light-grey main area",
+        "app/client/src/api/assets.js exports: getAssets(params), getAsset(id), getFilters(), uploadFiles(formData), enrichAsset(id)",
+        "All API functions use axios with base URL http://localhost:3001",
+        "Vitest test: Header renders the text 'Royal Caribbean'",
+        "Vitest test: Header renders an 'Upload' button",
+        "Negative case: if API base URL is unreachable, axios errors are caught and surfaced — app does not crash with an unhandled rejection"
+      ]
+    },
+    {
+      "id": "US-010",
+      "title": "Search and browse page",
+      "status": "open",
+      "dependsOn": ["US-004", "US-006", "US-009"],
+      "description": "As a content author, I want to search and browse all assets on the main page so that I can find the right image for my campaign.",
+      "acceptanceCriteria": [
+        "Route / renders the search/browse page",
+        "SearchBar component at top: text input with placeholder 'Search assets...', debounced 300ms, calls getAssets({ q }) on change",
+        "FilterSidebar (260px left panel) with collapsible sections: Category (ships/promotions chips), Subcategory (dynamic from filters API), Rights Status (owned/unclear/none chips), Location (dropdown), Metadata Quality (toggles for missing title, missing rights, release placeholder)",
+        "Active filters shown as removable chips below the search bar",
+        "AssetGrid renders assets in a responsive CSS grid (min-width 200px columns)",
+        "AssetCard shows: thumbnail (with fallback placeholder if no thumbnail), display_title, category badge, rights status dot (green=owned, amber=unclear, red=none), quality warning icon if any issues",
+        "Results count shown above grid: 'Showing X of Y assets'",
+        "Loading skeleton cards shown while API request is in-flight",
+        "Empty state message when results are 0: 'No assets match your search. Try clearing some filters.'",
+        "Clicking an asset card opens the AssetDetailModal (US-011)",
+        "Vitest test: renders 49 asset cards when API returns all assets",
+        "Vitest test: typing in search bar triggers getAssets with the q param after debounce",
+        "Vitest test: selecting category 'ships' calls getAssets with category='ships'",
+        "Negative case: API error shows an error banner, not a blank screen"
+      ]
+    },
+    {
+      "id": "US-011",
+      "title": "Asset detail modal",
+      "status": "open",
+      "dependsOn": ["US-005", "US-010"],
+      "description": "As a content author, I want to open an asset detail popup so that I can review all metadata, compare original vs enriched fields, and copy the CDN URL.",
+      "acceptanceCriteria": [
+        "Clicking an AssetCard opens AssetDetailModal as a full-screen overlay with close button (X) and ESC key support",
+        "Modal left panel: large image (web_image_path at 1280px if available, else thumbnail), filename, dimensions (WxH px), file size, format",
+        "Modal right panel: two-column metadata table with headers 'Original' and 'Enriched'",
+        "Metadata rows: Title, Description, Tags, Location, Creator, Rights Owner, Usage Terms, Channel, Format",
+        "Enriched column shows AI-generated value in navy text; empty cells show a grey dash",
+        "If enriched value differs from original, enriched cell has a subtle gold left border",
+        "Quality Issues section below metadata table: lists each issue as a badge (e.g. 'Missing Rights', 'Release Placeholder — needs review')",
+        "CDN URL section: full URL displayed in a monospace code block with a 'Copy' button; copy triggers navigator.clipboard.writeText and shows 'Copied!' for 2 seconds",
+        "If asset has no enriched data, shows 'Not yet enriched' banner with an 'Enrich with AI' button that calls enrichAsset(id) and refreshes the modal",
+        "Vitest test: modal renders asset title from display_title",
+        "Vitest test: clicking Copy button updates button text to 'Copied!'",
+        "Vitest test: pressing ESC closes the modal",
+        "Negative case: if cdn_url is null (no scene7_file), CDN section is hidden"
+      ]
+    },
+    {
+      "id": "US-012",
+      "title": "Upload component",
+      "status": "open",
+      "dependsOn": ["US-007", "US-008", "US-009"],
+      "description": "As a content author, I want to upload new images via a drag-and-drop interface so that they are stored and auto-enriched with AI metadata.",
+      "acceptanceCriteria": [
+        "Clicking 'Upload' in the Header opens UploadModal as an overlay",
+        "UploadModal contains a drag-and-drop zone with text 'Drop images here or click to browse'",
+        "File input accepts image/jpeg, image/png, image/webp and supports multiple selection (multiple attribute)",
+        "Folder upload supported via <input webkitdirectory> toggle button labeled 'Upload folder'",
+        "After file selection, shows a file list with: filename, file size, status (pending/uploading/uploaded/enriching/done/error)",
+        "On submit, calls uploadFiles(formData) — each file shows 'uploading' status",
+        "On upload success, immediately calls enrichAsset(id) for each uploaded asset — status changes to 'enriching'",
+        "On enrichment complete, status changes to 'done' with a green checkmark",
+        "After all files complete, shows 'View assets' button that closes modal and refreshes the asset grid",
+        "Vitest test: dropping a JPEG file onto the drop zone adds it to the file list",
+        "Vitest test: submit button is disabled when file list is empty",
+        "Vitest test: each file shows 'done' status after mock upload + enrich calls succeed",
+        "Negative case: if a file exceeds 20MB, it is rejected client-side before upload with 'File too large (max 20MB)'",
+        "Negative case: if enrichment fails (503 — no API key), file shows 'Uploaded, enrichment unavailable' status — asset is still stored"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:dam="http://www.day.com/dam/1.0" xmlns:tiff="http://ns.adobe.com/tiff/1.0/" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:stEvt="http://ns.adobe.com/xap/1.0/sType/ResourceEvent#" xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:exif="http://ns.adobe.com/exif/1.0/"
+    jcr:mixinTypes="[mix:referenceable]"
+    jcr:primaryType="dam:Asset"
+    jcr:uuid="d3f6946b-f0cd-4de7-bec0-db56a0acf64b">
+    <jcr:content
+        cq:lastReplicated="{Date}2025-04-21T10:58:47.044-04:00"
+        cq:lastReplicatedBy="t22cd"
+        cq:lastReplicationAction="Activate"
+        dam:assetState="processed"
+        dam:imageServerAsset="{Boolean}true"
+        dam:s7damType="Image"
+        jcr:lastModified="{Date}2025-04-21T10:44:46.695-04:00"
+        jcr:lastModifiedBy="t22cd"
+        jcr:mixinTypes="[cq:ReplicationStatus]"
+        jcr:primaryType="dam:AssetContent"
+        status="Finished">
+        <metadata
+            dam:Bitsperpixel="{Long}24"
+            dam:extracted="{Date}2025-04-21T10:44:13.113-04:00"
+            dam:Fileformat="JPEG"
+            dam:MIMEtype="image/jpeg"
+            dam:Numberofimages="{Long}1"
+            dam:Numberoftextualcomments="{Long}0"
+            dam:Physicalheightindpi="{Long}300"
+            dam:Physicalheightininches="{Decimal}0.8666666746139526"
+            dam:Physicalwidthindpi="{Long}300"
+            dam:Physicalwidthininches="{Decimal}5.199999809265137"
+            dam:Progressive="no"
+            dam:scene7APIServer="https://s7sps1apissl.scene7.com"
+            dam:scene7CloudConfigPath="/conf/global/settings/cloudconfigs/dmscene7"
+            dam:scene7CompanyID="c|239426"
+            dam:scene7Domain="https://assets.dm.rccl.com/"
+            dam:scene7File="RoyalCaribbeanCruises/icon-star-kicker-banner-sp-1560x260"
+            dam:scene7FileStatus="PublishComplete"
+            dam:scene7Folder="RoyalCaribbeanCruises/royal/promotions/star-and-icon/"
+            dam:scene7ID="a|2311218877"
+            dam:scene7JobStartDate="{Long}1745246653570"
+            dam:scene7LastModified="{Long}1745246685457"
+            dam:scene7Name="icon-star-kicker-banner-sp-1560x260"
+            dam:scene7PublishedBy="t22cd"
+            dam:scene7PublishTimeStamp="{Date}2025-04-21T10:58:47.754-04:00"
+            dam:scene7Type="Image"
+            dam:scene7UploadTimeStamp="{Date}2025-04-21T10:44:45.457-04:00"
+            dam:sha1="5db919cfdb1feeb0aa85603004bf9e96e5038f07"
+            dam:size="{Long}141158"
+            dc:creator="[Royal Carribean]"
+            dc:creator_xmpArrayType="rdf:Seq"
+            dc:format="image/jpeg"
+            dc:rights="Royal Carribean"
+            dc:title="Icon and Star Kicker banner Spanish 1560 x 260"
+            exif:ColorSpace="{Long}1"
+            exif:ExifVersion="0231"
+            exif:PixelXDimension="{Long}1560"
+            exif:PixelYDimension="{Long}260"
+            jcr:mixinTypes="[cq:Taggable]"
+            jcr:primaryType="nt:unstructured"
+            jcr:title="Icon and Star Kicker banner Spanish 1560 x 260"
+            tiff:ImageLength="{Long}260"
+            tiff:ImageWidth="{Long}1560"
+            tiff:Orientation="{Long}1"
+            tiff:ResolutionUnit="{Long}2"
+            tiff:XResolution="3000000/10000"
+            tiff:YResolution="3000000/10000"
+            xmp:CreateDate="{Date}2025-04-21T20:22:16.000+08:00"
+            xmp:CreatorTool="Adobe Photoshop 26.4 (Macintosh)"
+            xmp:MetadataDate="{Date}2025-04-21T22:43:21.000+08:00"
+            xmpMM:DocumentID="adobe:docid:photoshop:8a8f649d-4979-a043-be08-be792bd6e8f9"
+            xmpMM:InstanceID="xmp.iid:1cf2b6ea-2af7-47f4-9352-0957136616b7"
+            xmpMM:OriginalDocumentID="xmp.did:529dc678-cc5b-4455-becc-64d8c8b42aeb"
+            xmp:ModifyDate="{Date}2025-04-21T20:28:08.000+08:00">
+            <xmpMM:History
+                jcr:primaryType="nt:unstructured"
+                xmpArraySize="{Long}5"
+                xmpArrayType="rdf:Seq"
+                xmpNodeType="xmpArray">
+                <_x0031_
+                    jcr:primaryType="nt:unstructured"
+                    stEvt:action="created"
+                    stEvt:instanceID="xmp.iid:529dc678-cc5b-4455-becc-64d8c8b42aeb"
+                    stEvt:softwareAgent="Adobe Photoshop 26.4 (Macintosh)"
+                    stEvt:when="{Date}2025-04-21T20:22:16.000+08:00"
+                    xmpNodeType="xmpStruct"/>
+                <_x0032_
+                    jcr:primaryType="nt:unstructured"
+                    stEvt:action="converted"
+                    stEvt:parameters="from application/vnd.adobe.photoshop to image/jpeg"
+                    xmpNodeType="xmpStruct"/>
+                <_x0033_
+                    jcr:primaryType="nt:unstructured"
+                    stEvt:action="saved"
+                    stEvt:changed="/"
+                    stEvt:instanceID="xmp.iid:d54a3278-235f-41f8-a6b0-4d79b2283ed4"
+                    stEvt:softwareAgent="Adobe Photoshop 26.4 (Macintosh)"
+                    stEvt:when="{Date}2025-04-21T20:28:08.000+08:00"
+                    xmpNodeType="xmpStruct"/>
+                <_x0034_
+                    jcr:primaryType="nt:unstructured"
+                    stEvt:action="saved"
+                    stEvt:changed="/metadata"
+                    stEvt:instanceID="xmp.iid:ffade323-ce09-4d9c-9c44-abfc0d571bf9"
+                    stEvt:softwareAgent="Adobe Photoshop Camera Raw 17.2"
+                    stEvt:when="{Date}2025-04-21T22:40:59.000+08:00"
+                    xmpNodeType="xmpStruct"/>
+                <_x0035_
+                    jcr:primaryType="nt:unstructured"
+                    stEvt:action="saved"
+                    stEvt:changed="/metadata"
+                    stEvt:instanceID="xmp.iid:1cf2b6ea-2af7-47f4-9352-0957136616b7"
+                    stEvt:softwareAgent="Adobe Photoshop Camera Raw 17.2 (Macintosh)"
+                    stEvt:when="{Date}2025-04-21T22:43:21.000+08:00"
+                    xmpNodeType="xmpStruct"/>
+            </xmpMM:History>
+        </metadata>
+        <related jcr:primaryType="nt:unstructured"/>
+    </jcr:content>
+</jcr:root>

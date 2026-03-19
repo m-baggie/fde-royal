@@ -103,7 +103,7 @@ const styles = {
   },
 };
 
-function buildParams({ q, category, subcategory, rights, location, metadataQuality, channel, scene, destinationRegion, contentType }) {
+function buildParams({ q, category, subcategory, rights, location, metadataQuality, channel, scene, destinationRegion, contentType, showAllVariants }) {
   const params = {};
   if (q) params.q = q;
   if (category) params.category = category;
@@ -117,6 +117,7 @@ function buildParams({ q, category, subcategory, rights, location, metadataQuali
   if (scene && scene.length > 0) params.scene = scene.join(',');
   if (destinationRegion) params.destination_region = destinationRegion;
   if (contentType) params.content_type = contentType;
+  if (showAllVariants) params.show_all_variants = '1';
   return params;
 }
 
@@ -143,6 +144,7 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
   const closeTimerRef = useRef(null);
   const prevSelectedAssetIdRef = useRef(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showAllVariants, setShowAllVariants] = useState(false);
 
   // Slide-in animation: when selectedAssetId transitions from null → non-null, trigger panelIn
   useEffect(() => {
@@ -191,7 +193,7 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
 
   // Load assets whenever filter state or refreshKey changes
   useEffect(() => {
-    const params = buildParams({ q, category, subcategory, rights, location, metadataQuality, channel, scene, destinationRegion, contentType });
+    const params = buildParams({ q, category, subcategory, rights, location, metadataQuality, channel, scene, destinationRegion, contentType, showAllVariants });
     setLoading(true);
     setError(null);
     getAssets(params)
@@ -204,7 +206,7 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
         setError('Failed to load assets. Please try again.');
         setLoading(false);
       });
-  }, [q, category, subcategory, rights, location, metadataQuality, channel, scene, destinationRegion, contentType, refreshKey]);
+  }, [q, category, subcategory, rights, location, metadataQuality, channel, scene, destinationRegion, contentType, showAllVariants, refreshKey]);
 
   function handleUploadComplete() {
     onUploadRequestClose();
@@ -292,6 +294,8 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
             onFilterChange={handleFilterChange}
             adminMode={adminMode}
             onAdminModeChange={onAdminModeChange}
+            showAllVariants={showAllVariants}
+            onShowAllVariantsChange={setShowAllVariants}
           />
         </div>
 
@@ -337,6 +341,7 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
             onSelectAsset={setSelectedAssetId}
             isFavourited={isFavourited}
             onFavouriteToggle={onFavouriteToggle}
+            showAllVariants={showAllVariants}
           />
         </div>
 

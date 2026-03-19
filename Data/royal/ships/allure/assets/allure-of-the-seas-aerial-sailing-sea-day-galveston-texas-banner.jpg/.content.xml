@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:dam="http://www.day.com/dam/1.0" xmlns:tiff="http://ns.adobe.com/tiff/1.0/" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:stRef="http://ns.adobe.com/xap/1.0/sType/ResourceRef#" xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:dc="http://purl.org/dc/elements/1.1/"
+    jcr:mixinTypes="[mix:referenceable]"
+    jcr:primaryType="dam:Asset"
+    jcr:uuid="1a8e5a9a-db2b-4b0b-bbc9-235ac03bca2b">
+    <jcr:content
+        cq:isDelivered="{Boolean}false"
+        cq:lastReplicated="{Date}2025-06-26T21:23:43.707Z"
+        cq:lastReplicated_publish="{Date}2025-06-26T21:23:43.707Z"
+        cq:lastReplicatedBy="workflow-process-service"
+        cq:lastReplicatedBy_publish="workflow-process-service"
+        cq:lastReplicationAction="Activate"
+        cq:lastReplicationAction_publish="Activate"
+        dam:assetState="processed"
+        dam:imageServerAsset="{Boolean}true"
+        dam:s7damType="Image"
+        jcr:lastModified="{Date}2024-02-05T10:17:11.577-05:00"
+        jcr:lastModifiedBy="137019"
+        jcr:mixinTypes="[cq:ReplicationStatus,cq:ReplicationStatus2]"
+        jcr:primaryType="dam:AssetContent"
+        status="Finished">
+        <metadata
+            dam:Bitsperpixel="{Long}24"
+            dam:extracted="{Date}2024-02-05T10:16:23.360-05:00"
+            dam:Fileformat="JPEG"
+            dam:MIMEtype="image/jpeg"
+            dam:Numberofimages="{Long}1"
+            dam:Numberoftextualcomments="{Long}0"
+            dam:Physicalheightindpi="{Long}-1"
+            dam:Physicalheightininches="-1.0"
+            dam:Physicalwidthindpi="{Long}-1"
+            dam:Physicalwidthininches="-1.0"
+            dam:Progressive="no"
+            dam:scene7APIServer="https://s7sps1apissl.scene7.com"
+            dam:scene7CloudConfigPath="/conf/global/settings/cloudconfigs/dmscene7"
+            dam:scene7CompanyID="c|239426"
+            dam:scene7Domain="https://assets.dm.rccl.com/"
+            dam:scene7File="RoyalCaribbeanCruises/allure-of-the-seas-aerial-sailing-sea-day-galveston-texas-banner"
+            dam:scene7FileStatus="PublishComplete"
+            dam:scene7Folder="RoyalCaribbeanCruises/royal/ships/allure/assets/"
+            dam:scene7ID="a|1724975372"
+            dam:scene7JobStartDate="{Long}1707146181771"
+            dam:scene7LastModified="{Long}1707146218178"
+            dam:scene7Name="allure-of-the-seas-aerial-sailing-sea-day-galveston-texas-banner"
+            dam:scene7PublishedBy="o16tu"
+            dam:scene7PublishTimeStamp="{Date}2024-03-10T12:44:16.851-04:00"
+            dam:scene7Type="Image"
+            dam:scene7UploadTimeStamp="{Date}2024-02-05T10:16:58.178-05:00"
+            dam:sha1="0a8e0ff5f4c7b5354b1f8879e377fc5023a89ea4"
+            dam:size="{Long}3481807"
+            dc:format="image/jpeg"
+            jcr:mixinTypes="[cq:Taggable]"
+            jcr:primaryType="nt:unstructured"
+            tiff:ImageLength="{Long}1600"
+            tiff:ImageWidth="{Long}2880"
+            xmp:CreatorTool="Adobe Photoshop 23.4 (Macintosh)"
+            xmpMM:DocumentID="xmp.did:992D8562057D11EDAD0FDDC2CD2C3344"
+            xmpMM:InstanceID="xmp.iid:992D8561057D11EDAD0FDDC2CD2C3344">
+            <xmpMM:DerivedFrom
+                jcr:primaryType="nt:unstructured"
+                stRef:documentID="xmp.did:992D8560057D11EDAD0FDDC2CD2C3344"
+                stRef:instanceID="xmp.iid:BDD70C7E053C11EDAD0FDDC2CD2C3344"
+                xmpNodeType="xmpStruct"/>
+        </metadata>
+        <related jcr:primaryType="nt:unstructured"/>
+    </jcr:content>
+</jcr:root>

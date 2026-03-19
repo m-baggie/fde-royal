@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:dam="http://www.day.com/dam/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0"
+    jcr:mixinTypes="[mix:referenceable]"
+    jcr:primaryType="dam:Asset"
+    jcr:uuid="4d974b0a-5d11-4c31-bdf8-b00e8186278f">
+    <jcr:content
+        cq:lastReplicated="{Date}2025-04-16T14:28:00.095-04:00"
+        cq:lastReplicatedBy="133216"
+        cq:lastReplicationAction="Activate"
+        dam:assetState="processed"
+        dam:imageServerAsset="{Boolean}true"
+        dam:s7damType="Image"
+        jcr:lastModified="{Date}2025-04-16T14:27:51.237-04:00"
+        jcr:lastModifiedBy="133216"
+        jcr:mixinTypes="[cq:ReplicationStatus]"
+        jcr:primaryType="dam:AssetContent"
+        status="Finished">
+        <metadata
+            dam:scene7APIServer="https://s7sps1apissl.scene7.com"
+            dam:scene7CloudConfigPath="/conf/global/settings/cloudconfigs/dmscene7"
+            dam:scene7CompanyID="c|239426"
+            dam:scene7Domain="https://assets.dm.rccl.com/"
+            dam:scene7File="RoyalCaribbeanCruises/1040x520 op2 CTA_2x"
+            dam:scene7FileStatus="PublishComplete"
+            dam:scene7Folder="RoyalCaribbeanCruises/royal/promotions/star-and-icon/"
+            dam:scene7ID="a|2305295756"
+            dam:scene7JobStartDate="{Long}1744828008088"
+            dam:scene7LastModified="{Long}1744828066372"
+            dam:scene7Name="1040x520 op2 CTA_2x"
+            dam:scene7PublishedBy="133216"
+            dam:scene7PublishTimeStamp="{Date}2025-04-16T14:28:00.612-04:00"
+            dam:scene7Type="Image"
+            dam:scene7UploadTimeStamp="{Date}2025-04-16T14:27:46.372-04:00"
+            jcr:mixinTypes="[cq:Taggable]"
+            jcr:primaryType="nt:unstructured"/>
+        <related jcr:primaryType="nt:unstructured"/>
+    </jcr:content>
+</jcr:root>

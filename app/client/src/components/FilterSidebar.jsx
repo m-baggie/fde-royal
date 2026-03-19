@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { TEXT_MUTED } from '../styles/tokens';
 
 const RIGHTS_OPTIONS = ['owned', 'unclear', 'none'];
@@ -100,6 +100,83 @@ function Chip({ opt, isActive, onToggle }) {
   );
 }
 
+function LocationSearch({ locations, activeLocation, onSelect }) {
+  const [query, setQuery] = useState('');
+  const inputRef = useRef(null);
+
+  const filtered = query.trim()
+    ? locations.filter((loc) => loc.toLowerCase().includes(query.toLowerCase()))
+    : [];
+
+  function handleSelect(loc) {
+    onSelect(loc);
+    setQuery('');
+  }
+
+  function handleClear() {
+    onSelect('');
+    setQuery('');
+  }
+
+  return (
+    <div style={{ marginTop: '8px', position: 'relative' }}>
+      {/* Input */}
+      <div style={{ position: 'relative' }}>
+        <input
+          ref={inputRef}
+          type="text"
+          value={activeLocation && !query ? activeLocation : query}
+          placeholder="Search locations..."
+          onChange={(e) => { setQuery(e.target.value); if (activeLocation) onSelect(''); }}
+          style={{
+            width: '100%', boxSizing: 'border-box', padding: '7px 28px 7px 10px',
+            fontSize: '12px', border: '1px solid #E5E7EB', borderRadius: '8px',
+            backgroundColor: '#FFFFFF', color: '#374151', outline: 'none',
+          }}
+          onFocus={(e) => { e.target.style.borderColor = '#001B6B'; }}
+          onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; }}
+        />
+        {(activeLocation || query) && (
+          <button
+            onClick={handleClear}
+            style={{
+              position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF',
+              fontSize: '14px', lineHeight: 1, padding: 0,
+            }}
+          >×</button>
+        )}
+      </div>
+
+      {/* Results dropdown */}
+      {filtered.length > 0 && (
+        <div
+          style={{
+            marginTop: '4px', backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB',
+            borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            maxHeight: '160px', overflowY: 'auto',
+          }}
+        >
+          {filtered.map((loc) => (
+            <div
+              key={loc}
+              onClick={() => handleSelect(loc)}
+              style={{
+                padding: '7px 10px', fontSize: '12px', color: '#374151',
+                cursor: 'pointer', borderBottom: '1px solid #F3F4F6',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
+            >
+              {loc}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Chips({ options, active, onToggle }) {
   if (!options.length) return null;
   return (
@@ -128,6 +205,8 @@ export default function FilterSidebar({
   onFilterChange,
   adminMode = false,
   onAdminModeChange = () => {},
+  showAllVariants = false,
+  onShowAllVariantsChange = () => {},
 }) {
   const categories = filters?.categories || [];
   const subcategories = activeCategory ? (filters?.subcategories?.[activeCategory] || []) : [];
@@ -210,16 +289,11 @@ export default function FilterSidebar({
       </Section>
 
       <Section title="Location">
-        <select
-          style={styles.select}
-          value={activeLocation}
-          onChange={handleLocationChange}
-        >
-          <option value="">All locations</option>
-          {locations.map((loc) => (
-            <option key={loc} value={loc}>{loc}</option>
-          ))}
-        </select>
+        <LocationSearch
+          locations={locations}
+          activeLocation={activeLocation}
+          onSelect={(val) => onFilterChange('location', val)}
+        />
       </Section>
 
       {channels.length > 0 && (
@@ -251,6 +325,31 @@ export default function FilterSidebar({
           />
         </Section>
       )}
+
+      {/* Group Variants toggle */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '6px 0',
+          marginTop: '8px',
+        }}
+      >
+        <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase', color: TEXT_MUTED }}>
+          Group Variants
+        </span>
+        <label style={{ position: 'relative', display: 'inline-block', width: '36px', height: '20px', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={!showAllVariants}
+            onChange={(e) => onShowAllVariantsChange(!e.target.checked)}
+            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
+          />
+          <span style={{ position: 'absolute', inset: 0, borderRadius: '20px', backgroundColor: !showAllVariants ? '#001B6B' : '#D1D5DB', transition: 'background-color 150ms ease' }} />
+          <span style={{ position: 'absolute', top: '3px', left: !showAllVariants ? '19px' : '3px', width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#FFFFFF', transition: 'left 150ms ease' }} />
+        </label>
+      </div>
 
       {/* Admin Mode toggle */}
       <div

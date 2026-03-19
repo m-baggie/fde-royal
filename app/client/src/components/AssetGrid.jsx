@@ -11,7 +11,7 @@ const styles = {
   },
 };
 
-export default function AssetGrid({ assets, loading, onSelectAsset, isFavourited, onFavouriteToggle }) {
+export default function AssetGrid({ assets, loading, onSelectAsset, isFavourited, onFavouriteToggle, showAllVariants = false }) {
   if (loading) {
     return (
       <div style={styles.grid}>
@@ -31,6 +31,7 @@ export default function AssetGrid({ assets, loading, onSelectAsset, isFavourited
           onSelectAsset={onSelectAsset}
           isFavourited={isFavourited ? isFavourited(asset.id) : false}
           onFavouriteToggle={onFavouriteToggle}
+          showVariantBadge={!showAllVariants}
         />
       ))}
     </div>

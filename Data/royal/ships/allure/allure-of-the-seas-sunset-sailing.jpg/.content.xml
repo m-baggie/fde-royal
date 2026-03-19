@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:dam="http://www.day.com/dam/1.0" xmlns:tiff="http://ns.adobe.com/tiff/1.0/" xmlns:Iptc4xmpCore="http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:stRef="http://ns.adobe.com/xap/1.0/sType/ResourceRef#" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0" xmlns:dc="http://purl.org/dc/elements/1.1/"
+    jcr:mixinTypes="[mix:referenceable]"
+    jcr:primaryType="dam:Asset"
+    jcr:uuid="0c8eeaef-70e4-4818-8d40-59d73ec0fbc3">
+    <jcr:content
+        cq:isDelivered="{Boolean}false"
+        cq:lastReplicated="{Date}2025-06-26T21:23:43.707Z"
+        cq:lastReplicated_publish="{Date}2025-06-26T21:23:43.707Z"
+        cq:lastReplicatedBy="workflow-process-service"
+        cq:lastReplicatedBy_publish="workflow-process-service"
+        cq:lastReplicationAction="Activate"
+        cq:lastReplicationAction_publish="Activate"
+        cq:name="allure-of-the-seas-sunset-sailing.jpg"
+        cq:parentPath="/content/dam/royal/ships/allure"
+        dam:assetState="processed"
+        dam:imageServerAsset="{Boolean}true"
+        dam:relativePath="royal/ships/allure/allure-of-the-seas-sunset-sailing.jpg"
+        dam:s7damType="Image"
+        jcr:lastModified="{Date}2019-07-12T14:32:06.573-04:00"
+        jcr:lastModifiedBy="131914"
+        jcr:mixinTypes="[cq:ReplicationStatus,cq:ReplicationStatus2]"
+        jcr:primaryType="dam:AssetContent"
+        status="Finished">
+        <metadata
+            dam:Bitsperpixel="{Long}24"
+            dam:extracted="{Date}2019-07-12T14:27:54.070-04:00"
+            dam:Fileformat="JPEG"
+            dam:MIMEtype="image/jpeg"
+            dam:Numberofimages="{Long}1"
+            dam:Numberoftextualcomments="{Long}0"
+            dam:Physicalheightindpi="{Long}-1"
+            dam:Physicalheightininches="-1.0"
+            dam:Physicalwidthindpi="{Long}-1"
+            dam:Physicalwidthininches="-1.0"
+            dam:Progressive="no"
+            dam:scene7APIServer="https://s7sps1apissl.scene7.com"
+            dam:scene7CloudConfigPath="/conf/global/settings/cloudconfigs/dmscene7"
+            dam:scene7CompanyID="c|239426"
+            dam:scene7Domain="https://assets.dm.rccl.com/"
+            dam:scene7File="RoyalCaribbeanCruises/allure-of-the-seas-sunset-sailing"
+            dam:scene7FileStatus="PublishComplete"
+            dam:scene7Folder="RoyalCaribbeanCruises/royal/ships/allure/"
+            dam:scene7ID="a|1726331653"
+            dam:scene7LastModified="{Long}1707215424300"
+            dam:scene7Name="allure-of-the-seas-sunset-sailing"
+            dam:scene7PublishedBy="o16tu"
+            dam:scene7PublishTimeStamp="{Date}2024-03-10T12:43:32.540-04:00"
+            dam:scene7Type="Image"
+            dam:scene7UploadTimeStamp="{Date}2024-02-06T05:30:51.646-05:00"
+            dam:sha1="7f07473262de3d6cbb2b116559a2a2d5ec30560f"
+            dam:size="{Long}1076279"
+            dc:description="Allure of the Seas Sunset Sailing"
+            dc:format="image/jpeg"
+            dc:modified="{Date}2019-07-12T14:29:17.272-04:00"
+            dc:title="Allure of the Seas Sunset Sailing"
+            jcr:lastModified="{Date}2019-07-12T14:32:06.478-04:00"
+            jcr:lastModifiedBy="131914"
+            jcr:mixinTypes="[cq:Taggable]"
+            jcr:primaryType="nt:unstructured"
+            tiff:ImageLength="{Long}1920"
+            tiff:ImageWidth="{Long}2880"
+            xmpMM:DocumentID="xmp.did:FD798C049CF611E98466B03B71AF7DE6"
+            xmpMM:InstanceID="xmp.iid:FD798C039CF611E98466B03B71AF7DE6">
+            <xmpMM:DerivedFrom
+                jcr:primaryType="nt:unstructured"
+                stRef:documentID="xmp.did:FD798C029CF611E98466B03B71AF7DE6"
+                stRef:instanceID="xmp.iid:FD798C019CF611E98466B03B71AF7DE6"
+                xmpNodeType="xmpStruct"/>
+            <Iptc4xmpCore:CreatorContactInfo jcr:primaryType="nt:unstructured"/>
+        </metadata>
+        <related jcr:primaryType="nt:unstructured"/>
+        <usages
+            dam:score="{Long}1"
+            jcr:primaryType="nt:unstructured"
+            usedBy="[aem]">
+            <aem
+                jcr:primaryType="nt:unstructured"
+                count="{Long}1"
+                lastUsed="{Date}2019-09-17T03:32:01.016-04:00"/>
+        </usages>
+    </jcr:content>
+</jcr:root>

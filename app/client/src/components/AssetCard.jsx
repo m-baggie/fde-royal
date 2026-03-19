@@ -145,7 +145,7 @@ const placeholderStyle = {
   wordBreak: 'break-all',
 };
 
-export default function AssetCard({ asset, onSelectAsset, isFavourited = false, onFavouriteToggle }) {
+export default function AssetCard({ asset, onSelectAsset, isFavourited = false, onFavouriteToggle, showVariantBadge = true }) {
   const [hovered, setHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -177,7 +177,7 @@ export default function AssetCard({ asset, onSelectAsset, isFavourited = false, 
   const hasIssues = Array.isArray(asset.quality_issues) && asset.quality_issues.length > 0;
 
   const variantCount = asset.variant_count;
-  const showVariantBadge = variantCount > 1;
+  const showVariantBadge_ = showVariantBadge && variantCount > 1 && (variantCount - 1) > 0;
 
   const thumbnailSrc = asset.thumbnail_path
     ? `${API_BASE}/api/assets/media/${asset.thumbnail_path}`
@@ -221,7 +221,7 @@ export default function AssetCard({ asset, onSelectAsset, isFavourited = false, 
             onError={() => setImgError(true)}
           />
         )}
-        {showVariantBadge && (
+        {showVariantBadge_ && (
           <span data-testid="variant-badge" style={styles.variantBadge}>
             +{variantCount - 1} variants
           </span>
