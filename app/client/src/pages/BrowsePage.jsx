@@ -224,6 +224,7 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
         count={count}
         onFavouriteToggle={onFavouriteToggle}
         clear={clear}
+        onSelectAsset={setSelectedAssetId}
       />
 
       <div style={styles.searchRow}>
@@ -297,6 +298,8 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
         <AssetDetailModal
           selectedAssetId={selectedAssetId}
           onClose={() => setSelectedAssetId(null)}
+          isFavourited={isFavourited ? isFavourited(selectedAssetId) : false}
+          onFavouriteToggle={onFavouriteToggle}
         />
       )}
 

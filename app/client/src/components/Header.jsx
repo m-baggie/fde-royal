@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import FavouritesDropdown from './FavouritesDropdown';
 
-export default function Header({ onUploadClick, count = 0, onFavouriteIconClick = () => {}, onFavouriteToggle = () => {}, clear = () => {} }) {
+export default function Header({ onUploadClick, count = 0, onFavouriteIconClick = () => {}, onFavouriteToggle = () => {}, clear = () => {}, onSelectAsset = () => {} }) {
   const [isOpen, setIsOpen] = useState(false);
 
   function handleFavIconClick() {
@@ -136,6 +136,7 @@ export default function Header({ onUploadClick, count = 0, onFavouriteIconClick 
               onFavouriteToggle={onFavouriteToggle}
               onClear={clear}
               onClose={handleClose}
+              onSelectAsset={(id) => { onSelectAsset(id); handleClose(); }}
             />
           )}
         </div>

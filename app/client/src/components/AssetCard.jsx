@@ -196,7 +196,12 @@ export default function AssetCard({ asset, onSelectAsset, isFavourited = false, 
       <div style={styles.imageWrapper}>
         <button
           data-testid="heart-btn"
-          style={{ ...styles.heartBtn, transform: `scale(${heartScale})` }}
+          style={{
+            ...styles.heartBtn,
+            transform: `scale(${heartScale})`,
+            opacity: (hovered || isFavourited) ? 1 : 0,
+            transition: 'opacity 150ms ease, transform 150ms ease',
+          }}
           onClick={handleHeartClick}
           aria-label={isFavourited ? 'Remove from favourites' : 'Add to favourites'}
         >

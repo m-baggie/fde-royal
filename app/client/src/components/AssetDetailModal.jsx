@@ -67,7 +67,7 @@ function formatFileSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function AssetDetailModal({ selectedAssetId, onClose }) {
+export default function AssetDetailModal({ selectedAssetId, onClose, isFavourited = false, onFavouriteToggle }) {
   const [asset, setAsset] = useState(null);
   const [loading, setLoading] = useState(true);
   const [enriching, setEnriching] = useState(false);
@@ -389,6 +389,27 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                   {asset.display_title || asset.filename}
                 </h2>
                 <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                  {onFavouriteToggle && (
+                    <button
+                      onClick={() => onFavouriteToggle(asset.id, { display_title: asset.display_title, thumbnail_path: asset.thumbnail_path, cdn_url: asset.cdn_url })}
+                      title={isFavourited ? 'Remove from favourites' : 'Add to favourites'}
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: isFavourited ? '#FEE2E2' : '#F3F4F6',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '15px',
+                        cursor: 'pointer',
+                        color: isFavourited ? '#EF4444' : '#9CA3AF',
+                      }}
+                    >
+                      {isFavourited ? '♥' : '♡'}
+                    </button>
+                  )}
                   <a
                     href={getAssetDownloadUrl(asset.id)}
                     download

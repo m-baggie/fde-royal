@@ -22,7 +22,7 @@ function readData() {
   }
 }
 
-export default function FavouritesDropdown({ count, onFavouriteToggle, onClear, onClose }) {
+export default function FavouritesDropdown({ count, onFavouriteToggle, onClear, onClose, onSelectAsset = () => {} }) {
   const ref = useRef(null);
   const [copied, setCopied] = useState(false);
 
@@ -40,12 +40,18 @@ export default function FavouritesDropdown({ count, onFavouriteToggle, onClear, 
   }, [onClose]);
 
   function handleExport() {
-    const urls = ids.map((id) => data[id]?.cdn_url).filter(Boolean);
-    const text = urls.join('\n');
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+    ids.forEach((id, i) => {
+      setTimeout(() => {
+        const a = document.createElement('a');
+        a.href = `/api/assets/${encodeURIComponent(id)}/download`;
+        a.download = data[id]?.display_title || id;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }, i * 300);
     });
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   function handleClearAll() {
@@ -100,11 +106,13 @@ export default function FavouritesDropdown({ count, onFavouriteToggle, onClear, 
               return (
                 <div
                   key={id}
+                  onClick={() => onSelectAsset(id)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
                     padding: '10px 16px',
+                    cursor: 'pointer',
                   }}
                 >
                   {item.thumbnail_path ? (
@@ -145,7 +153,7 @@ export default function FavouritesDropdown({ count, onFavouriteToggle, onClear, 
                     {item.display_title || id}
                   </span>
                   <button
-                    onClick={() => onFavouriteToggle(id)}
+                    onClick={(e) => { e.stopPropagation(); onFavouriteToggle(id); }}
                     style={{
                       background: 'none',
                       border: 'none',
@@ -201,7 +209,7 @@ export default function FavouritesDropdown({ count, onFavouriteToggle, onClear, 
                 cursor: 'pointer',
               }}
             >
-              {copied ? '✓ Copied!' : 'Export CDN URLs'}
+              {copied ? '✓ Downloading...' : 'Export Images'}
             </button>
           </div>
         </>
