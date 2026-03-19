@@ -107,6 +107,9 @@ function searchAssets(db, params) {
   `;
 
   if (q) {
+    // Split terms by whitespace and join with OR so "happy people" matches either word
+    const ftsQuery = q.trim().split(/\s+/).filter(Boolean).join(' OR ');
+
     // --- FTS path ---
     const ftsWhere = conditions.length ? 'AND ' + conditions.join(' AND ') : '';
     const ftsSql = `
@@ -127,7 +130,7 @@ function searchAssets(db, params) {
     `;
 
     try {
-      const ftsArgs = [q, ...condArgs];
+      const ftsArgs = [ftsQuery, ...condArgs];
       const total = db.prepare(ftsCountSql).get(...ftsArgs).total;
       if (total > 0) {
         const rows = db.prepare(ftsSql).all(...ftsArgs, limit, offset);
