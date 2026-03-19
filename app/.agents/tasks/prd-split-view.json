@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "project": "Royal Caribbean DAM — Split-Screen Detail View",
+  "project": "Royal Caribbean DAM \u2014 Split-Screen Detail View",
   "overview": "Replace the asset detail modal with a persistent split-screen panel. Clicking an asset card opens a detail panel on the right side of the screen (40% width). The grid and sidebar remain visible on the left (60%). The detail panel stacks content vertically: full-width image at top, then title and actions, then tags, then the collapsible metadata accordion below. The modal overlay is removed entirely.",
   "goals": [
     "Clicking an asset opens a right-side detail panel instead of a modal overlay",
@@ -25,36 +25,36 @@
     "Panel closes on X click or Escape key"
   ],
   "stack": {
-    "frontend": "React 18 + Vite — client/src/",
+    "frontend": "React 18 + Vite \u2014 client/src/",
     "styling": "Inline styles only"
   },
   "routes": [],
   "uiNotes": [
-    "Layout when panel is closed: sidebar (240px) + main grid (flex:1) — unchanged from current",
+    "Layout when panel is closed: sidebar (240px) + main grid (flex:1) \u2014 unchanged from current",
     "Layout when panel is open: sidebar (240px) + main grid (flex:1, min-width 0) + detail panel (400px, flex-shrink:0). The grid naturally shrinks to fill remaining space.",
-    "Detail panel: width 400px, height 100%, border-left '1px solid #E5E7EB', background #FFFFFF, overflow-y auto, flex-shrink 0. Slide in from right: transform translateX(400px) → translateX(0), transition '250ms cubic-bezier(0.16,1,0.3,1)'.",
+    "Detail panel: width 400px, height 100%, border-left '1px solid #E5E7EB', background #FFFFFF, overflow-y auto, flex-shrink 0. Slide in from right: transform translateX(400px) \u2192 translateX(0), transition '250ms cubic-bezier(0.16,1,0.3,1)'.",
     "Panel image zone: width 100%, aspect-ratio 16/9, object-fit cover, display block. Background #F3F4F6 while loading.",
     "Panel content zone: padding 20px. Stacking order from top: (1) title + action buttons row, (2) Details accordion (OPEN by default), (3) Tags accordion (COLLAPSED by default, only shown in Enriched view), (4) CDN URL section, (5) Enrich button.",
-    "Details accordion: open by default. Contains Enriched/Original pill toggle at top, then key-value metadata rows. Tags row NOT included here — tags have their own accordion.",
-    "Tags accordion: separate accordion below Details. Collapsed by default. Only rendered when metaView === 'enriched' AND display_tags is non-empty. Label 'Tags ▼', contains navy pill chips.",
-    "Title row: display flex, align-items flex-start, gap 8px. Title: 16px/700 color #111827, flex 1. Action buttons: '↓ Download' (text+icon, navy), star favourite (★/☆, gold #C8A84B with glow when active), share (↗), and delete (🗑 — admin only).",
+    "Details accordion: open by default. Contains Enriched/Original pill toggle at top, then key-value metadata rows. Tags row NOT included here \u2014 tags have their own accordion.",
+    "Tags accordion: separate accordion below Details. Collapsed by default. Only rendered when metaView === 'enriched' AND display_tags is non-empty. Label 'Tags \u25bc', contains navy pill chips.",
+    "Title row: display flex, align-items flex-start, gap 8px. Title: 16px/700 color #111827, flex 1. Action buttons: '\u2193 Download' (text+icon, navy), star favourite (\u2605/\u2606, gold #C8A84B with glow when active), share (\u2197), and delete (\ud83d\uddd1 \u2014 admin only).",
     "The detail panel inherits ALL content and logic from AssetDetailModal: enriched-first metadata, Enriched/Original pill toggle inside the accordion, variant strip, quality issues, enrich button, share button, admin-gated delete.",
     "Variant strip: shown below the image if variants exist, same horizontal thumbnail strip design.",
-    "Close button: top-right of the panel, 32×32px, × symbol, color #9CA3AF.",
-    "When panel is open and user clicks a different card: content updates in place (no close/reopen animation — just data swap).",
+    "Close button: top-right of the panel, 32\u00d732px, \u00d7 symbol, color #9CA3AF.",
+    "When panel is open and user clicks a different card: content updates in place (no close/reopen animation \u2014 just data swap).",
     "AssetDetailModal.jsx is removed and replaced by AssetDetailPanel.jsx. BrowsePage renders the panel inline instead of the modal.",
-    "The panel does NOT use position:fixed or z-index overlay — it is part of the normal document flow."
+    "The panel does NOT use position:fixed or z-index overlay \u2014 it is part of the normal document flow."
   ],
   "dataModel": [],
   "rules": [
     "Remove AssetDetailModal.jsx and its usage from BrowsePage.jsx",
     "Create client/src/components/AssetDetailPanel.jsx with the same data-fetching logic (getAsset, getAssetVariants) and all the same content sections as the current modal",
     "BrowsePage bodyRow layout: when selectedAssetId is set, render AssetDetailPanel as a sibling to the main grid div inside the bodyRow flex container",
-    "The bodyRow already has display:flex and overflow:hidden — the panel slots in naturally as a third flex child",
+    "The bodyRow already has display:flex and overflow:hidden \u2014 the panel slots in naturally as a third flex child",
     "AssetDetailPanel receives the same props as AssetDetailModal: selectedAssetId, onClose, isFavourited, onFavouriteToggle, adminMode",
     "Panel slide-in: use a CSS transition on the panel's transform. When selectedAssetId changes from null to a value, render the panel and immediately transition from translateX(400px) to translateX(0). When closing, reverse the transition then remove from DOM (use a 'closing' state with 250ms timeout).",
-    "Escape key closes the panel — same as current modal",
-    "Clicking a card when panel is already open: just update selectedAssetId — panel stays open and re-fetches new asset",
+    "Escape key closes the panel \u2014 same as current modal",
+    "Clicking a card when panel is already open: just update selectedAssetId \u2014 panel stays open and re-fetches new asset",
     "The share URL format is unchanged: window.location.origin + '/?asset=' + id"
   ],
   "qualityGates": [
@@ -64,21 +64,21 @@
   "stories": [
     {
       "id": "US-001",
-      "title": "AssetDetailPanel component — vertical layout with image at top",
-      "status": "open",
+      "title": "AssetDetailPanel component \u2014 vertical layout with image at top",
+      "status": "done",
       "dependsOn": [],
       "description": "As a content author, I want to see asset details in a side panel with the image at the top so I can evaluate the image and read metadata without losing context of the grid.",
       "acceptanceCriteria": [
         "client/src/components/AssetDetailPanel.jsx is created",
         "Panel container: width 400px, height 100%, border-left '1px solid #E5E7EB', background #FFFFFF, overflow-y auto, flex-shrink 0, position relative",
-        "Close button: position absolute, top 12px, right 12px, 32×32px, background none, border none, fontSize 20px, color #9CA3AF, cursor pointer, z-index 1",
+        "Close button: position absolute, top 12px, right 12px, 32\u00d732px, background none, border none, fontSize 20px, color #9CA3AF, cursor pointer, z-index 1",
         "Image zone: width 100%, aspect-ratio 16/9, object-fit cover. Uses web_image_path or thumbnail_path via /api/assets/media/ route. Shows grey placeholder if no image.",
-        "Variant strip: rendered below the image when variants.length > 1 — horizontal scrollable strip of 64×64px thumbnails, same style as current modal",
+        "Variant strip: rendered below the image when variants.length > 1 \u2014 horizontal scrollable strip of 64\u00d764px thumbnails, same style as current modal",
         "Content zone: padding 20px, display flex, flex-direction column, gap 16px",
-        "Title row: display flex, align-items flex-start, gap 8px. Title: 16px/700 color #111827, flex 1. Action buttons: '↓ Download' (text+icon, navy), favourite heart (♥/♡, toggles red when active), share (↗), and delete (🗑 — admin only). The favourite and delete buttons are icon-only 32×32px; Download and Share have text labels.",
+        "Title row: display flex, align-items flex-start, gap 8px. Title: 16px/700 color #111827, flex 1. Action buttons: '\u2193 Download' (text+icon, navy), favourite heart (\u2665/\u2661, toggles red when active), share (\u2197), and delete (\ud83d\uddd1 \u2014 admin only). The favourite and delete buttons are icon-only 32\u00d732px; Download and Share have text labels.",
         "Tags row: always visible. 'Tags' label (11px/600 uppercase muted) above navy pill chips. Hidden if no tags.",
-        "Details accordion: same collapsible accordion as specified in prd-modal-ux US-004 — label 'Details', collapsed by default, contains Enriched/Original pill toggle and key-value metadata rows",
-        "CDN URL section: shown when asset.cdn_url exists — code block + copy button",
+        "Details accordion: same collapsible accordion as specified in prd-modal-ux US-004 \u2014 label 'Details', collapsed by default, contains Enriched/Original pill toggle and key-value metadata rows",
+        "CDN URL section: shown when asset.cdn_url exists \u2014 code block + copy button",
         "Enrich button: shown when enrichment_source is null or pending",
         "All data fetching logic copied from AssetDetailModal: getAsset on selectedAssetId change, getAssetVariants if variant_group_id set, enrichAsset, handleCopy, handleDelete, handleVariantClick",
         "Escape key listener closes panel via onClose()",
@@ -86,13 +86,18 @@
         "Negative case: asset with no image shows grey placeholder in the image zone",
         "npm run lint passes",
         "npm run build passes"
-      ]
+      ],
+      "startedAt": "2026-03-19T14:15:40.383388+00:00",
+      "completedAt": "2026-03-19T14:22:21.674834+00:00",
+      "updatedAt": "2026-03-19T14:22:21.674191+00:00"
     },
     {
       "id": "US-002",
-      "title": "BrowsePage — split-screen layout with slide-in panel",
-      "status": "open",
-      "dependsOn": ["US-001"],
+      "title": "BrowsePage \u2014 split-screen layout with slide-in panel",
+      "status": "done",
+      "dependsOn": [
+        "US-001"
+      ],
       "description": "As a content author, I want the detail panel to appear alongside the grid so I can keep browsing while reading asset details.",
       "acceptanceCriteria": [
         "BrowsePage removes the AssetDetailModal import and renders AssetDetailPanel instead",
@@ -109,7 +114,10 @@
         "Negative case: pressing Escape while panel is open closes the panel",
         "npm run lint passes",
         "npm run build passes"
-      ]
+      ],
+      "startedAt": "2026-03-19T14:22:24.371496+00:00",
+      "completedAt": "2026-03-19T14:40:09.317509+00:00",
+      "updatedAt": "2026-03-19T14:40:09.317148+00:00"
     }
   ]
 }

@@ -1,0 +1,15 @@
+The app loads correctly — asset grid is rendering with no regressions. The `AssetDetailPanel` component is not yet wired into `BrowsePage` (that's US-002), but it exists and the build is clean.
+
+**Summary of US-001:**
+
+- `client/src/components/AssetDetailPanel.jsx` created
+- Vertical layout: image zone (16/9, grey placeholder) → variant strip → content zone
+- Content zone: title row with Download/Share (text labels) + Favourite ♥/♡ (32×32, red when active) + Delete 🗑 (admin-only, 32×32)
+- Tags row: plain row with navy pill chips, hidden if empty
+- Details accordion: collapsed by default, Enriched/Original toggle + key-value rows
+- CDN URL section + Enrich with AI button
+- All data fetching and interactions copied from `AssetDetailModal` (getAsset, getAssetVariants, enrichAsset, Escape key, handleCopy, handleDelete, handleVariantClick)
+- `npm run lint` ✅ `npm run build` ✅ Browser: no regressions ✅
+- Commit: `5ba8a38 feat(panel): add AssetDetailPanel component`
+
+<promise>COMPLETE</promise>

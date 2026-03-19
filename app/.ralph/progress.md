@@ -1261,3 +1261,75 @@ Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-modal-ux/app/.ralph/runs
   - Accordion button styled with background:none, border:none, borderTop inline keeps it semantically correct
   - metaOpen state reset must be added to the same useEffect that resets metaView (keyed on selectedAssetId)
 ---
+
+
+## [2026-03-19 10:15] - US-001: AssetDetailPanel component — vertical layout with image at top
+Thread:
+Run: 20260319-101540-41479 (iteration 1)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-split-view/app/.ralph/runs/run-20260319-101540-41479-iter-1.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-split-view/app/.ralph/runs/run-20260319-101540-41479-iter-1.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 5ba8a38 feat(panel): add AssetDetailPanel component
+- Post-commit status: .agents/tasks/prd-split-view.json modified by task loop (not by agent); dist/index.html build artifact; .ralph/.tmp/* run artifacts — all expected
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS (226kB, 94 modules)
+- Files changed:
+  - client/src/components/AssetDetailPanel.jsx (new file)
+  - .ralph/activity.log
+  - .ralph/runs/run-20260319-101540-41479-iter-1.log
+- What was implemented:
+  - Created AssetDetailPanel.jsx from scratch based on AssetDetailModal.jsx
+  - Vertical layout: image zone (full-width, 16/9 aspect ratio, grey placeholder when no image) at top
+  - Variant strip below image (64×64 thumbnails, horizontal scroll, only when variants.length > 1)
+  - Content zone (padding 20px, flex column, gap 16px) containing:
+    - Title row: title (16px/700 #111827) + Download (navy, text+icon) + Share (bordered, text label) + Favourite heart ♥/♡ (32×32, red when active) + Delete 🗑 (admin only, 32×32)
+    - Tags row: muted label + navy pill chips (hidden if no tags)
+    - Details accordion: collapsed by default, Enriched/Original toggle + key-value rows
+    - CDN URL section: code block + Copy button
+    - Enrich with AI button
+    - Toast for enrichment errors
+  - Close button: position absolute, top 12px, right 12px, 32×32, fontSize 20px, color #9CA3AF
+  - Panel container: width 400px, height 100%, borderLeft #E5E7EB, background #FFFFFF, overflow-y auto, flex-shrink 0, position relative
+  - All data fetching from AssetDetailModal copied: getAsset on selectedAssetId change, getAssetVariants, enrichAsset, handleCopy, handleDelete, handleVariantClick, Escape key listener
+  - No body scroll lock (panel is not an overlay)
+- **Learnings for future iterations:**
+  - `ralph log` script does not exist in this repo; append to .ralph/activity.log directly
+  - Details accordion starts collapsed (metaOpen=false) in panel, unlike modal which starts open (metaOpen=true)
+  - Tags are a plain row in the panel spec (not an accordion), unlike the modal's Tags accordion
+  - npm install needed before first build if node_modules absent (vite: command not found)
+  - PRD JSON (.agents/tasks/prd-split-view.json) is modified by task loop — do not stage/commit it
+---
+
+## [2026-03-19] - US-002: BrowsePage — split-screen layout with slide-in panel
+Thread:
+Run: 20260319-101540-41479 (iteration 2)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-split-view/app/.ralph/runs/run-20260319-101540-41479-iter-2.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-split-view/app/.ralph/runs/run-20260319-101540-41479-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 1e91fc3 feat(browse): replace modal with split-screen panel (US-002)
+- Post-commit status: clean
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS
+  - Browser: panel mounts in bodyRow (3 children), panelWidth=401px, panelInBodyRow=true, Escape closes panel -> PASS
+- Files changed:
+  - client/src/pages/BrowsePage.jsx
+  - .ralph/activity.log
+- What was implemented:
+  - Removed AssetDetailModal import/usage from BrowsePage
+  - Imported AssetDetailPanel; rendered inside bodyRow flex container as a sibling of main content
+  - Added isClosing + panelIn state and handleClosePanel for slide animation
+  - Slide-in: double rAF sets panelIn=true → translateX(400px)→translateX(0) 250ms cubic-bezier(0.16,1,0.3,1)
+  - Slide-out: panelIn=false → translateX(400px) 200ms ease → unmount after 200ms timer
+  - prevSelectedAssetIdRef tracks null→non-null transition to only animate on first open, not asset switch
+  - Grid takes flex:1 with min-width:0; panel wrapper is flexShrink:0 with height:100%
+  - Escape key closes panel via AssetDetailPanel's existing Escape listener (calls handleClosePanel)
+- **Learnings for future iterations:**
+  - Vite dev server does NOT auto-reload when files are edited externally (e.g., by Claude Edit tool) if the process was started before the edits; need to kill/restart Vite to pick up changes
+  - When browser testing, always verify Vite is serving the NEW code by checking source for key identifiers before concluding the browser behavior is wrong
+  - The `client/dist/` folder is in .gitignore; don't try to stage it
+  - `bodyRow` children count is a reliable proxy for panel mount status (2=closed, 3=open)
+---

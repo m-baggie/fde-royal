@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Header from '../components/Header';
 import SearchBar from '../components/SearchBar';
 import FilterSidebar from '../components/FilterSidebar';
 import AssetGrid from '../components/AssetGrid';
-import AssetDetailModal from '../components/AssetDetailModal';
+import AssetDetailPanel from '../components/AssetDetailPanel';
 import UploadModal from '../components/UploadModal';
 import { getAssets, getFilters } from '../api/assets';
 import { SURFACE } from '../styles/tokens';
@@ -138,9 +138,43 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({ categories: [], subcategories: {}, locations: [] });
   const [selectedAssetId, setSelectedAssetId] = useState(null);
+  const [isClosing, setIsClosing] = useState(false);
+  const [panelIn, setPanelIn] = useState(false);
+  const closeTimerRef = useRef(null);
+  const prevSelectedAssetIdRef = useRef(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Read ?asset= URL param on mount and open that asset's detail modal
+  // Slide-in animation: when selectedAssetId transitions from null → non-null, trigger panelIn
+  useEffect(() => {
+    const prev = prevSelectedAssetIdRef.current;
+    prevSelectedAssetIdRef.current = selectedAssetId;
+    if (selectedAssetId !== null && prev === null) {
+      // Panel just opened — animate in on next two frames to ensure initial translateX(400px) is painted
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setPanelIn(true);
+        });
+      });
+    }
+  }, [selectedAssetId]);
+
+  // Cleanup close timer on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
+  function handleClosePanel() {
+    setPanelIn(false);
+    setIsClosing(true);
+    closeTimerRef.current = setTimeout(() => {
+      setSelectedAssetId(null);
+      setIsClosing(false);
+    }, 200);
+  }
+
+  // Read ?asset= URL param on mount and open that asset's detail panel
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const assetParam = params.get('asset');
@@ -305,17 +339,28 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
             onFavouriteToggle={onFavouriteToggle}
           />
         </div>
-      </div>
 
-      {selectedAssetId && (
-        <AssetDetailModal
-          selectedAssetId={selectedAssetId}
-          onClose={() => setSelectedAssetId(null)}
-          adminMode={adminMode}
-          isFavourited={isFavourited ? isFavourited(selectedAssetId) : false}
-          onFavouriteToggle={onFavouriteToggle}
-        />
-      )}
+        {(selectedAssetId !== null || isClosing) && (
+          <div
+            style={{
+              transform: panelIn ? 'translateX(0)' : 'translateX(400px)',
+              transition: isClosing
+                ? 'transform 200ms ease'
+                : 'transform 250ms cubic-bezier(0.16,1,0.3,1)',
+              flexShrink: 0,
+              height: '100%',
+            }}
+          >
+            <AssetDetailPanel
+              selectedAssetId={selectedAssetId}
+              onClose={handleClosePanel}
+              adminMode={adminMode}
+              isFavourited={isFavourited ? isFavourited(selectedAssetId) : false}
+              onFavouriteToggle={onFavouriteToggle}
+            />
+          </div>
+        )}
+      </div>
 
       <UploadModal
         isOpen={isUploadOpen}

@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "total": 2,
+  "remaining": 2,
+  "quality_gates": [
+    "npm run lint",
+    "npm run build"
+  ],
+  "id": "US-001",
+  "title": "AssetDetailPanel component \u2014 vertical layout with image at top"
+}
