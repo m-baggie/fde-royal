@@ -201,7 +201,6 @@ export default function FilterSidebar({
   activeChannel,
   activeScene,
   activeDestinationRegion,
-  activeContentType,
   onFilterChange,
   adminMode = false,
   onAdminModeChange = () => {},
@@ -214,7 +213,6 @@ export default function FilterSidebar({
   const channels = filters?.channels || [];
   const scenes = filters?.scenes || [];
   const destinationRegions = filters?.destination_regions || [];
-  const contentTypes = filters?.content_types || [];
 
   function handleCategoryToggle(val) {
     const next = activeCategory === val ? '' : val;
@@ -254,10 +252,6 @@ export default function FilterSidebar({
 
   function handleDestinationRegionToggle(val) {
     onFilterChange('destinationRegion', activeDestinationRegion === val ? '' : val);
-  }
-
-  function handleContentTypeToggle(val) {
-    onFilterChange('contentType', activeContentType === val ? '' : val);
   }
 
   return (
@@ -312,16 +306,6 @@ export default function FilterSidebar({
             options={destinationRegions}
             active={activeDestinationRegion}
             onToggle={handleDestinationRegionToggle}
-          />
-        </Section>
-      )}
-
-      {contentTypes.length > 0 && (
-        <Section title="Content Type" defaultOpen={false}>
-          <Chips
-            options={contentTypes}
-            active={activeContentType}
-            onToggle={handleContentTypeToggle}
           />
         </Section>
       )}

@@ -39,7 +39,7 @@ export default function Header({ onUploadClick, adminMode = false, count = 0, on
             Royal Caribbean
           </span>
           <span style={{ color: '#9CA3AF', fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1.2 }}>
-            Asset Search & Intelligence
+            Automated Semantic Search & Enrichment Tool
           </span>
         </div>
       </div>

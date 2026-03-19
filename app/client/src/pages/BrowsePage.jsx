@@ -103,7 +103,7 @@ const styles = {
   },
 };
 
-function buildParams({ q, category, subcategory, rights, location, metadataQuality, channel, scene, destinationRegion, contentType, showAllVariants }) {
+function buildParams({ q, category, subcategory, rights, location, metadataQuality, channel, scene, destinationRegion, showAllVariants }) {
   const params = {};
   if (q) params.q = q;
   if (category) params.category = category;
@@ -116,7 +116,6 @@ function buildParams({ q, category, subcategory, rights, location, metadataQuali
   if (channel) params.channel = channel;
   if (scene && scene.length > 0) params.scene = scene.join(',');
   if (destinationRegion) params.destination_region = destinationRegion;
-  if (contentType) params.content_type = contentType;
   if (showAllVariants) params.show_all_variants = '1';
   return params;
 }
@@ -131,7 +130,6 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
   const [channel, setChannel] = useState('');
   const [scene, setScene] = useState([]);
   const [destinationRegion, setDestinationRegion] = useState('');
-  const [contentType, setContentType] = useState('');
 
   const [assets, setAssets] = useState([]);
   const [total, setTotal] = useState(0);
@@ -193,7 +191,7 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
 
   // Load assets whenever filter state or refreshKey changes
   useEffect(() => {
-    const params = buildParams({ q, category, subcategory, rights, location, metadataQuality, channel, scene, destinationRegion, contentType, showAllVariants });
+    const params = buildParams({ q, category, subcategory, rights, location, metadataQuality, channel, scene, destinationRegion, showAllVariants });
     setLoading(true);
     setError(null);
     getAssets(params)
@@ -206,7 +204,7 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
         setError('Failed to load assets. Please try again.');
         setLoading(false);
       });
-  }, [q, category, subcategory, rights, location, metadataQuality, channel, scene, destinationRegion, contentType, showAllVariants, refreshKey]);
+  }, [q, category, subcategory, rights, location, metadataQuality, channel, scene, destinationRegion, showAllVariants, refreshKey]);
 
   function handleUploadComplete() {
     onUploadRequestClose();
@@ -222,7 +220,6 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
     else if (key === 'channel') setChannel(value);
     else if (key === 'scene') setScene(value);
     else if (key === 'destinationRegion') setDestinationRegion(value);
-    else if (key === 'contentType') setContentType(value);
   }, []);
 
   function clearAllFilters() {
@@ -235,7 +232,6 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
     setChannel('');
     setScene([]);
     setDestinationRegion('');
-    setContentType('');
   }
 
   // Build active filter chips list
@@ -261,7 +257,6 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
     })
   );
   if (destinationRegion) activeChips.push({ key: 'destinationRegion', label: destinationRegion, clear: () => setDestinationRegion('') });
-  if (contentType) activeChips.push({ key: 'contentType', label: contentType, clear: () => setContentType('') });
 
   return (
     <div style={styles.page}>
@@ -292,7 +287,6 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
             activeChannel={channel}
             activeScene={scene}
             activeDestinationRegion={destinationRegion}
-            activeContentType={contentType}
             onFilterChange={handleFilterChange}
             adminMode={adminMode}
             onAdminModeChange={onAdminModeChange}
