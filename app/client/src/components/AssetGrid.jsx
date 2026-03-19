@@ -11,7 +11,7 @@ const styles = {
   },
 };
 
-export default function AssetGrid({ assets, loading, onSelectAsset }) {
+export default function AssetGrid({ assets, loading, onSelectAsset, isFavourited, onFavouriteToggle }) {
   if (loading) {
     return (
       <div style={styles.grid}>
@@ -25,7 +25,13 @@ export default function AssetGrid({ assets, loading, onSelectAsset }) {
   return (
     <div style={styles.grid}>
       {assets.map((asset) => (
-        <AssetCard key={asset.id} asset={asset} onSelectAsset={onSelectAsset} />
+        <AssetCard
+          key={asset.id}
+          asset={asset}
+          onSelectAsset={onSelectAsset}
+          isFavourited={isFavourited ? isFavourited(asset.id) : false}
+          onFavouriteToggle={onFavouriteToggle}
+        />
       ))}
     </div>
   );

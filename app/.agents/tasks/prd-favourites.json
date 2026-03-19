@@ -1,19 +1,19 @@
 {
   "version": 1,
-  "project": "Royal Caribbean DAM — Favourites",
+  "project": "Royal Caribbean DAM \u2014 Favourites",
   "overview": "Allow content authors to favourite assets with a single heart icon click on the card. Favourites are stored in localStorage. A favourites tray icon in the header shows the count and opens a compact dropdown panel where users can review, remove, and export their saved assets.",
   "goals": [
     "One-click favouriting via a heart icon on each asset card",
-    "Favourites persisted in localStorage — survive page refresh",
+    "Favourites persisted in localStorage \u2014 survive page refresh",
     "Header favourites icon shows live count badge",
     "Dropdown tray lists all favourited assets with thumbnail, title, and remove button",
     "Export action copies all favourited CDN URLs to clipboard"
   ],
   "nonGoals": [
-    "No server-side persistence — localStorage only",
+    "No server-side persistence \u2014 localStorage only",
     "No sharing of favourite lists between users",
     "No bulk-favourite from grid",
-    "No ZIP download of images — export is CDN URL list only",
+    "No ZIP download of images \u2014 export is CDN URL list only",
     "No favourite folders or collections"
   ],
   "successMetrics": [
@@ -24,20 +24,20 @@
     "Export copies a newline-separated list of CDN URLs to clipboard and shows confirmation"
   ],
   "stack": {
-    "frontend": "React 18 + Vite — client/src/",
+    "frontend": "React 18 + Vite \u2014 client/src/",
     "styling": "Inline styles only",
     "persistence": "localStorage key 'dam_favourites', value JSON array of asset IDs"
   },
   "routes": [],
   "uiNotes": [
-    "Heart icon on card: positioned top-left of the thumbnail image (position absolute). Size 28px × 28px, circular, semi-transparent dark background (rgba(0,0,0,0.35)) at rest. Icon: ♡ (outline) when not favourited, ♥ (filled) when favourited. Filled colour: #EF4444 (red). Always visible — not only on hover. Transition: transform scale(1.2) for 150ms on toggle for a satisfying click feel.",
-    "Header favourites icon: placed to the right of the Upload button (always visible, not gated by admin mode). Icon: ♥ heart symbol, 20px, navy (#001B6B). Wrapped in a 36×36px circular button, background transparent, border none. Count badge: navy circle (#001B6B) with white text, 16px diameter, font 10px/700, positioned top-right of the icon. Badge only shown when count > 0.",
+    "Heart icon on card: positioned top-left of the thumbnail image (position absolute). Size 28px \u00d7 28px, circular, semi-transparent dark background (rgba(0,0,0,0.35)) at rest. Icon: \u2661 (outline) when not favourited, \u2665 (filled) when favourited. Filled colour: #EF4444 (red). Always visible \u2014 not only on hover. Transition: transform scale(1.2) for 150ms on toggle for a satisfying click feel.",
+    "Header favourites icon: placed to the right of the Upload button (always visible, not gated by admin mode). Icon: \u2665 heart symbol, 20px, navy (#001B6B). Wrapped in a 36\u00d736px circular button, background transparent, border none. Count badge: navy circle (#001B6B) with white text, 16px diameter, font 10px/700, positioned top-right of the icon. Badge only shown when count > 0.",
     "Favourites dropdown: appears below the header icon on click. Width 320px, max-height 480px, overflow-y auto (scrollbar hidden). Background #FFFFFF, border-radius 12px, box-shadow '0 8px 32px rgba(11,21,96,0.14), 0 2px 8px rgba(11,21,96,0.06)'. Positioned right-aligned to the header icon.",
     "Dropdown header: 'Favourites' label (14px/600, color #111827) left, count in muted text right, padding 14px 16px, border-bottom 1px solid #F3F4F6.",
-    "Dropdown item: display flex, align-items center, gap 10px, padding 10px 16px. Thumbnail: 44×44px, object-fit cover, border-radius 6px. Title: 13px/500 color #111827, flex 1, 2-line clamp. Remove button: × symbol, 16px, color #9CA3AF, hover color #EF4444, background none, border none, cursor pointer, flex-shrink 0.",
+    "Dropdown item: display flex, align-items center, gap 10px, padding 10px 16px. Thumbnail: 44\u00d744px, object-fit cover, border-radius 6px. Title: 13px/500 color #111827, flex 1, 2-line clamp. Remove button: \u00d7 symbol, 16px, color #9CA3AF, hover color #EF4444, background none, border none, cursor pointer, flex-shrink 0.",
     "Dropdown footer (shown when at least 1 item): border-top 1px solid #F3F4F6, padding 12px 16px, display flex, justify-content space-between. Left: 'Clear all' button (12px, color #9CA3AF, hover #EF4444, background none, border none). Right: 'Export CDN URLs' button (12px/600, color #001B6B, background rgba(0,27,107,0.07), border none, border-radius 6px, padding 6px 12px).",
     "Dropdown empty state: centered text 'No favourites yet' (13px, color #9CA3AF), heart icon above, padding 32px 16px.",
-    "Export behaviour: collect cdn_url from each favourited asset. Assets without a cdn_url are skipped. Join with newline. Copy to clipboard. Button label swaps to '✓ Copied!' for 2000ms.",
+    "Export behaviour: collect cdn_url from each favourited asset. Assets without a cdn_url are skipped. Join with newline. Copy to clipboard. Button label swaps to '\u2713 Copied!' for 2000ms.",
     "Clicking outside the dropdown closes it. Clicking the header icon toggles it.",
     "The dropdown does not close when interacting with items inside it."
   ],
@@ -47,7 +47,7 @@
       "description": "Stored in localStorage as a JSON array of asset ID strings",
       "fields": [
         "localStorage key: 'dam_favourites'",
-        "Value: JSON.stringify(string[]) — array of asset IDs",
+        "Value: JSON.stringify(string[]) \u2014 array of asset IDs",
         "Companion data (display): the full asset objects are fetched from GET /api/assets?ids=... OR cached from the grid response"
       ]
     }
@@ -72,72 +72,85 @@
   "stories": [
     {
       "id": "US-001",
-      "title": "useFavourites hook — localStorage state management",
-      "status": "open",
+      "title": "useFavourites hook \u2014 localStorage state management",
+      "status": "done",
       "dependsOn": [],
       "description": "As a developer, I want a custom hook that manages favourites state in localStorage so all components share a single source of truth.",
       "acceptanceCriteria": [
         "client/src/hooks/useFavourites.js exports useFavourites() hook",
         "Hook returns { favouriteIds: string[], isFavourited(id): boolean, toggle(id, assetData): void, clear(): void, count: number }",
         "Initialises favouriteIds from localStorage key 'dam_favourites' on mount (JSON.parse, default [])",
-        "toggle(id, assetData): if id in favouriteIds → remove it and delete from 'dam_favourites_data'; if not → add it and write { display_title, thumbnail_path, cdn_url } to 'dam_favourites_data'",
+        "toggle(id, assetData): if id in favouriteIds \u2192 remove it and delete from 'dam_favourites_data'; if not \u2192 add it and write { display_title, thumbnail_path, cdn_url } to 'dam_favourites_data'",
         "Every state change writes updated array to localStorage 'dam_favourites'",
         "clear(): empties favouriteIds, removes both localStorage keys",
         "App.jsx calls useFavourites() and passes { favouriteIds, isFavourited, toggle: onFavouriteToggle, clear, count } as props to BrowsePage",
-        "Example: toggle('asset-1', data) → localStorage 'dam_favourites' contains ['asset-1']",
+        "Example: toggle('asset-1', data) \u2192 localStorage 'dam_favourites' contains ['asset-1']",
         "Negative case: toggling the same ID twice returns to empty array",
         "npm run lint passes",
         "npm run build passes"
-      ]
+      ],
+      "startedAt": "2026-03-19T10:27:39.447198+00:00",
+      "completedAt": "2026-03-19T10:31:33.384353+00:00",
+      "updatedAt": "2026-03-19T10:31:33.384026+00:00"
     },
     {
       "id": "US-002",
       "title": "Heart icon on asset cards",
-      "status": "open",
-      "dependsOn": ["US-001"],
+      "status": "done",
+      "dependsOn": [
+        "US-001"
+      ],
       "description": "As a content author, I want to favourite an asset with one click from the grid so I can build a shortlist without opening the detail modal.",
       "acceptanceCriteria": [
         "AssetCard receives isFavourited (boolean) and onFavouriteToggle (function) props",
         "A heart button is rendered top-left of the thumbnail image, position absolute, top 8px left 8px",
-        "Button: 28×28px, border-radius 50%, background rgba(0,0,0,0.35), border none, cursor pointer, display flex, align-items center, justify-content center",
-        "Icon: ♡ (not favourited) or ♥ (favourited), font-size 14px",
+        "Button: 28\u00d728px, border-radius 50%, background rgba(0,0,0,0.35), border none, cursor pointer, display flex, align-items center, justify-content center",
+        "Icon: \u2661 (not favourited) or \u2665 (favourited), font-size 14px",
         "Not favourited: icon color #FFFFFF",
         "Favourited: icon color #EF4444",
         "On click: calls e.stopPropagation() then onFavouriteToggle(asset.id, { display_title: asset.display_title, thumbnail_path: asset.thumbnail_path, cdn_url: asset.cdn_url })",
-        "On toggle: button animates transform scale(1.2) → scale(1) over 150ms",
+        "On toggle: button animates transform scale(1.2) \u2192 scale(1) over 150ms",
         "BrowsePage passes isFavourited={isFavourited(asset.id)} and onFavouriteToggle={onFavouriteToggle} to each AssetCard",
-        "Example: clicking ♡ on a card immediately shows ♥ in red",
-        "Negative case: clicking ♥ on an already-favourited card removes it and shows ♡",
+        "Example: clicking \u2661 on a card immediately shows \u2665 in red",
+        "Negative case: clicking \u2665 on an already-favourited card removes it and shows \u2661",
         "npm run lint passes",
         "npm run build passes"
-      ]
+      ],
+      "startedAt": "2026-03-19T10:31:36.179018+00:00",
+      "completedAt": "2026-03-19T10:37:41.006754+00:00",
+      "updatedAt": "2026-03-19T10:37:41.006140+00:00"
     },
     {
       "id": "US-003",
       "title": "Header favourites icon with count badge and dropdown tray",
-      "status": "open",
-      "dependsOn": ["US-001"],
+      "status": "done",
+      "dependsOn": [
+        "US-001"
+      ],
       "description": "As a content author, I want to see my saved favourites at a glance and manage them from the header so I can quickly review my shortlist.",
       "acceptanceCriteria": [
         "Header receives count and onFavouriteIconClick props",
         "A favourites button is rendered to the right of the Upload button (always visible)",
-        "Button: 36×36px circular, background transparent, border none, cursor pointer, contains ♥ icon (20px, color #001B6B)",
+        "Button: 36\u00d736px circular, background transparent, border none, cursor pointer, contains \u2665 icon (20px, color #001B6B)",
         "Count badge: shown when count > 0. Navy circle (#001B6B), 16px diameter, white text 10px/700, position absolute top-right of the icon",
         "A FavouritesDropdown component renders below the icon when open",
         "Dropdown: 320px wide, max-height 480px, scrollbar hidden, background #FFFFFF, border-radius 12px, box-shadow as per uiNotes, position absolute top 48px right 0, z-index 200",
         "Dropdown header: 'Favourites' label left, count right, padding 14px 16px, border-bottom",
-        "Dropdown items: read from localStorage 'dam_favourites_data'. Each item shows 44×44px thumbnail, display_title (2-line clamp), × remove button",
-        "× remove button calls onFavouriteToggle(id) and updates display immediately",
+        "Dropdown items: read from localStorage 'dam_favourites_data'. Each item shows 44\u00d744px thumbnail, display_title (2-line clamp), \u00d7 remove button",
+        "\u00d7 remove button calls onFavouriteToggle(id) and updates display immediately",
         "Dropdown footer (count > 0): 'Clear all' button left, 'Export CDN URLs' button right",
-        "'Export CDN URLs': collects cdn_url from stored data (skip nulls), joins with newline, copies to clipboard, button shows '✓ Copied!' for 2000ms",
+        "'Export CDN URLs': collects cdn_url from stored data (skip nulls), joins with newline, copies to clipboard, button shows '\u2713 Copied!' for 2000ms",
         "'Clear all': calls clear() and closes dropdown",
         "Empty state: shows heart icon and 'No favourites yet' centered",
         "Clicking outside the dropdown closes it (useEffect with mousedown listener)",
-        "Example: 3 assets favourited → badge shows '3', dropdown lists all 3 with thumbnails",
+        "Example: 3 assets favourited \u2192 badge shows '3', dropdown lists all 3 with thumbnails",
         "Negative case: asset with no cdn_url is listed in dropdown but skipped in export",
         "npm run lint passes",
         "npm run build passes"
-      ]
+      ],
+      "startedAt": "2026-03-19T10:37:43.666627+00:00",
+      "completedAt": "2026-03-19T10:46:07.150594+00:00",
+      "updatedAt": "2026-03-19T10:46:07.149896+00:00"
     }
   ]
 }

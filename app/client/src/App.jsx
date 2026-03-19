@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import BrowsePage from './pages/BrowsePage';
+import { useFavourites } from './hooks/useFavourites';
 
 export default function App() {
   const [uploadOpen, setUploadOpen] = useState(false);
+  const { favouriteIds, isFavourited, toggle: onFavouriteToggle, clear, count } = useFavourites();
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -19,6 +21,11 @@ export default function App() {
         isUploadOpen={uploadOpen}
         onUploadClick={() => setUploadOpen(true)}
         onUploadRequestClose={() => setUploadOpen(false)}
+        favouriteIds={favouriteIds}
+        isFavourited={isFavourited}
+        onFavouriteToggle={onFavouriteToggle}
+        clear={clear}
+        count={count}
       />
     </div>
   );

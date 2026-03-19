@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { TEXT_PRIMARY } from '../styles/tokens';
 import { getAssetDownloadUrl } from '../api/assets';
 
@@ -50,6 +50,23 @@ const styles = {
     border: 'none',
     cursor: 'pointer',
     lineHeight: 1,
+  },
+  heartBtn: {
+    position: 'absolute',
+    top: '8px',
+    left: '8px',
+    width: '28px',
+    height: '28px',
+    borderRadius: '50%',
+    background: 'rgba(0,0,0,0.35)',
+    border: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+    padding: 0,
+    transition: 'transform 150ms ease',
   },
   variantBadge: {
     position: 'absolute',
@@ -128,10 +145,24 @@ const placeholderStyle = {
   wordBreak: 'break-all',
 };
 
-export default function AssetCard({ asset, onSelectAsset }) {
+export default function AssetCard({ asset, onSelectAsset, isFavourited = false, onFavouriteToggle }) {
   const [hovered, setHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [heartScale, setHeartScale] = useState(1);
+
+  const handleHeartClick = useCallback((e) => {
+    e.stopPropagation();
+    if (onFavouriteToggle) {
+      onFavouriteToggle(asset.id, {
+        display_title: asset.display_title,
+        thumbnail_path: asset.thumbnail_path,
+        cdn_url: asset.cdn_url,
+      });
+    }
+    setHeartScale(1.2);
+    setTimeout(() => setHeartScale(1), 150);
+  }, [asset, onFavouriteToggle]);
 
   function handleCopy(e) {
     e.stopPropagation();
@@ -163,6 +194,16 @@ export default function AssetCard({ asset, onSelectAsset }) {
       onMouseLeave={() => setHovered(false)}
     >
       <div style={styles.imageWrapper}>
+        <button
+          data-testid="heart-btn"
+          style={{ ...styles.heartBtn, transform: `scale(${heartScale})` }}
+          onClick={handleHeartClick}
+          aria-label={isFavourited ? 'Remove from favourites' : 'Add to favourites'}
+        >
+          <span style={{ fontSize: '14px', color: isFavourited ? '#EF4444' : '#FFFFFF', lineHeight: 1 }}>
+            {isFavourited ? '♥' : '♡'}
+          </span>
+        </button>
         {showPlaceholder ? (
           <div data-testid="asset-placeholder" style={placeholderStyle}>
             {asset.filename || asset.display_title || 'No preview'}

@@ -1,0 +1,10 @@
+Working tree is clean for all story-related files. The remaining are the loop-managed PRD JSON, a pre-committed gitignored dist file, and ralph temp artifacts.
+
+US-001 is complete:
+- **`client/src/hooks/useFavourites.js`** — new hook returning `{ favouriteIds, isFavourited, toggle, clear, count }`
+- **`client/src/App.jsx`** — calls `useFavourites()` and passes all props to `BrowsePage`
+- `npm run lint` → PASS
+- `npm run build` → PASS (93 modules, 216 kB)
+- Commit: `a8b6ff5`
+
+<promise>COMPLETE</promise>

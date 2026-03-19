@@ -120,7 +120,7 @@ function buildParams({ q, category, subcategory, rights, location, metadataQuali
   return params;
 }
 
-export default function BrowsePage({ isUploadOpen = false, onUploadClick = () => {}, onUploadRequestClose = () => {} }) {
+export default function BrowsePage({ isUploadOpen = false, onUploadClick = () => {}, onUploadRequestClose = () => {}, isFavourited, onFavouriteToggle, count = 0, clear = () => {} }) {
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
@@ -219,7 +219,12 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
 
   return (
     <div style={styles.page}>
-      <Header onUploadClick={onUploadClick} />
+      <Header
+        onUploadClick={onUploadClick}
+        count={count}
+        onFavouriteToggle={onFavouriteToggle}
+        clear={clear}
+      />
 
       <div style={styles.searchRow}>
         <SearchBar onChange={setQ} />
@@ -282,6 +287,8 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
             assets={assets}
             loading={loading}
             onSelectAsset={setSelectedAssetId}
+            isFavourited={isFavourited}
+            onFavouriteToggle={onFavouriteToggle}
           />
         </div>
       </div>

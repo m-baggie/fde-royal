@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "total": 3,
+  "remaining": 1,
+  "quality_gates": [
+    "npm run lint",
+    "npm run build"
+  ],
+  "id": "US-003",
+  "title": "Header favourites icon with count badge and dropdown tray"
+}
