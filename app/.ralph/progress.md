@@ -6,6 +6,39 @@ Started: Tue Mar 17 11:21:30 EDT 2026
 
 ---
 
+## [2026-03-19 11:18] - US-001: POST /api/search/prompt — Claude-powered search endpoint
+Thread:
+Run: 20260319-111829-69991 (iteration 1)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-search/app/.ralph/runs/run-20260319-111829-69991-iter-1.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-search/app/.ralph/runs/run-20260319-111829-69991-iter-1.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: a45da52 feat(search): add POST /api/search/prompt smart search endpoint
+- Post-commit status: `.agents/tasks/prd-smart-search.json` (pre-existing), `activity.log`, `client/dist/index.html` (build artifact) — committed in follow-up
+- Verification:
+  - Command: npx jest --runInBand --forceExit --testPathPattern=search -> PASS (98 tests, 9 suites)
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS (vite production build)
+- Files changed:
+  - server/src/routes/search.js (new)
+  - server/src/__tests__/search.test.js (new)
+  - server/src/index.js (mount /api/search)
+  - client/src/api/assets.js (add smartSearch export)
+- What was implemented:
+  - POST /api/search/prompt route uses Claude Haiku extraction prompt to parse natural-language into {search_terms, content_type, mood, location, destination_region, channel, explanation}
+  - Calls searchAssets() with extracted params; falls back to plain q= search if Anthropic unavailable or JSON parse fails
+  - Returns { total, assets, explanation } — explanation null on fallback
+  - 5 supertest tests covering: valid prompt, missing prompt, empty string, empty body, null anthropic fallback
+  - client smartSearch(prompt) POSTs to /api/search/prompt
+- **Learnings for future iterations:**
+  - `./ralph log` script does not exist on this branch — write activity.log directly
+  - `npx jest` needed (jest not on PATH); `npm test` works from workspace root
+  - server/src/index.js uses `app.locals.anthropic` pattern for optional Claude client — test fallback by nulling this before request
+  - All test suites run even with testPathPattern — jest globalSetup in server/jest.globalSetup.js seeds the DB once
+---
+
+---
+
 ## [2026-03-17 11:25] - US-001: Scaffold monorepo — Express + React Vite
 Thread:
 Run: 20260317-112130-86970 (iteration 1)
@@ -1332,4 +1365,30 @@ Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-split-view/app/.ralph/ru
   - When browser testing, always verify Vite is serving the NEW code by checking source for key identifiers before concluding the browser behavior is wrong
   - The `client/dist/` folder is in .gitignore; don't try to stage it
   - `bodyRow` children count is a reliable proxy for panel mount status (2=closed, 3=open)
+---
+
+## [2026-03-19] - US-002: Smart search UI — mode toggle, prompt input, explanation banner
+Thread: 
+Run: 20260319-111829-69991 (iteration 2)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-search/app/.ralph/runs/run-20260319-111829-69991-iter-2.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-smart-search/app/.ralph/runs/run-20260319-111829-69991-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 6965a5b feat(search): add smart search UI toggle, prompt input, explanation
+- Post-commit status: clean
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run build -> PASS
+  - Browser: Smart pill renders, toggle active/inactive styles correct, placeholder changes, blue border in smart mode, → button shows with text, Enter submits, explanation null (fallback) shown correctly, toggle-off resumes normal search -> PASS
+- Files changed:
+  - client/src/components/SearchBar.jsx
+  - client/src/pages/BrowsePage.jsx
+- What was implemented:
+  - SearchBar: ✦ Smart toggle pill with inactive (grey border/text) and active (#001B6B bg/white) styles; smart mode changes input placeholder, border color, and adds → submit button inside right of input when text present; Enter key triggers onSmartSearch; debounced onChange skipped in smart mode except on clear; on toggle-off, immediately fires onChange(currentValue) to resume normal search
+  - BrowsePage: smartMode, smartLoading, explanation state; handleSmartSearch calls smartSearch API, sets assets/total/explanation; explanation banner (rgba(0,27,107,0.06) bg, 8px border-radius, 12px navy text) shown above results count — ✦ Thinking... while loading, ✦ <explanation> on response, hidden when null; handleSmartModeToggle clears explanation on deactivation; handleSearchClear clears explanation and smartLoading on input clear
+- **Learnings for future iterations:**
+  - The Vite dev server may be on a different port (5197+) if many dev servers started previously — always check the actual port in Vite startup output
+  - `client/dist/` is in .gitignore; never stage it
+  - When no ANTHROPIC_API_KEY is set, the server falls back to plain text search with explanation=null — correct behavior, no banner shown
+  - SearchBar keeps its own `value` state (uncontrolled from parent); use useRef(value) + useEffect on smartMode to fire onChange when toggling off
 ---

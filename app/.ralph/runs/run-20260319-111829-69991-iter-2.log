@@ -1,0 +1,13 @@
+Clean. US-002 is fully implemented and verified.
+
+**Summary:**
+
+- **SearchBar.jsx**: Added `✦ Smart` toggle pill with inactive/active styles per spec. In smart mode: placeholder becomes "Describe what you're looking for...", border turns `#001B6B`, `→` submit button appears inside input right edge when text is present. Enter key and `→` both call `onSmartSearch()`. Debounced `onChange` is suppressed in smart mode (except on clear). When toggled off, immediately fires `onChange(currentValue)` to resume normal search.
+
+- **BrowsePage.jsx**: Added `smartMode`, `smartLoading`, `explanation` state. `handleSmartSearch` calls the API, updates assets/total/explanation. Explanation banner renders above the results count: `✦ Thinking...` while loading, `✦ <text>` on response, hidden when `null`. Toggling off clears the banner; clearing input also clears the banner.
+
+- `npm run lint` → PASS  
+- `npm run build` → PASS  
+- Browser verified: toggle styles, placeholder, blue border, `→` button, Enter submit, null-explanation fallback (no banner), toggle-off resumes normal search
+
+<promise>COMPLETE</promise>

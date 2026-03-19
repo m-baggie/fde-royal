@@ -5,7 +5,7 @@ import FilterSidebar from '../components/FilterSidebar';
 import AssetGrid from '../components/AssetGrid';
 import AssetDetailPanel from '../components/AssetDetailPanel';
 import UploadModal from '../components/UploadModal';
-import { getAssets, getFilters } from '../api/assets';
+import { getAssets, getFilters, smartSearch } from '../api/assets';
 import { SURFACE } from '../styles/tokens';
 
 const styles = {
@@ -74,6 +74,14 @@ const styles = {
   countLabel: {
     fontSize: '12px',
     color: '#6b7280',
+    marginBottom: '12px',
+  },
+  explanationBanner: {
+    background: 'rgba(0,27,107,0.06)',
+    borderRadius: '8px',
+    padding: '8px 12px',
+    fontSize: '12px',
+    color: '#001B6B',
     marginBottom: '12px',
   },
   errorBanner: {
@@ -145,6 +153,9 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
   const prevSelectedAssetIdRef = useRef(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showAllVariants, setShowAllVariants] = useState(false);
+  const [smartMode, setSmartMode] = useState(false);
+  const [smartLoading, setSmartLoading] = useState(false);
+  const [explanation, setExplanation] = useState(null);
 
   // Slide-in animation: when selectedAssetId transitions from null → non-null, trigger panelIn
   useEffect(() => {
@@ -174,6 +185,36 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
       setSelectedAssetId(null);
       setIsClosing(false);
     }, 200);
+  }
+
+  async function handleSmartSearch(query) {
+    setSmartLoading(true);
+    setExplanation(null);
+    try {
+      const data = await smartSearch(query);
+      setAssets(data.assets || []);
+      setTotal(data.total || 0);
+      setExplanation(data.explanation || null);
+    } catch {
+      setError('Smart search failed. Please try again.');
+    } finally {
+      setSmartLoading(false);
+    }
+  }
+
+  function handleSmartModeToggle() {
+    setSmartMode((prev) => {
+      if (prev) {
+        setExplanation(null);
+        setSmartLoading(false);
+      }
+      return !prev;
+    });
+  }
+
+  function handleSearchClear() {
+    setExplanation(null);
+    setSmartLoading(false);
   }
 
   // Read ?asset= URL param on mount and open that asset's detail panel
@@ -275,7 +316,13 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
       />
 
       <div style={styles.searchRow}>
-        <SearchBar onChange={setQ} />
+        <SearchBar
+          onChange={setQ}
+          smartMode={smartMode}
+          onSmartModeToggle={handleSmartModeToggle}
+          onSmartSearch={handleSmartSearch}
+          onClear={handleSearchClear}
+        />
       </div>
 
       <div style={styles.bodyRow}>
@@ -318,6 +365,13 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
           )}
 
           {error && <div style={styles.errorBanner}>{error}</div>}
+
+          {smartLoading && (
+            <div style={styles.explanationBanner}>✦ Thinking...</div>
+          )}
+          {!smartLoading && explanation && (
+            <div style={styles.explanationBanner}>✦ {explanation}</div>
+          )}
 
           {!loading && !error && (
             <div style={styles.countLabel}>

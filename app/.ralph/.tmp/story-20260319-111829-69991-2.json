@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "total": 2,
+  "remaining": 1,
+  "quality_gates": [
+    "npm run lint",
+    "npm run build"
+  ],
+  "id": "US-002",
+  "title": "Smart search UI \u2014 mode toggle, prompt input, explanation banner"
+}

@@ -9,6 +9,7 @@ const { ingestAssets } = require('./services/ingest');
 const assetsRouter = require('./routes/assets');
 const filtersRouter = require('./routes/filters');
 const uploadRouter = require('./routes/upload');
+const searchRouter = require('./routes/search');
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use('/api/assets/media', express.static(uploadsRoot));
 app.use('/api/assets', uploadRouter);
 app.use('/api/assets', assetsRouter);
 app.use('/api/filters', filtersRouter);
+app.use('/api/search', searchRouter);
 
 if (process.env.ANTHROPIC_API_KEY) {
   app.locals.anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });

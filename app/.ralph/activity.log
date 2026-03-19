@@ -1,11 +1,15 @@
 # Activity Log
 
 ## Run Summary
+- 2026-03-19 11:31:37 | run=20260319-111829-69991 | iter=2 | mode=build | story=US-002 | duration=513s | status=success
+- 2026-03-19 11:23:01 | run=20260319-111829-69991 | iter=1 | mode=build | story=US-001 | duration=271s | status=success
+- 2026-03-19 11:18:29 | run=20260319-111829-69991 | iter=1 | mode=build | story=US-001 | duration=- | status=success
 - 2026-03-19 10:40:08 | run=20260319-101540-41479 | iter=2 | mode=build | story=US-002 | duration=1065s | status=success
 - 2026-03-19 10:22:21 | run=20260319-101540-41479 | iter=1 | mode=build | story=US-001 | duration=400s | status=success
 - 2026-03-19 10:15:40 | run=20260319-101540-41479 | iter=1 | mode=build | story=US-001 | duration=- | status=in_progress
 
 ## Actions
+- 2026-03-19 | run=20260319-111829-69991 | iter=1 | US-001: implemented POST /api/search/prompt, client smartSearch(), supertest tests — all 98 tests pass, lint+build clean
 - 2026-03-19 | run=20260319-101540-41479 | iter=2 | US-002: starting BrowsePage split-screen layout implementation
 - 2026-03-19 09:50:56 | run=20260319-062623-87899 | iter=5 | mode=build | story=US-004 | duration=234s | status=success
 - 2026-03-19 09:46:58 | run=20260319-062623-87899 | iter=4 | mode=build | story=US-003 | duration=383s | status=success
@@ -193,3 +197,9 @@
 [2026-03-19 10:22:20] ITERATION 1 end (duration=400s)
 [2026-03-19 10:22:25] ITERATION 2 start (mode=build story=US-002)
 [2026-03-19 10:40:08] ITERATION 2 end (duration=1065s)
+[2026-03-19 11:18:31] ITERATION 1 start (mode=build story=US-001)
+[2026-03-19 11:23:00] ITERATION 1 end (duration=271s)
+[2026-03-19 11:23:06] ITERATION 2 start (mode=build story=US-002)
+[2026-03-19 11:26:06] Starting US-002: Smart search UI — mode toggle, prompt input, explanation banner
+[2026-03-19 11:30:29] Implemented US-002: smart toggle pill, prompt input, explanation banner — lint/build pass, browser verified
+[2026-03-19 11:31:37] ITERATION 2 end (duration=513s)

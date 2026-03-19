@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const ICON_COLOR_REST = '#9CA3AF';
 const ICON_COLOR_FOCUS = '#001B6B';
@@ -20,9 +20,15 @@ function MagnifierIcon({ color }) {
 }
 
 const styles = {
+  row: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    width: '100%',
+  },
   wrapper: {
     position: 'relative',
-    width: '100%',
+    flex: 1,
   },
   iconWrap: {
     position: 'absolute',
@@ -52,38 +58,148 @@ const styles = {
     boxShadow: '0 0 0 3px rgba(0,27,107,0.08)',
     background: '#FFFFFF',
   },
+  submitBtn: {
+    position: 'absolute',
+    top: '50%',
+    right: '12px',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#001B6B',
+    fontSize: '18px',
+    padding: '4px 6px',
+    display: 'flex',
+    alignItems: 'center',
+    lineHeight: 1,
+  },
+  smartPill: {
+    flexShrink: 0,
+    border: '1px solid #E5E7EB',
+    background: 'transparent',
+    color: '#9CA3AF',
+    borderRadius: '100px',
+    fontSize: '11px',
+    fontWeight: 600,
+    padding: '3px 10px',
+    cursor: 'pointer',
+    lineHeight: 1.6,
+    whiteSpace: 'nowrap',
+  },
+  smartPillActive: {
+    background: '#001B6B',
+    color: '#FFFFFF',
+    borderColor: '#001B6B',
+  },
 };
 
-export default function SearchBar({ onChange }) {
+export default function SearchBar({
+  onChange,
+  smartMode = false,
+  onSmartModeToggle = () => {},
+  onSmartSearch = () => {},
+  onClear = () => {},
+}) {
   const [value, setValue] = useState('');
   const [focused, setFocused] = useState(false);
+  const valueRef = useRef(value);
+  valueRef.current = value;
+  const prevSmartModeRef = useRef(smartMode);
 
+  // Debounced normal search — skipped in smart mode
   useEffect(() => {
+    if (smartMode) return;
     const timer = setTimeout(() => {
       onChange(value);
     }, 300);
     return () => clearTimeout(timer);
-  }, [value, onChange]);
+  }, [value, onChange, smartMode]);
 
-  const inputStyle = focused
-    ? { ...styles.input, ...styles.inputFocus }
-    : styles.input;
+  // When smart mode turns off → immediately fire normal search with current input
+  useEffect(() => {
+    if (prevSmartModeRef.current && !smartMode) {
+      onChange(valueRef.current);
+    }
+    prevSmartModeRef.current = smartMode;
+  }, [smartMode, onChange]);
+
+  function handleChange(e) {
+    const newVal = e.target.value;
+    setValue(newVal);
+    if (smartMode && newVal === '') {
+      onChange('');
+      onClear();
+    }
+  }
+
+  function handleKeyDown(e) {
+    if (smartMode && e.key === 'Enter' && value.trim()) {
+      onSmartSearch(value.trim());
+    }
+  }
+
+  function handleSubmit() {
+    if (value.trim()) {
+      onSmartSearch(value.trim());
+    }
+  }
+
+  const inputStyle = (() => {
+    const base = { ...styles.input };
+    if (smartMode) {
+      base.borderColor = '#001B6B';
+      if (value) base.paddingRight = '40px';
+      if (focused) {
+        base.boxShadow = '0 0 0 3px rgba(0,27,107,0.08)';
+      }
+    } else if (focused) {
+      Object.assign(base, styles.inputFocus);
+    }
+    return base;
+  })();
+
+  const pillStyle = smartMode
+    ? { ...styles.smartPill, ...styles.smartPillActive }
+    : styles.smartPill;
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.iconWrap}>
-        <MagnifierIcon color={focused ? ICON_COLOR_FOCUS : ICON_COLOR_REST} />
+    <div style={styles.row}>
+      <div style={styles.wrapper}>
+        <div style={styles.iconWrap}>
+          <MagnifierIcon color={focused ? ICON_COLOR_FOCUS : ICON_COLOR_REST} />
+        </div>
+        <input
+          type="text"
+          className="search-input"
+          style={inputStyle}
+          placeholder={
+            smartMode
+              ? "Describe what you're looking for..."
+              : 'Search by keyword, location, mood, ship...'
+          }
+          value={value}
+          onChange={handleChange}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          onKeyDown={handleKeyDown}
+        />
+        {smartMode && value && (
+          <button
+            style={styles.submitBtn}
+            onClick={handleSubmit}
+            aria-label="Submit smart search"
+          >
+            →
+          </button>
+        )}
       </div>
-      <input
-        type="text"
-        className="search-input"
-        style={inputStyle}
-        placeholder="Search by keyword, location, mood, ship..."
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-      />
+      <button
+        style={pillStyle}
+        onClick={onSmartModeToggle}
+        aria-pressed={smartMode}
+      >
+        ✦ Smart
+      </button>
     </div>
   );
 }

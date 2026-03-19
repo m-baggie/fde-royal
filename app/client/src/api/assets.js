@@ -36,4 +36,8 @@ export function deleteAsset(id) {
   return api.delete(`/api/assets/${id}`).then((res) => res.data);
 }
 
+export function smartSearch(prompt) {
+  return api.post('/api/search/prompt', { prompt }).then((res) => res.data);
+}
+
 export default api;

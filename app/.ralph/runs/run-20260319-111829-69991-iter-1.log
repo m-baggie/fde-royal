@@ -1,0 +1,12 @@
+Clean working tree. US-001 is complete.
+
+**Summary of what was implemented:**
+
+- **`server/src/routes/search.js`** — new route with `POST /api/search/prompt`. Uses Claude Haiku with an RC-specific extraction prompt to parse natural-language into `{search_terms, content_type, mood, location, destination_region, channel, explanation}`, then calls `searchAssets()`. Falls back to plain `q=prompt` with `explanation: null` if Anthropic is unavailable or returns unparseable JSON.
+- **`server/src/index.js`** — mounts `searchRouter` at `/api/search`
+- **`server/src/__tests__/search.test.js`** — 5 supertest tests: valid prompt, missing prompt, empty string, empty body, null anthropic fallback
+- **`client/src/api/assets.js`** — added `smartSearch(prompt)` export
+
+All 98 tests pass, lint clean, build clean.
+
+<promise>COMPLETE</promise>
