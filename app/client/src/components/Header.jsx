@@ -87,7 +87,7 @@ export default function Header({ onUploadClick, adminMode = false, count = 0, on
             }}
             aria-label="Favourites"
           >
-            <span style={{ fontSize: '20px', color: '#001B6B', lineHeight: 1 }}>♥</span>
+            <span style={{ fontSize: '20px', color: '#C8A84B', lineHeight: 1 }}>★</span>
             {count > 0 && (
               <span
                 data-testid="favourites-badge"

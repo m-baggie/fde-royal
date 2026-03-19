@@ -205,8 +205,8 @@ export default function AssetCard({ asset, onSelectAsset, isFavourited = false, 
           onClick={handleHeartClick}
           aria-label={isFavourited ? 'Remove from favourites' : 'Add to favourites'}
         >
-          <span style={{ fontSize: '14px', color: isFavourited ? '#EF4444' : '#FFFFFF', lineHeight: 1 }}>
-            {isFavourited ? '♥' : '♡'}
+          <span style={{ fontSize: '15px', color: isFavourited ? '#C8A84B' : '#FFFFFF', lineHeight: 1, filter: isFavourited ? 'drop-shadow(0 0 4px rgba(200,168,75,0.6))' : 'none' }}>
+            {isFavourited ? '★' : '☆'}
           </span>
         </button>
         {showPlaceholder ? (

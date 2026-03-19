@@ -25,6 +25,7 @@ function readData() {
 export default function FavouritesDropdown({ count, onFavouriteToggle, onClear, onClose, onSelectAsset = () => {} }) {
   const ref = useRef(null);
   const [copied, setCopied] = useState(false);
+  const [shared, setShared] = useState(false);
 
   const ids = readIds();
   const data = readData();
@@ -52,6 +53,14 @@ export default function FavouritesDropdown({ count, onFavouriteToggle, onClear, 
     });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleShareAll() {
+    const urls = ids.map((id) => `${window.location.origin}/?asset=${encodeURIComponent(id)}`);
+    navigator.clipboard.writeText(urls.join('\n')).then(() => {
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    });
   }
 
   function handleClearAll() {
@@ -94,7 +103,7 @@ export default function FavouritesDropdown({ count, onFavouriteToggle, onClear, 
       {/* Empty state */}
       {ids.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '32px 16px' }}>
-          <div style={{ fontSize: '24px', marginBottom: '8px', color: '#9CA3AF' }}>♥</div>
+          <div style={{ fontSize: '24px', marginBottom: '8px', color: '#C8A84B' }}>★</div>
           <div style={{ fontSize: '13px', color: '#9CA3AF' }}>No favourites yet</div>
         </div>
       ) : (
@@ -210,6 +219,21 @@ export default function FavouritesDropdown({ count, onFavouriteToggle, onClear, 
               }}
             >
               {copied ? '✓ Downloading...' : 'Export Images'}
+            </button>
+            <button
+              onClick={handleShareAll}
+              style={{
+                fontSize: '12px',
+                fontWeight: '600',
+                color: '#001B6B',
+                backgroundColor: 'transparent',
+                border: '1.5px solid #001B6B',
+                borderRadius: '6px',
+                padding: '6px 12px',
+                cursor: 'pointer',
+              }}
+            >
+              {shared ? '✓ Copied!' : '↗ Share All'}
             </button>
           </div>
         </>

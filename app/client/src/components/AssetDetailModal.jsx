@@ -19,7 +19,6 @@ const RED_ISSUES = ['release_placeholder', 'missing_rights'];
 const METADATA_ROWS = [
   { label: 'Title',       origKey: 'original_title',       enrichedKey: 'enriched_title' },
   { label: 'Description', origKey: 'original_description', enrichedKey: 'enriched_description' },
-  { label: 'Tags',        origKey: 'original_tags',        enrichedKey: 'enriched_tags' },
   { label: 'Location',    origKey: 'original_location',    enrichedKey: 'enriched_location' },
   { label: 'Creator',     origKey: 'original_creator',     enrichedKey: 'enriched_creator_normalized' },
   { label: 'Rights Owner',origKey: 'original_rights_owner',enrichedKey: null },
@@ -67,7 +66,7 @@ function formatFileSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function AssetDetailModal({ selectedAssetId, onClose, adminMode = false }) {
+export default function AssetDetailModal({ selectedAssetId, onClose, adminMode = false, isFavourited = false, onFavouriteToggle }) {
   const [asset, setAsset] = useState(null);
   const [loading, setLoading] = useState(true);
   const [enriching, setEnriching] = useState(false);
@@ -76,7 +75,8 @@ export default function AssetDetailModal({ selectedAssetId, onClose, adminMode =
   const [shareLabel, setShareLabel] = useState('↗ Share');
   const [toast, setToast] = useState(null);
   const [metaView, setMetaView] = useState('enriched');
-  const [metaOpen, setMetaOpen] = useState(false);
+  const [metaOpen, setMetaOpen] = useState(true);
+  const [tagsOpen, setTagsOpen] = useState(false);
   const [variants, setVariants] = useState([]);
   const [activeVariantId, setActiveVariantId] = useState(null);
   const copyTimeoutRef = useRef(null);
@@ -89,7 +89,8 @@ export default function AssetDetailModal({ selectedAssetId, onClose, adminMode =
     setLoading(true);
     setAsset(null);
     setMetaView('enriched');
-    setMetaOpen(false);
+    setMetaOpen(true);
+    setTagsOpen(false);
     setVariants([]);
     setActiveVariantId(selectedAssetId);
     getAsset(selectedAssetId)
@@ -403,6 +404,21 @@ export default function AssetDetailModal({ selectedAssetId, onClose, adminMode =
                   {asset.display_title || asset.filename}
                 </h2>
                 <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                  {onFavouriteToggle && (
+                    <button
+                      onClick={() => onFavouriteToggle(asset.id, { display_title: asset.display_title, thumbnail_path: asset.thumbnail_path, cdn_url: asset.cdn_url })}
+                      title={isFavourited ? 'Remove from saved' : 'Save asset'}
+                      style={{
+                        width: '32px', height: '32px', display: 'inline-flex', alignItems: 'center',
+                        justifyContent: 'center', border: 'none', borderRadius: '8px', cursor: 'pointer',
+                        backgroundColor: isFavourited ? 'rgba(200,168,75,0.15)' : '#F3F4F6',
+                        fontSize: '16px',
+                        filter: isFavourited ? 'drop-shadow(0 0 4px rgba(200,168,75,0.5))' : 'none',
+                      }}
+                    >
+                      {isFavourited ? '★' : '☆'}
+                    </button>
+                  )}
                   <a
                     href={getAssetDownloadUrl(asset.id)}
                     download
@@ -410,18 +426,18 @@ export default function AssetDetailModal({ selectedAssetId, onClose, adminMode =
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      width: '32px',
-                      height: '32px',
+                      gap: '5px',
+                      padding: '6px 12px',
                       backgroundColor: NAVY,
                       color: '#fff',
                       borderRadius: '8px',
-                      fontSize: '15px',
+                      fontSize: '13px',
                       textDecoration: 'none',
+                      whiteSpace: 'nowrap',
                     }}
                     data-testid="download-btn"
                   >
-                    ↓
+                    ↓ Download
                   </a>
                   <button
                     onClick={handleShare}
@@ -466,53 +482,6 @@ export default function AssetDetailModal({ selectedAssetId, onClose, adminMode =
                 </div>
               </div>
 
-              {/* Tags summary — always visible */}
-              {(() => {
-                const rawTags = asset.display_tags;
-                if (!rawTags) return null;
-                let tags;
-                try {
-                  tags = typeof rawTags === 'string' ? JSON.parse(rawTags) : rawTags;
-                } catch {
-                  return null;
-                }
-                if (!Array.isArray(tags) || tags.length === 0) return null;
-                return (
-                  <div style={{ marginBottom: '8px' }}>
-                    <span
-                      style={{
-                        display: 'block',
-                        fontSize: '11px',
-                        fontWeight: '600',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                        color: '#9CA3AF',
-                        marginBottom: '6px',
-                      }}
-                    >
-                      Tags
-                    </span>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                      {tags.map((tag) => (
-                        <span
-                          key={tag}
-                          style={{
-                            fontSize: '11px',
-                            fontWeight: '500',
-                            padding: '2px 8px',
-                            borderRadius: '100px',
-                            backgroundColor: 'rgba(0, 32, 91, 0.07)',
-                            color: '#00205B',
-                          }}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-
               {/* Details accordion */}
               <div style={{ marginBottom: '24px' }}>
                 {/* Accordion header */}
@@ -537,7 +506,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose, adminMode =
 
                 {/* Accordion body — only rendered when open */}
                 {metaOpen && (
-                  <div style={{ paddingTop: '4px' }}>
+                  <div className="accordion-body" style={{ paddingTop: '4px' }}>
                     {/* Enriched / Original pill toggle */}
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
                       <div
@@ -627,9 +596,41 @@ export default function AssetDetailModal({ selectedAssetId, onClose, adminMode =
                         );
                       })}
                     </div>
+
                   </div>
                 )}
               </div>
+
+              {/* Tags accordion — enriched view only */}
+              {metaView === 'enriched' && (() => {
+                const rawTags = asset.display_tags;
+                if (!rawTags) return null;
+                let tags;
+                try { tags = typeof rawTags === 'string' ? JSON.parse(rawTags) : rawTags; } catch { return null; }
+                if (!Array.isArray(tags) || tags.length === 0) return null;
+                return (
+                  <div style={{ marginBottom: '16px' }}>
+                    <button
+                      onClick={() => setTagsOpen((o) => !o)}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        width: '100%', background: 'none', border: 'none',
+                        borderTop: '1px solid #F3F4F6', padding: '8px 0', cursor: 'pointer',
+                      }}
+                    >
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#374151' }}>Tags</span>
+                      <span style={{ fontSize: '12px', color: '#9CA3AF' }}>{tagsOpen ? '▲' : '▼'}</span>
+                    </button>
+                    {tagsOpen && (
+                      <div className="accordion-body" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', paddingTop: '8px' }}>
+                        {tags.map((tag) => (
+                          <span key={tag} style={{ fontSize: '11px', fontWeight: '500', padding: '2px 8px', borderRadius: '100px', backgroundColor: 'rgba(0,32,91,0.07)', color: '#00205B' }}>{tag}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* CDN URL */}
               {asset.cdn_url && (

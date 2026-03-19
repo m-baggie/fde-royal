@@ -120,7 +120,7 @@ function buildParams({ q, category, subcategory, rights, location, metadataQuali
   return params;
 }
 
-export default function BrowsePage({ isUploadOpen = false, onUploadClick = () => {}, onUploadRequestClose = () => {}, adminMode = false, onAdminModeChange = () => {} }) {
+export default function BrowsePage({ isUploadOpen = false, onUploadClick = () => {}, onUploadRequestClose = () => {}, adminMode = false, onAdminModeChange = () => {}, isFavourited = () => false, onFavouriteToggle = () => {}, count = 0, clear = () => {} }) {
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
@@ -229,7 +229,14 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
 
   return (
     <div style={styles.page}>
-      <Header onUploadClick={onUploadClick} adminMode={adminMode} />
+      <Header
+        onUploadClick={onUploadClick}
+        adminMode={adminMode}
+        count={count}
+        onFavouriteToggle={onFavouriteToggle}
+        clear={clear}
+        onSelectAsset={setSelectedAssetId}
+      />
 
       <div style={styles.searchRow}>
         <SearchBar onChange={setQ} />
@@ -294,6 +301,8 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
             assets={assets}
             loading={loading}
             onSelectAsset={setSelectedAssetId}
+            isFavourited={isFavourited}
+            onFavouriteToggle={onFavouriteToggle}
           />
         </div>
       </div>
@@ -303,6 +312,8 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
           selectedAssetId={selectedAssetId}
           onClose={() => setSelectedAssetId(null)}
           adminMode={adminMode}
+          isFavourited={isFavourited ? isFavourited(selectedAssetId) : false}
+          onFavouriteToggle={onFavouriteToggle}
         />
       )}
 
