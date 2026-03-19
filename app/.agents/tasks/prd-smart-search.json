@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "project": "Royal Caribbean DAM — Smart Search",
+  "overview": "Add an AI-powered prompt search mode to the DAM. Instead of typing keywords, content authors describe what they want in plain English ('happy families enjoying the pool'). Claude interprets the prompt, extracts structured search parameters (search terms, content type, mood, location), and runs a combined FTS5 + filter query. The results panel shows a brief AI-generated explanation of what was found so users understand why those assets matched.",
+  "goals": [
+    "Allow natural language prompts like 'happy families by the pool' to return relevant assets",
+    "Claude extracts both search terms AND structured filters from the prompt for more accurate results than keyword expansion alone",
+    "Show a visible AI explanation above results so users understand the search interpretation",
+    "Graceful fallback to standard search if Claude is unavailable",
+    "Smart search mode is a toggle — users can switch back to normal keyword search"
+  ],
+  "nonGoals": [
+    "No vector embeddings or semantic similarity — results still come from FTS5 + SQL filters",
+    "No persistent search history",
+    "No multi-turn conversation — each search is independent",
+    "No changes to the enrichment pipeline",
+    "No changes to the asset grid or detail panel"
+  ],
+  "successMetrics": [
+    "Typing 'happy families by the pool' returns assets tagged with family, children, pool, smiling",
+    "The AI explanation banner shows above results: 'Showing onboard lifestyle · family · pool activity'",
+    "Switching between smart and normal search mode works without page reload",
+    "If ANTHROPIC_API_KEY is not set, smart search falls back to standard FTS5 search with no error"
+  ],
+  "stack": {
+    "backend": "Express.js (Node 20) — server/src/",
+    "frontend": "React 18 + Vite — client/src/",
+    "ai": "Claude Haiku (claude-haiku-4-5-20251001) — fast, cheap, sufficient for prompt interpretation"
+  },
+  "routes": [
+    {
+      "path": "POST /api/search/prompt",
+      "name": "Smart Search",
+      "purpose": "Accepts a natural language prompt. Uses Claude Haiku to extract search_terms, content_type, mood, location, destination_region, and channel. Runs searchAssets() with the extracted parameters. Returns { assets, total, explanation } where explanation is a short human-readable summary of what Claude found."
+    }
+  ],
+  "uiNotes": [
+    "Search bar area: add a small '✦ Smart' toggle pill to the right of the search input. Inactive: grey outline, grey text. Active: navy background, white text.",
+    "When Smart mode is active: the search input placeholder changes to 'Describe what you're looking for...' and the input border turns navy to indicate AI mode.",
+    "Submitting in smart mode calls POST /api/search/prompt instead of GET /api/assets. Normal typing debounce is replaced by explicit submit (Enter key or a '→' submit button).",
+    "AI explanation banner: shown above the results count when smart search returns results. Soft navy background (rgba(0,27,107,0.06)), navy text, 12px, padding 8px 12px, border-radius 8px. Format: '✦ Showing: [explanation text from API]'. Dismissed when user clears search or switches to normal mode.",
+    "Loading state: while waiting for smart search response, show a subtle '✦ Thinking...' text in the banner area instead of the results count.",
+    "If smart search returns 0 results, show the explanation banner with the interpretation plus 'No matching assets found — try different keywords' below.",
+    "Smart mode toggle resets to off when the search input is cleared."
+  ],
+  "dataModel": [],
+  "rules": [
+    "POST /api/search/prompt body: { prompt: string }",
+    "Claude Haiku prompt: 'You are helping search a Royal Caribbean cruise marketing image library. The user wants to find images. Extract search parameters from their request. Return ONLY valid JSON: { \"search_terms\": string[] (4-8 keywords to search for), \"content_type\": string|null (one of: ship-exterior, onboard-lifestyle, destination, promotional, aerial, entertainment, dining, people — or null), \"mood\": string|null (one of: adventurous, luxurious, relaxing, exciting, romantic, family, festive — or null), \"location\": string|null (specific place name or null), \"destination_region\": string|null (one of: Caribbean, Bahamas, Mexico, Alaska, Europe, Asia, South Pacific, North America — or null), \"channel\": string|null (one of: hero, banner, mobile, desktop, landscape, portrait, square — or null), \"explanation\": string (one short sentence describing what you are searching for, in plain English, starting with a verb e.g. \"Showing families enjoying pool activities on deck\") }. User request: \"<prompt>\"'",
+    "If Claude call fails or returns invalid JSON, fall back to treating the prompt as a plain FTS5 query (same as normal search) and set explanation to null",
+    "The search_terms array is joined with ' OR ' for FTS5 matching — same as expandQuery",
+    "All extracted filters (content_type, mood, location, destination_region, channel) are passed as additional WHERE conditions to searchAssets()",
+    "The mood filter maps to enriched_mood column in the assets table",
+    "Response shape: { total: number, assets: object[], explanation: string|null }",
+    "Client: when smart mode is active and input has value, disable the 300ms debounce — only search on Enter or submit button click",
+    "Client: store explanation in component state, clear it when search is cleared or mode is switched",
+    "client/src/api/assets.js exports smartSearch(prompt) that calls POST /api/search/prompt"
+  ],
+  "qualityGates": [
+    "npm run lint",
+    "npm run build"
+  ],
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "POST /api/search/prompt — Claude-powered search endpoint",
+      "status": "open",
+      "dependsOn": [],
+      "description": "As a developer, I want a dedicated smart search endpoint so Claude can interpret natural language prompts and return structured search results.",
+      "acceptanceCriteria": [
+        "POST /api/search/prompt added to server/src/routes/search.js (new file) and mounted at /api/search in server/src/index.js",
+        "Accepts JSON body { prompt: string }, returns 400 if prompt is missing or empty",
+        "Calls Claude Haiku with the RC-specific extraction prompt and parses the JSON response",
+        "On success: calls searchAssets() with extracted search_terms (joined with OR), plus any non-null filter values (content_type, mood, location, destination_region, channel)",
+        "Returns { total, assets, explanation } — explanation is Claude's plain-English summary string",
+        "On Claude failure or invalid JSON: falls back to searchAssets({ q: prompt }) and returns explanation: null",
+        "If ANTHROPIC_API_KEY is not configured: falls back to plain search, returns explanation: null",
+        "Supertest test: POST /api/search/prompt with { prompt: 'ships at sunset' } returns 200 with assets array and total",
+        "Supertest test: POST /api/search/prompt with empty body returns 400",
+        "Supertest test: endpoint works when anthropic is null (falls back gracefully)",
+        "client/src/api/assets.js exports smartSearch(prompt) that POSTs to /api/search/prompt and returns { total, assets, explanation }"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Smart search UI — mode toggle, prompt input, explanation banner",
+      "status": "open",
+      "dependsOn": ["US-001"],
+      "description": "As a content author, I want to switch to smart search mode and type a natural language prompt so I can find assets by describing what I need.",
+      "acceptanceCriteria": [
+        "SearchBar.jsx (or BrowsePage.jsx) renders a '✦ Smart' toggle pill to the right of the search input",
+        "Toggle inactive style: border '1px solid #E5E7EB', background transparent, color #9CA3AF, border-radius 100px, font 11px/600, padding 3px 10px, cursor pointer",
+        "Toggle active style: background #001B6B, color #FFFFFF, border-color #001B6B",
+        "When smart mode is active: input placeholder changes to 'Describe what you're looking for...' and input border becomes 1.5px solid #001B6B",
+        "When smart mode is active: typing does NOT trigger debounced search — only Enter key or a small '→' submit button (appears inside the input on the right when there is text) triggers the search",
+        "Clicking '→' or pressing Enter calls smartSearch(query) from the API module",
+        "While waiting for response: show '✦ Thinking...' in the explanation banner area (above results count), results are not cleared during loading",
+        "On response: update assets grid with returned assets, show explanation banner above results count",
+        "Explanation banner: background rgba(0,27,107,0.06), border-radius 8px, padding 8px 12px, font 12px color #001B6B. Text: '✦ ' + explanation",
+        "Clearing the search input hides the explanation banner and resets to normal search",
+        "Toggling off smart mode clears the explanation banner and triggers a normal search with the current input value",
+        "If explanation is null (fallback): no banner shown, results display normally",
+        "BrowsePage passes smartMode state and explanation to the search area components",
+        "Example: typing 'happy families by the pool' and pressing Enter shows assets + banner '✦ Showing families enjoying pool activities on deck'",
+        "Negative case: if smart search returns 0 results, banner still shows with explanation and results count shows 0",
+        "npm run lint passes",
+        "npm run build passes"
+      ]
+    }
+  ]
+}
