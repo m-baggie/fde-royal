@@ -1,0 +1,9 @@
+US-004 is complete. Summary of what was delivered:
+
+- **Removed** the `<table>` with `<thead>` column headers ("Field", "Value") and the standalone "Metadata" heading
+- **Added** a div-based key-value list: 110px uppercase muted label + flex value, padded rows with no dividers
+- **Wrapped** the Enriched/Original toggle + key-value list in a collapsible "Details" accordion (collapsed by default, resets on each modal open)
+- **Added** always-visible tags summary above the accordion using `display_tags`, rendered as navy pill chips — hidden when empty
+- `npm run lint` → PASS, `npm run build` → PASS, browser verified both states
+
+<promise>COMPLETE</promise>

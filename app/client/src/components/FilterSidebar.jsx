@@ -126,6 +126,8 @@ export default function FilterSidebar({
   activeDestinationRegion,
   activeContentType,
   onFilterChange,
+  adminMode = false,
+  onAdminModeChange = () => {},
 }) {
   const categories = filters?.categories || [];
   const subcategories = activeCategory ? (filters?.subcategories?.[activeCategory] || []) : [];
@@ -249,6 +251,64 @@ export default function FilterSidebar({
           />
         </Section>
       )}
+
+      {/* Admin Mode toggle */}
+      <div
+        style={{
+          marginTop: '16px',
+          paddingTop: '16px',
+          borderTop: '1px solid #E5E7EB',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+        data-testid="admin-toggle-row"
+      >
+        <span
+          style={{
+            fontSize: '11px',
+            fontWeight: '700',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: TEXT_MUTED,
+          }}
+        >
+          Admin Mode
+        </span>
+        <label
+          style={{ position: 'relative', display: 'inline-block', width: '36px', height: '20px', cursor: 'pointer' }}
+          data-testid="admin-toggle-label"
+        >
+          <input
+            type="checkbox"
+            checked={adminMode}
+            onChange={(e) => onAdminModeChange(e.target.checked)}
+            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
+            data-testid="admin-toggle-input"
+          />
+          <span
+            style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: '20px',
+              backgroundColor: adminMode ? '#001B6B' : '#D1D5DB',
+              transition: 'background-color 150ms ease',
+            }}
+          />
+          <span
+            style={{
+              position: 'absolute',
+              top: '3px',
+              left: adminMode ? '19px' : '3px',
+              width: '14px',
+              height: '14px',
+              borderRadius: '50%',
+              backgroundColor: '#FFFFFF',
+              transition: 'left 150ms ease',
+            }}
+          />
+        </label>
+      </div>
     </aside>
   );
 }

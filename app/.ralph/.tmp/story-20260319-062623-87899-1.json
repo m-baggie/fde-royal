@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "total": 4,
+  "remaining": 4,
+  "quality_gates": [
+    "npm run lint",
+    "npm run build"
+  ],
+  "id": "US-001",
+  "title": "Admin mode toggle \u2014 localStorage persistence + gate Upload and Delete"
+}

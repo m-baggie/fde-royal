@@ -1061,66 +1061,6 @@ Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/r
   - `git add client/dist/` fails due to gitignore; previously committed dist files still show as modified — they may be picked up via other staged state from prior iterations
 ---
 
-## [2026-03-19 06:27] - US-001: useFavourites hook — localStorage state management
-Thread:
-Run: 20260319-062739-90032 (iteration 1)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-favourites/app/.ralph/runs/run-20260319-062739-90032-iter-1.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-favourites/app/.ralph/runs/run-20260319-062739-90032-iter-1.md
-- Guardrails reviewed: yes
-- No-commit run: false
-- Commit: a8b6ff5 feat(favourites): add useFavourites hook and wire into App (US-001)
-- Post-commit status: clean
-- Verification:
-  - Command: npm run lint -> PASS
-  - Command: npm run build -> PASS (vite build, 93 modules, 216 kB)
-- Files changed:
-  - client/src/hooks/useFavourites.js (new)
-  - client/src/App.jsx (import useFavourites, call hook, pass props to BrowsePage)
-- What was implemented:
-  - Created client/src/hooks/useFavourites.js exporting useFavourites() hook
-  - Hook returns { favouriteIds, isFavourited, toggle, clear, count }
-  - Initialises from localStorage 'dam_favourites' on mount (JSON.parse, default [])
-  - toggle(id, assetData): adds/removes ID from array; writes companion data to 'dam_favourites_data'; updates localStorage on every change
-  - clear(): empties favouriteIds, removes both localStorage keys
-  - App.jsx: calls useFavourites() and passes all props to BrowsePage
-- **Learnings for future iterations:**
-  - The `ralph log` script does not exist in this repo — log directly to activity.log
-  - client/dist/ is gitignored but dist files from prior tracked commits may appear as modified; do NOT stage them
-  - Hooks directory (client/src/hooks/) did not exist yet — mkdir before creating the file
----
-
-## [2026-03-19 06:45] - US-002: Heart icon on asset cards
-Thread:
-Run: 20260319-062739-90032 (iteration 2)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-favourites/app/.ralph/runs/run-20260319-062739-90032-iter-2.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-favourites/app/.ralph/runs/run-20260319-062739-90032-iter-2.md
-- Guardrails reviewed: yes
-- No-commit run: false
-- Commit: 639f6d7 feat(favourites): add heart icon to asset cards (US-002)
-- Post-commit status: .agents/tasks/prd-favourites.json and ralph run logs remain (loop-managed, not edited per rules)
-- Verification:
-  - Command: npm run lint -> PASS
-  - Command: npm run build -> PASS (vite build, 217 kB, 93 modules)
-  - Browser: 31 heart buttons on 31 cards; ♡ (white) at rest → ♥ (red) on click → ♡ on second click -> PASS
-- Files changed:
-  - client/src/components/AssetCard.jsx (heartBtn style, isFavourited/onFavouriteToggle props, handleHeartClick with scale animation)
-  - client/src/components/AssetGrid.jsx (thread isFavourited/onFavouriteToggle props to AssetCard)
-  - client/src/pages/BrowsePage.jsx (accept and pass isFavourited/onFavouriteToggle from App)
-- What was implemented:
-  - Heart button (data-testid="heart-btn") rendered position absolute top-left (top:8px, left:8px) of imageWrapper
-  - Button: 28×28px, border-radius 50%, rgba(0,0,0,0.35) bg, no border, flex centered
-  - Icon ♡ (white #FFFFFF, not favourited) / ♥ (red #EF4444, favourited), font-size 14px
-  - onClick: e.stopPropagation() + onFavouriteToggle(asset.id, {display_title, thumbnail_path, cdn_url})
-  - Scale animation: useState(heartScale), sets 1.2 → 1 with 150ms setTimeout
-  - AssetGrid: accepts isFavourited function and onFavouriteToggle, calls isFavourited(asset.id) per card
-  - BrowsePage: destructures isFavourited + onFavouriteToggle from props (passed by App)
-- **Learnings for future iterations:**
-  - The running dev server at port 5173 is from a DIFFERENT repo (`Royal Caribbean/app`) — must start fresh Vite from the correct branch dir
-  - Vite auto-increments port; started on 5189 for this branch
-  - `npx tsx <<'EOF'` heredoc fails Node 18; write to tmp/*.ts and run `npx tsx tmp/file.ts`
-  - Browser verification proved props chain works: App → BrowsePage → AssetGrid → AssetCard
----
-
 ## [2026-03-17 22:50] - US-006: Sidebar filter visual restyle
 Thread:
 Run: 20260317-221620-26893 (iteration 7)
@@ -1152,31 +1092,172 @@ Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-ui-redesign/app/.ralph/r
   - `client/dist/` is gitignored — never try to stage build output
 ---
 
-## [2026-03-19 07:10] - US-003: Header favourites icon with count badge and dropdown tray
+## [2026-03-19 06:26] - US-001: Admin mode toggle — localStorage persistence + gate Upload and Delete
 Thread:
-Run: 20260319-062739-90032 (iteration 3)
-Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-favourites/app/.ralph/runs/run-20260319-062739-90032-iter-3.log
-Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-favourites/app/.ralph/runs/run-20260319-062739-90032-iter-3.md
+Run: 20260319-062623-87899 (iteration 1)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-modal-ux/app/.ralph/runs/run-20260319-062623-87899-iter-1.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-modal-ux/app/.ralph/runs/run-20260319-062623-87899-iter-1.md
 - Guardrails reviewed: yes
 - No-commit run: false
-- Commit: f0567ee feat(favourites): add header favourites icon, badge, and dropdown tray (US-003)
-- Post-commit status: .ralph/errors.log (loop-managed), client/dist/index.html (pre-tracked artifact) — expected
+- Commit: 1d60576 feat(admin): add admin mode toggle with localStorage persistence
+- Post-commit status: clean (only .agents/tasks/prd-modal-ux.json modified — loop-managed, not edited per rules)
+- Verification:
+  - Command: `npm run lint` -> PASS
+  - Command: `npm run build` -> PASS (vite, 216 kB bundle)
+  - Browser: upload-btn absent with no localStorage key -> PASS
+  - Browser: admin toggle present and unchecked -> PASS
+  - Browser: clicking toggle makes upload-btn appear + localStorage = '1' -> PASS
+  - Browser: reload with localStorage='1' keeps upload-btn visible -> PASS
+- Files changed:
+  - client/src/App.jsx
+  - client/src/pages/BrowsePage.jsx
+  - client/src/components/Header.jsx
+  - client/src/components/FilterSidebar.jsx
+  - client/src/components/AssetDetailModal.jsx
+- What was implemented:
+  - App.jsx: adminMode state lazy-initialised from localStorage; handleAdminModeChange writes '1' or removes key
+  - BrowsePage: threads adminMode/onAdminModeChange to Header, FilterSidebar, and AssetDetailModal
+  - Header.jsx: Upload button gated behind adminMode; data-testid="upload-btn" added
+  - FilterSidebar.jsx: pill toggle at bottom with top border separator; hidden checkbox + track/thumb spans; navy active / #D1D5DB inactive
+  - AssetDetailModal.jsx: Delete button gated behind adminMode
+- **Learnings for future iterations:**
+  - ralph log script absent — write to activity.log directly
+  - npx tsx via heredoc fails on Node 18 — write to tmp/*.ts and run from ~/.claude/skills/dev-browser/
+  - client/dist/ is gitignored — never stage build output
+  - Pill toggle: hidden checkbox input + two absolutely-positioned spans (track + thumb); left CSS transition animates thumb
+---
+
+## [2026-03-19 06:32] - US-002: Share button — copy deep-link URL to asset
+Thread:
+Run: 20260319-062623-87899 (iteration 2)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-modal-ux/app/.ralph/runs/run-20260319-062623-87899-iter-2.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-modal-ux/app/.ralph/runs/run-20260319-062623-87899-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 3a690a6 feat(modal): add Share button with deep-link URL copy
+- Post-commit status: clean (only .agents/tasks/prd-modal-ux.json modified — loop-managed, not edited per rules)
+- Verification:
+  - Command: `npm run lint` -> PASS
+  - Command: `npm run build` -> PASS (vite, 217 kB bundle)
+  - Browser: share-btn found with text '↗ Share' -> PASS
+  - Browser: share-btn style matches spec (border 1.5px solid #001B6B, transparent bg, 6px 14px padding, 13px font) -> PASS
+  - Browser: click copies URL ?asset=<id> to clipboard -> PASS
+  - Browser: label changes to '✓ Copied!' after click -> PASS
+  - Browser: label reverts to '↗ Share' after 2s -> PASS
+  - Browser: deep link auto-opens modal -> PASS
+  - Browser: ?asset= param removed from URL after load -> PASS
+- Files changed:
+  - client/src/components/AssetDetailModal.jsx
+  - client/src/pages/BrowsePage.jsx
+- What was implemented:
+  - AssetDetailModal: shareLabel state, shareTimeoutRef, handleShare() copies deep link URL, Share button renders next to Download in action row
+  - BrowsePage: useEffect on mount reads URLSearchParams('asset'), calls setSelectedAssetId, then history.replaceState to clean URL
+- **Learnings for future iterations:**
+  - Many Vite dev servers may be running on successive ports (5173..5188+) from other project branches — identify correct port using lsof + ps
+  - client/dist/ is gitignored — never stage build output
+  - npx tsx via heredoc fails on Node 18 — write to tmp/*.ts files in skills/dev-browser/ directory
+  - navigator.clipboard requires context.grantPermissions(['clipboard-read','clipboard-write']) in Playwright
+---
+
+## [2026-03-19 09:35] - US-002: Share button — copy deep-link URL to asset (iter-3 re-verification)
+Thread:
+Run: 20260319-062623-87899 (iteration 3)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-modal-ux/app/.ralph/runs/run-20260319-062623-87899-iter-3.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-modal-ux/app/.ralph/runs/run-20260319-062623-87899-iter-3.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: (see below — run artifacts + progress entry only)
+- Post-commit status: clean
+- Verification:
+  - Command: `npm run lint` -> PASS
+  - Command: `npm run build` -> PASS (vite, 217 kB bundle)
+  - Browser (port 5174): share-btn rendered with text '↗ Share' -> PASS
+  - Browser: styles match spec — border '1.5px solid rgb(0,27,107)', color 'rgb(0,27,107)', borderRadius '6px', padding '6px 14px', fontSize '13px', background 'transparent' -> PASS
+  - Browser: click copies `http://localhost:5174/?asset=dubai-arabian-gulf-emirates-burj-al-arab-skyline.jpg` -> PASS
+  - Browser: label changes to '✓ Copied!' after click -> PASS
+  - Browser: label reverts to '↗ Share' after 2000ms -> PASS
+  - Browser: deep link `/?asset=<id>` auto-opens correct asset modal -> PASS
+  - Browser: `?asset=` param removed from URL via history.replaceState after load -> PASS
+- Files changed:
+  - .ralph/activity.log
+  - .ralph/progress.md
+  - .ralph/runs/run-20260319-062623-87899-iter-2.log (leftover from iter-2)
+  - .ralph/runs/run-20260319-062623-87899-iter-2.md (leftover from iter-2)
+  - .ralph/runs/run-20260319-062623-87899-iter-3.log
+  - .ralph/.tmp/* (run artifacts)
+- What was implemented:
+  - iter-3 is a re-verification pass only; all code changes were committed in iter-2 (commit 3a690a6).
+  - Implementation confirmed correct via live browser testing on port 5174 (port 5173 was a stale server from another run/branch).
+  - All US-002 acceptance criteria satisfied.
+- **Learnings for future iterations:**
+  - Port 5173 is often occupied by a stale Vite server from a prior session; always verify the correct port by checking process CWD with lsof, not by assuming 5173
+  - Playwright click timeout on asset-card can mean a modal overlay is blocking interaction from a prior session — close it first with modal-close-btn
+  - `context.grantPermissions(['clipboard-read','clipboard-write'])` is required before reading clipboard in Playwright
+---
+
+## [2026-03-19 10:00] - US-003: Metadata toggle — clean Enriched / Original pill toggle (one view at a time)
+Thread:
+Run: 20260319-062623-87899 (iteration 4)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-modal-ux/app/.ralph/runs/run-20260319-062623-87899-iter-4.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-modal-ux/app/.ralph/runs/run-20260319-062623-87899-iter-4.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 5352de4 feat(modal): replace Show Original button with Enriched/Original pill toggle
+- Post-commit status: clean (only .agents/tasks/prd-modal-ux.json and .ralph/errors.log remain modified — loop-managed / not edited per rules)
+- Verification:
+  - Command: `npm run lint` -> PASS
+  - Command: `npm run build` -> PASS (vite, 217 kB bundle)
+  - Browser: pill toggle present, old show-original-toggle gone -> PASS
+  - Browser: enriched btn bg rgb(0,27,107), original btn bg rgb(255,255,255) on open -> PASS
+  - Browser: toggle container height 28px -> PASS
+  - Browser: click Original → original btn becomes navy, enriched btn becomes white -> PASS
+  - Browser: table has 2 columns (Field + Value), no Original column -> PASS
+  - Browser: 0 gold borders in both modes -> PASS
+  - Browser: re-open modal → toggle resets to Enriched (navy bg) -> PASS
+- Files changed:
+  - client/src/components/AssetDetailModal.jsx
+- What was implemented:
+  - Replaced `showOriginal` (boolean) state with `metaView` state ('enriched' | 'original'), default 'enriched'
+  - `metaView` resets to 'enriched' in the selectedAssetId useEffect (fires on every modal open)
+  - Replaced single Show Original button with inline-flex pill toggle container (border-radius 100px, border 1.5px solid #001B6B, height 28px)
+  - Two pill buttons (Enriched, Original): 72px width, 12px/600 font, border-radius 100px, active=navy bg/white text, inactive=white bg/navy text
+  - Table: removed conditional Original column and gold border logic entirely
+  - Enriched mode: displayVal = enrichedVal ?? origVal; null → grey italic 'Not enriched'
+  - Original mode: displayVal = origVal; null/empty → grey '—'
+  - Single 'Value' column header in both modes
+- **Learnings for future iterations:**
+  - dev-browser heredoc fails with Node 18; always write to /tmp/*.ts and run with `npx tsx /tmp/file.ts` from skills dir
+  - Pill toggle: `overflow: hidden` on the outer container + `border-radius: 100px` on each button gives the correct pill shape without gaps
+  - `page.route()` for test-asset-id match: use regex that ends with asset ID and excludes `/media` to avoid intercepting image requests
+---
+
+## [2026-03-19 14:30] - US-004: Compact modal — collapsible metadata accordion, always-visible tags, clean key-value layout
+Thread:
+Run: 20260319-062623-87899 (iteration 5)
+Run log: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-modal-ux/app/.ralph/runs/run-20260319-062623-87899-iter-5.log
+Run summary: /Users/mbaggie/Dev/FDE/Royal Caribbean.prd-modal-ux/app/.ralph/runs/run-20260319-062623-87899-iter-5.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 779b0cd feat(modal): add collapsible Details accordion with key-value layout
+- Post-commit status: clean
 - Verification:
   - Command: npm run lint -> PASS
-  - Command: npm run build -> PASS (221.60 kB, 94 modules)
-  - Browser: favourites icon button FOUND, badge hidden at count=0 ✓, badge shows count after heart click ✓, dropdown visible on click ✓, has Favourites header ✓, has Export CDN URLs ✓, has Clear all ✓, empty state "No favourites yet" ✓, closes on outside click ✓, remove button works (badge gone after remove) ✓
+  - Command: npm run build -> PASS
+  - Browser: modal opens collapsed with tags visible, accordion expands showing toggle + key-value rows -> PASS
 - Files changed:
-  - client/src/components/FavouritesDropdown.jsx (new)
-  - client/src/components/Header.jsx (updated — added count badge, favourites button, dropdown)
-  - client/src/pages/BrowsePage.jsx (added count/clear props, passes to Header)
+  - client/src/components/AssetDetailModal.jsx
 - What was implemented:
-  - FavouritesDropdown.jsx: reads `dam_favourites` (IDs) and `dam_favourites_data` (display data) from localStorage on every render. Renders: dropdown header (Favourites label + count), items list (44×44px thumbnail, 2-line clamped title, × remove button), footer (Clear all + Export CDN URLs) when items > 0, empty state (♥ icon + "No favourites yet") when empty. Outside-click via useEffect mousedown listener on the dropdown's own ref. Export: filters cdn_url (skips nulls), joins with \n, clipboard.writeText(), shows "✓ Copied!" for 2000ms.
-  - Header.jsx: added `count`, `onFavouriteIconClick`, `onFavouriteToggle`, `clear` props. Internal `isOpen` state. Favourites button (36×36px circular, transparent, ♥ 20px navy) rendered to the right of Upload. Count badge (navy circle, 16px, white 10px/700) shown when count > 0. onMouseDown stopPropagation prevents the outside-click handler from firing when button is clicked.
-  - BrowsePage.jsx: added `count`/`clear` to props destructuring; passes `count`, `onFavouriteToggle`, `clear` to Header.
+  - Removed standalone 'Metadata' heading and HTML table entirely
+  - Added div-based key-value list: 110px label (11px/600/uppercase/#9CA3AF), flex value (13px/400/#111827)
+  - Rows separated by 8px top/bottom padding only — no border lines
+  - Collapsible 'Details' accordion (border-top, 'Details' label left, ▼/▲ chevron right)
+  - Accordion defaults collapsed; resets to closed on each modal open (added metaOpen state + reset in useEffect)
+  - Always-visible tags summary above accordion: parses display_tags, renders navy pill chips
+  - Tags row hidden when display_tags is empty/null
+  - Right panel order: title+actions → tags → Details ▼ → [expanded: toggle + kv list] → CDN URL → Enrich
 - **Learnings for future iterations:**
-  - `onMouseDown={(e) => e.stopPropagation()}` on the toggle button is required to prevent the FavouritesDropdown's mousedown listener from closing the dropdown before the click handler fires (standard toggle-with-outside-click pattern)
-  - FavouritesDropdown reads localStorage on every render; this works because the `count` prop change (from useFavourites state update) triggers a re-render which re-reads the updated localStorage
-  - Dev browser pages share localStorage in the same browser context — use `page.evaluate(() => localStorage.removeItem(...))` + reload to isolate test state
-  - `npx tsx <<'EOF'` heredoc fails on Node 18; write to tmp/*.ts and run `npx tsx tmp/file.ts`
-  - Multiple stale Vite servers on 5175–5184 belong to other branches; start fresh Vite on explicit port (e.g. --port 5190) from the correct project dir
+  - display_tags is the field to use for the always-visible tag summary (per PRD rules)
+  - IIFE (immediately-invoked function expression) inside JSX works cleanly for conditional rendering with try/catch
+  - Accordion button styled with background:none, border:none, borderTop inline keeps it semantically correct
+  - metaOpen state reset must be added to the same useEffect that resets metaView (keyed on selectedAssetId)
 ---

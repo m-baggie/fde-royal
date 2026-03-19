@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import FavouritesDropdown from './FavouritesDropdown';
 
-export default function Header({ onUploadClick, count = 0, onFavouriteIconClick = () => {}, onFavouriteToggle = () => {}, clear = () => {}, onSelectAsset = () => {} }) {
+export default function Header({ onUploadClick, adminMode = false, count = 0, onFavouriteIconClick = () => {}, onFavouriteToggle = () => {}, clear = () => {}, onSelectAsset = () => {} }) {
   const [isOpen, setIsOpen] = useState(false);
 
   function handleFavIconClick() {
@@ -32,59 +32,42 @@ export default function Header({ onUploadClick, count = 0, onFavouriteIconClick 
         <img
           src="/royal-logo.png"
           alt="Royal Caribbean"
-          style={{
-            height: '36px',
-            width: 'auto',
-            display: 'block',
-          }}
+          style={{ height: '36px', width: 'auto', display: 'block' }}
         />
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <span
-            style={{
-              color: '#001B6B',
-              fontWeight: '700',
-              fontSize: '15px',
-              letterSpacing: '0.02em',
-              lineHeight: 1.2,
-            }}
-          >
+          <span style={{ color: '#001B6B', fontWeight: '700', fontSize: '15px', letterSpacing: '0.02em', lineHeight: 1.2 }}>
             Royal Caribbean
           </span>
-          <span
-            style={{
-              color: '#9CA3AF',
-              fontSize: '11px',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              lineHeight: 1.2,
-            }}
-          >
-            ASSET
+          <span style={{ color: '#9CA3AF', fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1.2 }}>
+            Asset Search & Intelligence
           </span>
         </div>
       </div>
 
-      {/* Right side: Upload button + Favourites icon */}
+      {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        {/* Upload button */}
-        <button
-          style={{
-            backgroundColor: '#001B6B',
-            color: '#FFFFFF',
-            border: 'none',
-            padding: '9px 22px',
-            borderRadius: '100px',
-            cursor: 'pointer',
-            fontSize: '13px',
-            fontWeight: '600',
-            letterSpacing: '0.02em',
-          }}
-          onClick={onUploadClick}
-        >
-          + Upload
-        </button>
+        {/* Upload button — admin only */}
+        {adminMode && (
+          <button
+            style={{
+              backgroundColor: '#001B6B',
+              color: '#FFFFFF',
+              border: 'none',
+              padding: '9px 22px',
+              borderRadius: '100px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: '600',
+              letterSpacing: '0.02em',
+            }}
+            onClick={onUploadClick}
+            data-testid="upload-btn"
+          >
+            + Upload
+          </button>
+        )}
 
-        {/* Favourites icon button */}
+        {/* Favourites icon */}
         <div style={{ position: 'relative' }}>
           <button
             data-testid="favourites-icon-btn"

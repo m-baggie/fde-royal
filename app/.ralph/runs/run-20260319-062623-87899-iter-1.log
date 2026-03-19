@@ -1,0 +1,13 @@
+Clean. US-001 is fully implemented and verified.
+
+**Summary of what was done:**
+
+- **App.jsx**: Added `adminMode` state (lazy-initialised from `localStorage.getItem('dam_admin_mode') === '1'`) and `handleAdminModeChange` that updates state and writes/removes the localStorage key.
+- **BrowsePage.jsx**: Accepts `adminMode`/`onAdminModeChange` props, threads them to `Header`, `FilterSidebar`, and `AssetDetailModal`.
+- **Header.jsx**: Upload button now only renders when `adminMode === true`.
+- **FilterSidebar.jsx**: Admin Mode pill toggle added at bottom, separated by a top border. Hidden checkbox with two `position: absolute` spans for track (navy/#D1D5DB) and white thumb with left-transition animation.
+- **AssetDetailModal.jsx**: Delete button now only renders when `adminMode === true`.
+
+Browser verification confirmed all AC cases: upload absent by default, toggle enables it immediately, localStorage persists across reload.
+
+<promise>COMPLETE</promise>

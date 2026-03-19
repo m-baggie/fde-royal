@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "total": 4,
+  "remaining": 3,
+  "quality_gates": [
+    "npm run lint",
+    "npm run build"
+  ],
+  "id": "US-002",
+  "title": "Share button \u2014 copy deep-link URL to asset"
+}

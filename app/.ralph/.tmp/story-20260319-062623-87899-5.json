@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "total": 4,
+  "remaining": 1,
+  "quality_gates": [
+    "npm run lint",
+    "npm run build"
+  ],
+  "id": "US-004",
+  "title": "Compact modal \u2014 collapsible metadata accordion, always-visible tags, clean key-value layout"
+}

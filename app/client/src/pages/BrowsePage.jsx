@@ -120,7 +120,7 @@ function buildParams({ q, category, subcategory, rights, location, metadataQuali
   return params;
 }
 
-export default function BrowsePage({ isUploadOpen = false, onUploadClick = () => {}, onUploadRequestClose = () => {}, isFavourited, onFavouriteToggle, count = 0, clear = () => {} }) {
+export default function BrowsePage({ isUploadOpen = false, onUploadClick = () => {}, onUploadRequestClose = () => {}, adminMode = false, onAdminModeChange = () => {} }) {
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
@@ -139,6 +139,16 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
   const [filters, setFilters] = useState({ categories: [], subcategories: {}, locations: [] });
   const [selectedAssetId, setSelectedAssetId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Read ?asset= URL param on mount and open that asset's detail modal
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const assetParam = params.get('asset');
+    if (assetParam) {
+      setSelectedAssetId(assetParam);
+      history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
 
   // Load filter options once
   useEffect(() => {
@@ -219,13 +229,7 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
 
   return (
     <div style={styles.page}>
-      <Header
-        onUploadClick={onUploadClick}
-        count={count}
-        onFavouriteToggle={onFavouriteToggle}
-        clear={clear}
-        onSelectAsset={setSelectedAssetId}
-      />
+      <Header onUploadClick={onUploadClick} adminMode={adminMode} />
 
       <div style={styles.searchRow}>
         <SearchBar onChange={setQ} />
@@ -245,6 +249,8 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
             activeDestinationRegion={destinationRegion}
             activeContentType={contentType}
             onFilterChange={handleFilterChange}
+            adminMode={adminMode}
+            onAdminModeChange={onAdminModeChange}
           />
         </div>
 
@@ -288,8 +294,6 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
             assets={assets}
             loading={loading}
             onSelectAsset={setSelectedAssetId}
-            isFavourited={isFavourited}
-            onFavouriteToggle={onFavouriteToggle}
           />
         </div>
       </div>
@@ -298,8 +302,7 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
         <AssetDetailModal
           selectedAssetId={selectedAssetId}
           onClose={() => setSelectedAssetId(null)}
-          isFavourited={isFavourited ? isFavourited(selectedAssetId) : false}
-          onFavouriteToggle={onFavouriteToggle}
+          adminMode={adminMode}
         />
       )}
 

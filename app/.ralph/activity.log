@@ -1,9 +1,12 @@
 # Activity Log
 
 ## Run Summary
-- 2026-03-19 06:46:06 | run=20260319-062739-90032 | iter=3 | mode=build | story=US-003 | duration=503s | status=success
-- 2026-03-19 06:37:40 | run=20260319-062739-90032 | iter=2 | mode=build | story=US-002 | duration=365s | status=success
-- 2026-03-19 06:31:32 | run=20260319-062739-90032 | iter=1 | mode=build | story=US-001 | duration=233s | status=success
+- 2026-03-19 09:50:56 | run=20260319-062623-87899 | iter=5 | mode=build | story=US-004 | duration=234s | status=success
+- 2026-03-19 09:46:58 | run=20260319-062623-87899 | iter=4 | mode=build | story=US-003 | duration=383s | status=success
+- 2026-03-19 09:40:32 | run=20260319-062623-87899 | iter=3 | mode=build | story=US-002 | duration=6582s | status=success
+- 2026-03-19 09:35:00 | run=20260319-062623-87899 | iter=3 | mode=build | story=US-002 | duration=- | status=success
+- 2026-03-19 07:45:28 | run=20260319-062623-87899 | iter=2 | mode=build | story=US-002 | duration=4397s | status=success
+- 2026-03-19 06:32:07 | run=20260319-062623-87899 | iter=1 | mode=build | story=US-001 | duration=344s | status=success
 - 2026-03-17 22:47:04 | run=20260317-221620-26893 | iter=7 | mode=build | story=US-006 | duration=236s | status=success
 - 2026-03-17 22:43:04 | run=20260317-221620-26893 | iter=6 | mode=build | story=US-005 | duration=224s | status=success
 - 2026-03-17 22:39:16 | run=20260317-221620-26893 | iter=5 | mode=build | story=US-004 | duration=261s | status=success
@@ -167,16 +170,16 @@
 [2026-03-17 22:43:03] ITERATION 6 end (duration=224s)
 [2026-03-17 22:43:08] ITERATION 7 start (mode=build story=US-006)
 [2026-03-17 22:47:03] ITERATION 7 end (duration=236s)
-[2026-03-19 06:27:40] ITERATION 1 start (mode=build story=US-001)
-[2026-03-19 06:30:04] US-001: Created useFavourites hook — lint PASS, build PASS
-[2026-03-19 06:31:32] ITERATION 1 end (duration=233s)
-[2026-03-19 06:31:37] ITERATION 2 start (mode=build story=US-002)
-[2026-03-19 06:32:30] US-002: Starting implementation — heart icon on asset cards
-[2026-03-19 06:35:46] US-002: Browser verified — heart buttons on all 31 cards, toggle works correctly
-[2026-03-19 06:37:29] US-002: Progress log updated, committing run artifacts
-[2026-03-19 06:37:40] ITERATION 2 end (duration=365s)
-[2026-03-19 06:37:44] ITERATION 3 start (mode=build story=US-003)
-[2026-03-19 06:38:11] US-003: starting implementation — Header favourites icon, count badge, FavouritesDropdown
-[2026-03-19 06:40:55] US-003: lint PASS, build PASS — starting browser verification
-[2026-03-19 06:45:54] US-003: COMPLETE — committed f0567ee, progress.md updated
-[2026-03-19 06:46:06] ITERATION 3 end (duration=503s)
+[2026-03-19 06:26:25] ITERATION 1 start (mode=build story=US-001)
+[2026-03-19 06:32:07] ITERATION 1 end (duration=344s)
+[2026-03-19 06:32:12] ITERATION 2 start (mode=build story=US-002)
+[2026-03-19 07:45:27] ITERATION 2 end (duration=4397s)
+[2026-03-19 07:50:52] ITERATION 3 start (mode=build story=US-002)
+[2026-03-19 09:40:32] ITERATION 3 end (duration=6582s)
+[2026-03-19 09:40:37] ITERATION 4 start (mode=build story=US-003)
+[2026-03-19 09:41:14] US-003 iter-4: Starting metadata pill toggle implementation
+[2026-03-19 09:46:45] US-003 iter-4: Completed - pill toggle verified in browser, committed 5352de4, progress updated
+[2026-03-19 09:46:58] ITERATION 4 end (duration=383s)
+[2026-03-19 09:47:03] ITERATION 5 start (mode=build story=US-004)
+[2026-03-19 14:30] US-004: Implementation complete — collapsible Details accordion, key-value layout, always-visible tags. Commit 779b0cd. Lint/build/browser PASS.
+[2026-03-19 09:50:56] ITERATION 5 end (duration=234s)

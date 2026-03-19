@@ -67,25 +67,29 @@ function formatFileSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function AssetDetailModal({ selectedAssetId, onClose, isFavourited = false, onFavouriteToggle }) {
+export default function AssetDetailModal({ selectedAssetId, onClose, adminMode = false }) {
   const [asset, setAsset] = useState(null);
   const [loading, setLoading] = useState(true);
   const [enriching, setEnriching] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [copyLabel, setCopyLabel] = useState('Copy');
+  const [shareLabel, setShareLabel] = useState('↗ Share');
   const [toast, setToast] = useState(null);
-  const [showOriginal, setShowOriginal] = useState(false);
+  const [metaView, setMetaView] = useState('enriched');
+  const [metaOpen, setMetaOpen] = useState(false);
   const [variants, setVariants] = useState([]);
   const [activeVariantId, setActiveVariantId] = useState(null);
   const copyTimeoutRef = useRef(null);
   const toastTimeoutRef = useRef(null);
+  const shareTimeoutRef = useRef(null);
 
   // Fetch full asset on open
   useEffect(() => {
     if (!selectedAssetId) return;
     setLoading(true);
     setAsset(null);
-    setShowOriginal(false);
+    setMetaView('enriched');
+    setMetaOpen(false);
     setVariants([]);
     setActiveVariantId(selectedAssetId);
     getAsset(selectedAssetId)
@@ -125,6 +129,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose, isFavourite
     return () => {
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
       if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+      if (shareTimeoutRef.current) clearTimeout(shareTimeoutRef.current);
     };
   }, []);
 
@@ -134,6 +139,15 @@ export default function AssetDetailModal({ selectedAssetId, onClose, isFavourite
     setCopyLabel('Copied!');
     if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
     copyTimeoutRef.current = setTimeout(() => setCopyLabel('Copy'), 2000);
+  }
+
+  function handleShare() {
+    if (!asset?.id) return;
+    const url = window.location.origin + '/?asset=' + encodeURIComponent(asset.id);
+    navigator.clipboard.writeText(url);
+    setShareLabel('✓ Copied!');
+    if (shareTimeoutRef.current) clearTimeout(shareTimeoutRef.current);
+    shareTimeoutRef.current = setTimeout(() => setShareLabel('↗ Share'), 2000);
   }
 
   function handleEnrich() {
@@ -389,27 +403,6 @@ export default function AssetDetailModal({ selectedAssetId, onClose, isFavourite
                   {asset.display_title || asset.filename}
                 </h2>
                 <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-                  {onFavouriteToggle && (
-                    <button
-                      onClick={() => onFavouriteToggle(asset.id, { display_title: asset.display_title, thumbnail_path: asset.thumbnail_path, cdn_url: asset.cdn_url })}
-                      title={isFavourited ? 'Remove from favourites' : 'Add to favourites'}
-                      style={{
-                        width: '32px',
-                        height: '32px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: isFavourited ? '#FEE2E2' : '#F3F4F6',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontSize: '15px',
-                        cursor: 'pointer',
-                        color: isFavourited ? '#EF4444' : '#9CA3AF',
-                      }}
-                    >
-                      {isFavourited ? '♥' : '♡'}
-                    </button>
-                  )}
                   <a
                     href={getAssetDownloadUrl(asset.id)}
                     download
@@ -431,105 +424,212 @@ export default function AssetDetailModal({ selectedAssetId, onClose, isFavourite
                     ↓
                   </a>
                   <button
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    title="Delete"
+                    onClick={handleShare}
+                    title="Copy link to asset"
                     style={{
-                      width: '32px',
-                      height: '32px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#FEE2E2',
-                      color: deleting ? '#9ca3af' : '#DC2626',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '15px',
-                      cursor: deleting ? 'not-allowed' : 'pointer',
+                      background: 'transparent',
+                      border: '1.5px solid #001B6B',
+                      color: '#001B6B',
+                      borderRadius: '6px',
+                      padding: '6px 14px',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
                     }}
-                    data-testid="delete-btn"
+                    data-testid="share-btn"
                   >
-                    🗑
+                    {shareLabel}
                   </button>
+                  {adminMode && (
+                    <button
+                      onClick={handleDelete}
+                      disabled={deleting}
+                      title="Delete"
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: '#FEE2E2',
+                        color: deleting ? '#9ca3af' : '#DC2626',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '15px',
+                        cursor: deleting ? 'not-allowed' : 'pointer',
+                      }}
+                      data-testid="delete-btn"
+                    >
+                      🗑
+                    </button>
+                  )}
                 </div>
               </div>
 
-              {/* Metadata table — enriched-first with Show Original toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '600', color: '#6b7280' }}>Metadata</span>
+              {/* Tags summary — always visible */}
+              {(() => {
+                const rawTags = asset.display_tags;
+                if (!rawTags) return null;
+                let tags;
+                try {
+                  tags = typeof rawTags === 'string' ? JSON.parse(rawTags) : rawTags;
+                } catch {
+                  return null;
+                }
+                if (!Array.isArray(tags) || tags.length === 0) return null;
+                return (
+                  <div style={{ marginBottom: '8px' }}>
+                    <span
+                      style={{
+                        display: 'block',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                        color: '#9CA3AF',
+                        marginBottom: '6px',
+                      }}
+                    >
+                      Tags
+                    </span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                      {tags.map((tag) => (
+                        <span
+                          key={tag}
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: '500',
+                            padding: '2px 8px',
+                            borderRadius: '100px',
+                            backgroundColor: 'rgba(0, 32, 91, 0.07)',
+                            color: '#00205B',
+                          }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Details accordion */}
+              <div style={{ marginBottom: '24px' }}>
+                {/* Accordion header */}
                 <button
-                  data-testid="show-original-toggle"
-                  title={showOriginal ? 'Show enriched values only' : 'Compare with original metadata'}
-                  onClick={() => setShowOriginal((v) => !v)}
+                  data-testid="details-accordion-header"
+                  onClick={() => setMetaOpen((o) => !o)}
                   style={{
-                    fontSize: '12px',
-                    padding: '3px 10px',
-                    borderRadius: '6px',
-                    border: `1px solid ${NAVY}`,
-                    backgroundColor: showOriginal ? NAVY : '#fff',
-                    color: showOriginal ? '#fff' : NAVY,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    background: 'none',
+                    border: 'none',
+                    borderTop: '1px solid #F3F4F6',
+                    padding: '8px 0',
                     cursor: 'pointer',
                   }}
                 >
-                  {showOriginal ? 'Hide Original' : 'Show Original'}
+                  <span style={{ fontSize: '13px', fontWeight: '600', color: '#374151' }}>Details</span>
+                  <span style={{ fontSize: '12px', color: '#9CA3AF' }}>{metaOpen ? '▲' : '▼'}</span>
                 </button>
+
+                {/* Accordion body — only rendered when open */}
+                {metaOpen && (
+                  <div style={{ paddingTop: '4px' }}>
+                    {/* Enriched / Original pill toggle */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+                      <div
+                        data-testid="meta-view-toggle"
+                        style={{
+                          display: 'inline-flex',
+                          height: '28px',
+                          border: '1.5px solid #001B6B',
+                          borderRadius: '100px',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {['enriched', 'original'].map((view) => (
+                          <button
+                            key={view}
+                            data-testid={`meta-view-${view}`}
+                            onClick={() => setMetaView(view)}
+                            style={{
+                              width: '72px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              borderRadius: '100px',
+                              border: 'none',
+                              backgroundColor: metaView === view ? '#001B6B' : '#FFFFFF',
+                              color: metaView === view ? '#FFFFFF' : '#001B6B',
+                            }}
+                          >
+                            {view.charAt(0).toUpperCase() + view.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Key-value list */}
+                    <div>
+                      {METADATA_ROWS.map(({ label, origKey, enrichedKey }) => {
+                        const origVal = origKey ? (asset[origKey] ?? null) : null;
+                        const enrichedVal = enrichedKey ? (asset[enrichedKey] ?? null) : null;
+                        let displayVal;
+                        let isEmpty;
+                        if (metaView === 'enriched') {
+                          displayVal = enrichedVal ?? origVal;
+                          isEmpty = displayVal === null;
+                        } else {
+                          displayVal = origVal;
+                          isEmpty = origVal === null || origVal === '';
+                        }
+                        return (
+                          <div
+                            key={label}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              padding: '8px 0',
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.04em',
+                                color: '#9CA3AF',
+                                width: '110px',
+                                flexShrink: 0,
+                                paddingTop: '1px',
+                              }}
+                            >
+                              {label}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: '13px',
+                                fontWeight: '400',
+                                color: isEmpty ? '#9CA3AF' : '#111827',
+                                flex: 1,
+                              }}
+                            >
+                              {isEmpty
+                                ? metaView === 'enriched'
+                                  ? <span style={{ fontStyle: 'italic' }}>Not enriched</span>
+                                  : '—'
+                                : formatCellValue(label, displayVal)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
-              <table
-                style={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                  marginBottom: '24px',
-                  fontSize: '13px',
-                }}
-              >
-                <thead>
-                  <tr>
-                    <th style={{ width: '100px', textAlign: 'left', padding: '6px 8px', color: '#6b7280', fontWeight: '600', borderBottom: '2px solid #e5e7eb' }}>
-                      Field
-                    </th>
-                    {showOriginal && (
-                      <th style={{ textAlign: 'left', padding: '6px 8px', color: '#6b7280', fontWeight: '600', borderBottom: '2px solid #e5e7eb' }}>
-                        Original
-                      </th>
-                    )}
-                    <th style={{ textAlign: 'left', padding: '6px 8px', color: NAVY, fontWeight: '600', borderBottom: '2px solid #e5e7eb' }}>
-                      {showOriginal ? 'Enriched' : 'Value'}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {METADATA_ROWS.map(({ label, origKey, enrichedKey }) => {
-                    const origVal = origKey ? (asset[origKey] ?? null) : null;
-                    const enrichedVal = enrichedKey ? (asset[enrichedKey] ?? null) : null;
-                    const displayVal = enrichedVal ?? origVal;
-                    const isImproved = enrichedVal !== null && enrichedVal !== origVal;
-                    return (
-                      <tr key={label} style={{ borderTop: '1px solid #f3f4f6' }}>
-                        <td style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_MUTED, verticalAlign: 'top' }}>
-                          {label}
-                        </td>
-                        {showOriginal && (
-                          <td style={{ padding: '6px 8px', color: '#374151', verticalAlign: 'top' }}>
-                            {origVal != null ? origVal : <span style={{ color: '#9ca3af' }}>—</span>}
-                          </td>
-                        )}
-                        <td
-                          style={{
-                            padding: '6px 8px',
-                            fontSize: '13px',
-                            fontWeight: '400',
-                            color: enrichedVal != null ? NAVY : '#9ca3af',
-                            verticalAlign: 'top',
-                            borderLeft: showOriginal && isImproved ? `3px solid ${GOLD}` : undefined,
-                          }}
-                        >
-                          {displayVal != null ? formatCellValue(label, displayVal) : <span style={{ color: '#9ca3af' }}>Not enriched</span>}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
 
               {/* CDN URL */}
               {asset.cdn_url && (
