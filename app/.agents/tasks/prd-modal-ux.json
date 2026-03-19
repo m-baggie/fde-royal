@@ -1,0 +1,158 @@
+{
+  "version": 1,
+  "project": "Royal Caribbean DAM — Modal UX & Admin Mode",
+  "overview": "Four focused UX improvements: (1) an admin mode toggle in the sidebar that gates upload and delete functionality behind a persistent switch; (2) a share button in the detail modal that copies a deep-link URL to the asset; (3) a clean two-mode metadata toggle (Enriched / Original) replacing the current side-by-side layout; (4) a collapsible metadata accordion in the detail modal so the default view is compact.",
+  "goals": [
+    "Gate destructive and upload actions behind an admin mode toggle stored in localStorage",
+    "Let users share a direct link to any asset via a copy-to-clipboard share button",
+    "Replace the current side-by-side metadata toggle with a clean Enriched / Original pill toggle showing one view at a time",
+    "Default the detail modal to a compact view with metadata collapsed behind an accordion"
+  ],
+  "nonGoals": [
+    "No authentication or real access control — admin mode is a UI convenience toggle only",
+    "No server-side sharing or link expiry",
+    "No changes to the metadata schema or enrichment pipeline",
+    "No changes to the asset grid or filter sidebar filters",
+    "No mobile layout changes"
+  ],
+  "successMetrics": [
+    "Admin mode off (default): Upload button and Delete button are not rendered",
+    "Admin mode on: Upload and Delete buttons appear; state survives page refresh",
+    "Share button copies a URL containing the asset ID; clicking it shows 'Copied!' for 2 seconds",
+    "Opening the shared URL auto-opens the correct asset modal",
+    "Metadata toggle shows Enriched values only by default; switching to Original shows only original values — no side-by-side",
+    "Metadata section is collapsed by default; clicking the accordion header expands it"
+  ],
+  "stack": {
+    "frontend": "React 18 + Vite — client/src/",
+    "styling": "Inline styles only",
+    "persistence": "localStorage for admin mode flag"
+  },
+  "routes": [],
+  "uiNotes": [
+    "Admin toggle: placed at the very bottom of the FilterSidebar, separated by a top border. Label: 'Admin Mode'. Use a CSS toggle switch (checkbox styled as a pill slider). Active state: navy (#001B6B) track, white thumb. Inactive: grey (#D1D5DB) track.",
+    "Admin mode state key in localStorage: 'dam_admin_mode', value '1' when on.",
+    "Share button: in the detail modal action row (next to Download and Delete). Label: '↗ Share'. Navy outline style (border: 1.5px solid #001B6B, background transparent, color #001B6B). On click: copies window.location.origin + '/?asset=' + asset.id to clipboard. Button swaps to '✓ Copied!' for 2000ms then reverts.",
+    "BrowsePage: on mount, read ?asset= from URL query string. If present, set selectedAssetId to that value to auto-open the modal. After modal closes, remove the ?asset= param from the URL (use history.replaceState).",
+    "Metadata toggle: replace the current 'Show Original' button with a pill-style two-option toggle. Left option: 'Enriched' (default active). Right option: 'Original'. Active option: navy background (#001B6B) white text. Inactive: white background navy text, navy border. Border-radius 100px on the container, each option is 50% width. Height 28px, font 12px/600.",
+    "Enriched mode (default): single Value column. Each row shows enrichedVal if present, else origVal, else grey 'Not enriched'. No gold borders, no Original column.",
+    "Original mode: single Value column. Each row shows origVal if present, else grey '—'. No enriched values shown at all.",
+    "Metadata accordion: the entire metadata section (toggle + table) is wrapped in a collapsible. The accordion header shows 'Metadata' label on the left and a ▼/▲ chevron on the right. Default state: collapsed. Clicking the header toggles open/closed. The toggle pill and table only render when expanded.",
+    "When metadata is collapsed, the right panel shows: title + action buttons, then Tags row displayed as pills (always visible outside the accordion as a quick summary), then the collapsed 'Metadata ▼' accordion header, then CDN URL, then Enrich button.",
+    "Tags always-visible summary: parse enriched_tags (or original_tags as fallback) and show as navy pill chips directly below the title row, even when metadata accordion is collapsed. Label 'Tags' in 11px uppercase muted text above the pills."
+  ],
+  "dataModel": [],
+  "rules": [
+    "Admin mode is read from localStorage on app mount. Default is off (key absent or value !== '1').",
+    "adminMode state lives in App.jsx and is passed as a prop to Header (controls Upload button visibility) and to AssetDetailModal (controls Delete button visibility).",
+    "FilterSidebar receives adminMode and onAdminModeChange props.",
+    "The toggle switch in FilterSidebar calls onAdminModeChange(newValue) which updates App state and writes to localStorage.",
+    "Share URL format: window.location.origin + '/?asset=' + encodeURIComponent(asset.id)",
+    "BrowsePage reads URLSearchParams on mount only. Uses history.replaceState to clean the URL after the modal opens (so sharing the URL again gives a clean link).",
+    "Metadata toggle state (enriched/original) resets to 'enriched' each time the modal opens — same as the current show original reset behaviour.",
+    "Metadata accordion state (open/closed) resets to closed each time the modal opens.",
+    "The Tags always-visible summary uses display_tags (the merged array from the API). If display_tags is empty, the tags row is not rendered.",
+    "Original mode shows only origVal — it does NOT fall back to enrichedVal. If origVal is null, show grey '—'.",
+    "Enriched mode shows enrichedVal ?? origVal — existing fallback behaviour preserved."
+  ],
+  "qualityGates": [
+    "npm run lint",
+    "npm run build"
+  ],
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Admin mode toggle — localStorage persistence + gate Upload and Delete",
+      "status": "open",
+      "dependsOn": [],
+      "description": "As an admin user, I want to toggle admin mode from the sidebar so that upload and delete actions are only available when I need them.",
+      "acceptanceCriteria": [
+        "App.jsx holds adminMode state (boolean, default false) initialised from localStorage key 'dam_admin_mode'",
+        "App.jsx passes adminMode and onAdminModeChange to BrowsePage which passes them to FilterSidebar and AssetDetailModal",
+        "FilterSidebar renders an admin toggle at the bottom, separated by a top border, with label 'Admin Mode' and a pill-style checkbox toggle",
+        "Toggle active state: navy (#001B6B) background track, white thumb. Inactive: #D1D5DB track",
+        "Clicking the toggle calls onAdminModeChange, updates App state, and writes '1' or removes the key from localStorage",
+        "Header Upload button: only rendered when adminMode is true",
+        "AssetDetailModal Delete button: only rendered when adminMode is true",
+        "Example: page loads with no localStorage key → Upload button absent, Delete button absent",
+        "Example: toggle admin mode on → Upload and Delete appear immediately without page refresh",
+        "Negative case: refreshing the page with admin mode on keeps admin mode on (localStorage persists)",
+        "npm run lint passes",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Share button — copy deep-link URL to asset",
+      "status": "open",
+      "dependsOn": [],
+      "description": "As a content author, I want to copy a direct link to an asset so I can share it with a colleague who can open it immediately.",
+      "acceptanceCriteria": [
+        "AssetDetailModal action row (next to Download button) renders a Share button",
+        "Share button style: transparent background, border '1.5px solid #001B6B', color '#001B6B', border-radius 6px, padding '6px 14px', font-size 13px, label '↗ Share'",
+        "On click: copies window.location.origin + '/?asset=' + encodeURIComponent(asset.id) to clipboard using navigator.clipboard.writeText",
+        "After copy: button label swaps to '✓ Copied!' for 2000ms then reverts to '↗ Share'",
+        "BrowsePage reads URLSearchParams('asset') on mount. If present and non-empty, sets selectedAssetId to that value",
+        "After setting selectedAssetId from URL param, BrowsePage calls history.replaceState to remove the ?asset= param from the URL",
+        "Example: user clicks Share on asset 'allure-aerial.jpg' → URL copied is 'http://localhost:5173/?asset=allure-aerial.jpg'",
+        "Example: opening that URL in a new tab auto-opens the detail modal for that asset",
+        "Negative case: if the ?asset= param contains an ID that doesn't exist, the modal opens and shows its loading/error state normally",
+        "npm run lint passes",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Metadata toggle — clean Enriched / Original pill toggle (one view at a time)",
+      "status": "open",
+      "dependsOn": [],
+      "description": "As a content author, I want to switch between enriched and original metadata views cleanly so I'm not overwhelmed by a two-column comparison table.",
+      "acceptanceCriteria": [
+        "Replace the current 'Show Original' button with a two-option pill toggle: left='Enriched', right='Original'",
+        "Toggle container: border-radius 100px, border '1.5px solid #001B6B', display inline-flex, height 28px",
+        "Each option: 50% width, font 12px/600, cursor pointer, border-radius 100px",
+        "Active option: backgroundColor '#001B6B', color '#FFFFFF'",
+        "Inactive option: backgroundColor '#FFFFFF', color '#001B6B'",
+        "Default active: Enriched",
+        "Enriched mode: single 'Value' column. Shows enrichedVal if present, falls back to origVal, falls back to grey italic 'Not enriched'",
+        "Original mode: single 'Value' column. Shows origVal only. If null/empty shows grey '—'. Does NOT show enriched values",
+        "No side-by-side layout, no Original column, no gold borders in either mode",
+        "Toggle state resets to 'enriched' each time the modal opens",
+        "Example: opening modal → Enriched tab active, table shows enriched values",
+        "Example: clicking Original tab → table shows only original values, enriched values not visible",
+        "Negative case: asset with no enriched data → Enriched mode shows original values as fallback; Original mode shows same original values",
+        "npm run lint passes",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "Compact modal — collapsible metadata accordion, always-visible tags, clean key-value layout",
+      "status": "open",
+      "dependsOn": ["US-003"],
+      "description": "As a content author, I want the detail modal to open in a compact state with a clean metadata layout so I can see key information immediately without column headers or section labels cluttering the view.",
+      "acceptanceCriteria": [
+        "Remove the standalone 'Metadata' section heading text entirely — the accordion header replaces it",
+        "Remove the table column headers ('Field', 'Value', 'Original', 'Enriched') — no thead, no header row",
+        "Replace the HTML table with a clean div-based key-value list: each row is a flex row with label on left and value on right",
+        "Label: 11px, font-weight 600, text-transform uppercase, letter-spacing 0.04em, color #9CA3AF, width 110px, flex-shrink 0",
+        "Value: 13px, font-weight 400, color #111827 (or #9CA3AF for empty/not enriched), flex 1",
+        "Rows separated by padding only (8px top/bottom per row) — no border lines between rows",
+        "The metadata section (toggle + key-value list) is wrapped in a collapsible accordion",
+        "Accordion header: full-width row, label 'Details' (13px/600, color #374151) on left, chevron '▼'/'▲' (12px, color #9CA3AF) on right, cursor pointer, padding '8px 0', border-top '1px solid #F3F4F6'",
+        "Default state: collapsed (key-value list and toggle not rendered)",
+        "Clicking the header toggles open/closed",
+        "A Tags summary row is always visible above the accordion header (never inside the accordion)",
+        "Tags summary: small 'Tags' label (11px/600 uppercase muted), then display_tags parsed and rendered as navy pill chips (bg rgba(0,32,91,0.07), color #00205B, border-radius 100px, font 11px/500, padding 2px 8px, gap 4px, flex-wrap wrap)",
+        "If display_tags is empty or null, the tags summary row is not rendered",
+        "Right panel order from top: title+actions row, tags summary (if present), 'Details' accordion header, [expanded: Enriched/Original toggle + key-value list], CDN URL section, Enrich button",
+        "Accordion open/closed state resets to closed each time the modal opens",
+        "Example: opening modal shows title, action buttons, tag pills, a 'Details ▼' row — clean and uncluttered",
+        "Example: clicking 'Details ▼' expands to show the toggle and clean key-value rows with no column headers",
+        "Negative case: asset with no tags → tags row not rendered; accordion still works correctly",
+        "npm run lint passes",
+        "npm run build passes"
+      ]
+    }
+  ]
+}

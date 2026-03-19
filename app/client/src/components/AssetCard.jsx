@@ -188,6 +188,7 @@ export default function AssetCard({ asset, onSelectAsset }) {
             data-testid="download-btn"
             href={getAssetDownloadUrl(asset.id)}
             download
+            title="Download"
             style={styles.actionBtn}
             onClick={(e) => e.stopPropagation()}
           >
@@ -196,6 +197,7 @@ export default function AssetCard({ asset, onSelectAsset }) {
           {asset.cdn_url && (
             <button
               data-testid="copy-cdn-btn"
+              title={copied ? 'Copied!' : 'Copy CDN URL'}
               style={styles.actionBtn}
               onClick={handleCopy}
             >

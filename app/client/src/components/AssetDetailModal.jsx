@@ -217,6 +217,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
           }}
           onClick={onClose}
           aria-label="Close"
+          title="Close"
           data-testid="modal-close-btn"
         >
           ×
@@ -250,6 +251,8 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                 padding: '24px',
                 borderRight: '1px solid #e5e7eb',
                 overflowY: 'auto',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
               }}
             >
               {/* Image */}
@@ -320,10 +323,12 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                 <div style={{ marginTop: '16px' }} data-testid="variant-strip">
                   <p
                     style={{
-                      fontSize: '12px',
-                      color: '#6b7280',
+                      fontSize: '11px',
+                      color: '#9CA3AF',
+                      fontWeight: '600',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.04em',
                       margin: '0 0 8px 0',
-                      fontWeight: '500',
                     }}
                     data-testid="variant-strip-header"
                   >
@@ -333,45 +338,33 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                     style={{
                       display: 'flex',
                       overflowX: 'auto',
-                      gap: '8px',
+                      gap: '6px',
+                      scrollbarWidth: 'none',
+                      msOverflowStyle: 'none',
                     }}
                   >
                     {variants.map((v) => {
                       const isActive = v.id === activeVariantId;
-                      const channelLabel = v.enriched_channel || v.file_format || '';
                       return (
-                        <div
+                        <img
                           key={v.id}
-                          style={{ flexShrink: 0, textAlign: 'center' }}
+                          src={`/api/assets/media/${v.web_image_path || v.thumbnail_path}`}
+                          alt={v.display_title || v.filename}
+                          onClick={() => handleVariantClick(v.id)}
+                          title={v.display_title || v.filename}
                           data-testid={`variant-thumb-${v.id}`}
-                        >
-                          <img
-                            src={`/api/assets/media/${v.web_image_path || v.thumbnail_path}`}
-                            alt={v.display_title || v.filename}
-                            onClick={() => handleVariantClick(v.id)}
-                            style={{
-                              width: '72px',
-                              height: '72px',
-                              objectFit: 'cover',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              border: isActive ? `2px solid ${NAVY}` : '2px solid transparent',
-                              display: 'block',
-                            }}
-                          />
-                          {channelLabel && (
-                            <span
-                              style={{
-                                display: 'block',
-                                fontSize: '10px',
-                                color: '#6b7280',
-                                marginTop: '2px',
-                              }}
-                            >
-                              {channelLabel}
-                            </span>
-                          )}
-                        </div>
+                          style={{
+                            width: '64px',
+                            height: '64px',
+                            objectFit: 'cover',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            border: isActive ? `2px solid ${NAVY}` : '2px solid transparent',
+                            opacity: isActive ? 1 : 0.75,
+                            transition: 'opacity 150ms ease, border-color 150ms ease',
+                          }}
+                        />
                       );
                     })}
                   </div>
@@ -380,7 +373,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
             </div>
 
             {/* Right panel — 60% */}
-            <div style={{ flex: 1, padding: '24px', overflowY: 'auto', paddingTop: '40px' }}>
+            <div style={{ flex: 1, padding: '24px', overflowY: 'auto', paddingTop: '40px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {/* Asset title + actions */}
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '16px' }}>
                 <h2
@@ -395,42 +388,47 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                 >
                   {asset.display_title || asset.filename}
                 </h2>
-                <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                   <a
                     href={getAssetDownloadUrl(asset.id)}
                     download
+                    title="Download"
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '5px',
-                      padding: '6px 14px',
+                      justifyContent: 'center',
+                      width: '32px',
+                      height: '32px',
                       backgroundColor: NAVY,
                       color: '#fff',
-                      borderRadius: '6px',
-                      fontSize: '13px',
+                      borderRadius: '8px',
+                      fontSize: '15px',
                       textDecoration: 'none',
-                      whiteSpace: 'nowrap',
                     }}
                     data-testid="download-btn"
                   >
-                    ↓ Download
+                    ↓
                   </a>
                   <button
                     onClick={handleDelete}
                     disabled={deleting}
+                    title="Delete"
                     style={{
-                      padding: '6px 14px',
-                      backgroundColor: deleting ? '#f3f4f6' : '#FEE2E2',
+                      width: '32px',
+                      height: '32px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#FEE2E2',
                       color: deleting ? '#9ca3af' : '#DC2626',
                       border: 'none',
-                      borderRadius: '6px',
-                      fontSize: '13px',
+                      borderRadius: '8px',
+                      fontSize: '15px',
                       cursor: deleting ? 'not-allowed' : 'pointer',
-                      whiteSpace: 'nowrap',
                     }}
                     data-testid="delete-btn"
                   >
-                    {deleting ? 'Deleting…' : '🗑 Delete'}
+                    🗑
                   </button>
                 </div>
               </div>
@@ -440,6 +438,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                 <span style={{ fontSize: '13px', fontWeight: '600', color: '#6b7280' }}>Metadata</span>
                 <button
                   data-testid="show-original-toggle"
+                  title={showOriginal ? 'Show enriched values only' : 'Compare with original metadata'}
                   onClick={() => setShowOriginal((v) => !v)}
                   style={{
                     fontSize: '12px',
@@ -553,6 +552,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                         flexShrink: 0,
                       }}
                       onClick={handleCopy}
+                      title="Copy CDN URL to clipboard"
                       data-testid="copy-cdn-btn"
                     >
                       {copyLabel}
@@ -580,6 +580,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                   }}
                   onClick={handleEnrich}
                   disabled={enriching}
+                  title="Use AI vision to generate title, description, tags and location for this asset"
                   data-testid="enrich-btn"
                 >
                   {enriching ? '⟳ Enriching...' : 'Enrich with AI'}
