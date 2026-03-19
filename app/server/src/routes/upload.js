@@ -37,8 +37,8 @@ const upload = multer({
 const router = Router();
 
 const insertStmt = db.prepare(`
-  INSERT INTO assets (id, filename, filepath, mime_type, file_size, category, enrichment_source, created_at)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  INSERT INTO assets (id, filename, filepath, thumbnail_path, web_image_path, mime_type, file_size, category, enrichment_source, created_at)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
 
 router.post('/upload', (req, res, next) => {
@@ -63,7 +63,7 @@ router.post('/upload', (req, res, next) => {
     // The filename on disk is "<uuid>-<originalname>"; uuid is always 36 chars
     const id = file.filename.slice(0, 36);
     const filepath = `uploads/${file.filename}`;
-    insertStmt.run(id, file.originalname, filepath, file.mimetype, file.size, 'uploaded', 'pending', now);
+    insertStmt.run(id, file.originalname, filepath, filepath, filepath, file.mimetype, file.size, 'uploaded', 'pending', now);
     assets.push({ id, filename: file.originalname, filepath });
   }
 

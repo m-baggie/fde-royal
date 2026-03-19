@@ -139,11 +139,15 @@ function searchAssets(db, params) {
     }
 
     // --- LIKE fallback ---
-    const likeVal = `%${q}%`;
-    const likeConditions = [
-      '(a.original_title LIKE ? OR a.enriched_title LIKE ? OR a.original_description LIKE ? OR a.enriched_description LIKE ? OR a.filename LIKE ?)',
+    // Split on whitespace so "allure sunset" matches assets containing both words
+    const terms = q.trim().split(/\s+/).filter(Boolean);
+    const likeConditions = terms.map(() =>
+      '(a.original_title LIKE ? OR a.enriched_title LIKE ? OR a.original_description LIKE ? OR a.enriched_description LIKE ? OR a.filename LIKE ?)'
+    );
+    const likeArgs = [
+      ...terms.flatMap((t) => { const v = `%${t}%`; return [v, v, v, v, v]; }),
+      ...condArgs,
     ];
-    const likeArgs = [likeVal, likeVal, likeVal, likeVal, likeVal, ...condArgs];
     const allLikeConds = [...likeConditions, ...conditions];
     const likeWhere = 'WHERE ' + allLikeConds.join(' AND ');
 

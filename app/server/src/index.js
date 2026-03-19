@@ -25,6 +25,9 @@ app.locals.dataRoot = dataRoot;
 
 // Static DAM media files — registered before API routers
 app.use('/api/assets/media', express.static(dataRoot));
+// Also serve uploaded files (filepath stored as 'uploads/<filename>')
+const uploadsRoot = path.resolve(__dirname, '..', '..');
+app.use('/api/assets/media', express.static(uploadsRoot));
 
 // Upload router must be registered before assetsRouter to avoid /:id capturing /upload
 app.use('/api/assets', uploadRouter);
@@ -40,8 +43,7 @@ if (process.env.ANTHROPIC_API_KEY) {
 // Ingest assets on first startup (only if the table is empty)
 const assetCount = db.prepare('SELECT COUNT(*) AS n FROM assets').get().n;
 if (assetCount === 0) {
-  const dataDir = process.env.DATA_DIR || '../Data/royal';
-  const ingested = ingestAssets(db, dataDir);
+  const ingested = ingestAssets(db, dataRoot);
   console.log(`Ingested ${ingested} assets`);
 }
 

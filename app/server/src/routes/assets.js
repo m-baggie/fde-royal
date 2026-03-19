@@ -148,6 +148,17 @@ router.get('/:id', (req, res) => {
 });
 
 /**
+ * DELETE /api/assets/:id
+ * Removes an asset from the database (used to clean up failed enrichments).
+ */
+router.delete('/:id', (req, res) => {
+  const row = db.prepare('SELECT id FROM assets WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Asset not found' });
+  db.prepare('DELETE FROM assets WHERE id = ?').run(req.params.id);
+  res.json({ deleted: true });
+});
+
+/**
  * POST /api/assets/:id/enrich
  * Enriches the asset with AI-generated metadata via OpenAI Vision.
  * Requires OPENAI_API_KEY to be configured; returns 503 otherwise.

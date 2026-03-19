@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { TEXT_MUTED } from '../styles/tokens';
-import { getAsset, enrichAsset as enrichAssetApi, getAssetVariants, getAssetDownloadUrl } from '../api/assets';
+import { getAsset, enrichAsset as enrichAssetApi, getAssetVariants, getAssetDownloadUrl, deleteAsset } from '../api/assets';
 
 const NAVY = '#001B6B';
 const GOLD = '#C8A84B';
@@ -71,6 +71,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
   const [asset, setAsset] = useState(null);
   const [loading, setLoading] = useState(true);
   const [enriching, setEnriching] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [copyLabel, setCopyLabel] = useState('Copy');
   const [toast, setToast] = useState(null);
   const [showOriginal, setShowOriginal] = useState(false);
@@ -153,6 +154,15 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
           toastTimeoutRef.current = setTimeout(() => setToast(null), 4000);
         }
       });
+  }
+
+  function handleDelete() {
+    if (!asset || deleting) return;
+    if (!window.confirm(`Delete "${asset.display_title || asset.filename}"? This cannot be undone.`)) return;
+    setDeleting(true);
+    deleteAsset(asset.id)
+      .then(() => onClose())
+      .catch(() => setDeleting(false));
   }
 
   function handleVariantClick(variantId) {
@@ -371,7 +381,7 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
 
             {/* Right panel — 60% */}
             <div style={{ flex: 1, padding: '24px', overflowY: 'auto', paddingTop: '40px' }}>
-              {/* Asset title + Download */}
+              {/* Asset title + actions */}
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '16px' }}>
                 <h2
                   style={{
@@ -385,26 +395,44 @@ export default function AssetDetailModal({ selectedAssetId, onClose }) {
                 >
                   {asset.display_title || asset.filename}
                 </h2>
-                <a
-                  href={getAssetDownloadUrl(asset.id)}
-                  download
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    padding: '6px 14px',
-                    backgroundColor: NAVY,
-                    color: '#fff',
-                    borderRadius: '6px',
-                    fontSize: '13px',
-                    textDecoration: 'none',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                  }}
-                  data-testid="download-btn"
-                >
-                  ↓ Download
-                </a>
+                <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                  <a
+                    href={getAssetDownloadUrl(asset.id)}
+                    download
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '6px 14px',
+                      backgroundColor: NAVY,
+                      color: '#fff',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      textDecoration: 'none',
+                      whiteSpace: 'nowrap',
+                    }}
+                    data-testid="download-btn"
+                  >
+                    ↓ Download
+                  </a>
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    style={{
+                      padding: '6px 14px',
+                      backgroundColor: deleting ? '#f3f4f6' : '#FEE2E2',
+                      color: deleting ? '#9ca3af' : '#DC2626',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      cursor: deleting ? 'not-allowed' : 'pointer',
+                      whiteSpace: 'nowrap',
+                    }}
+                    data-testid="delete-btn"
+                  >
+                    {deleting ? 'Deleting…' : '🗑 Delete'}
+                  </button>
+                </div>
               </div>
 
               {/* Metadata table — enriched-first with Show Original toggle */}

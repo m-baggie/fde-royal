@@ -32,4 +32,8 @@ export function getAssetDownloadUrl(id) {
   return `/api/assets/${id}/download`;
 }
 
+export function deleteAsset(id) {
+  return api.delete(`/api/assets/${id}`).then((res) => res.data);
+}
+
 export default api;

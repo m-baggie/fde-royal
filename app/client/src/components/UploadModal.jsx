@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { uploadFiles as uploadFilesApi, enrichAsset as enrichAssetApi } from '../api/assets';
+import { uploadFiles as uploadFilesApi, enrichAsset as enrichAssetApi, deleteAsset } from '../api/assets';
 
 const NAVY = '#001B6B';
 const GOLD = '#C8960C';
@@ -16,9 +16,10 @@ const STATUS = {
   DONE: 'Done ✓',
   ENRICH_UNAVAILABLE: 'Uploaded — enrichment unavailable',
   UPLOAD_FAILED: 'Upload failed',
+  ENRICH_FAILED: 'Enrichment failed — retry?',
 };
 
-const TERMINAL = new Set([STATUS.DONE, STATUS.ENRICH_UNAVAILABLE, STATUS.UPLOAD_FAILED]);
+const TERMINAL = new Set([STATUS.DONE, STATUS.ENRICH_UNAVAILABLE, STATUS.UPLOAD_FAILED, STATUS.ENRICH_FAILED]);
 
 /** Returns true if a File object is an image by MIME type or file extension. */
 export function isImageFile(file) {
@@ -83,6 +84,8 @@ function getStatusStyle(status) {
       return { backgroundColor: '#ede9fe', color: '#7c3aed' };
     case STATUS.DONE:
       return { backgroundColor: '#d1fae5', color: '#065f46' };
+    case STATUS.ENRICH_FAILED:
+      return { backgroundColor: '#fee2e2', color: '#dc2626' };
     case STATUS.ENRICH_UNAVAILABLE:
       return { backgroundColor: '#fef3c7', color: '#92400e' };
     default:
@@ -154,10 +157,33 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
     setFileEntries((prev) => [...prev, ...newEntries]);
   }
 
-  function updateStatus(localId, status) {
+  function updateEntry(localId, updates) {
     setFileEntries((prev) =>
-      prev.map((e) => (e.localId === localId ? { ...e, status } : e))
+      prev.map((e) => (e.localId === localId ? { ...e, ...updates } : e))
     );
+  }
+
+  function updateStatus(localId, status) {
+    updateEntry(localId, { status });
+  }
+
+  async function handleRetry(entry) {
+    updateEntry(entry.localId, { status: STATUS.UPLOADING });
+    try {
+      const formData = new FormData();
+      formData.append('files', entry.file);
+      const result = await uploadFilesApi(formData);
+      const assetId = result.assets[0]?.id;
+      if (!assetId) throw new Error('No asset ID returned');
+      updateEntry(entry.localId, { status: STATUS.ENRICHING, assetId });
+      await enrichAssetApi(assetId);
+      updateEntry(entry.localId, { status: STATUS.DONE });
+    } catch (err) {
+      const httpStatus = err?.response?.status;
+      updateEntry(entry.localId, {
+        status: httpStatus === 503 ? STATUS.ENRICH_UNAVAILABLE : STATUS.ENRICH_FAILED,
+      });
+    }
   }
 
   async function handleDrop(e) {
@@ -238,15 +264,16 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
         updateStatus(entry.localId, STATUS.UPLOAD_FAILED);
         return Promise.resolve();
       }
-      updateStatus(entry.localId, STATUS.ENRICHING);
+      updateEntry(entry.localId, { status: STATUS.ENRICHING, assetId });
       return enrichAssetApi(assetId)
         .then(() => updateStatus(entry.localId, STATUS.DONE))
-        .catch((err) => {
+        .catch(async (err) => {
           const httpStatus = err?.response?.status;
           if (httpStatus === 503) {
             updateStatus(entry.localId, STATUS.ENRICH_UNAVAILABLE);
           } else {
-            updateStatus(entry.localId, STATUS.UPLOAD_FAILED);
+            await deleteAsset(assetId).catch(() => {});
+            updateStatus(entry.localId, STATUS.ENRICH_FAILED);
           }
         });
     });
@@ -258,6 +285,8 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
   if (!isOpen) return null;
 
   const pendingCount = fileEntries.filter((e) => e.status === STATUS.PENDING).length;
+  const hasSucceeded = fileEntries.some((e) => e.status === STATUS.DONE);
+  const allSettled = fileEntries.length > 0 && fileEntries.every((e) => TERMINAL.has(e.status));
 
   return (
     <div
@@ -451,6 +480,25 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
                     >
                       {entry.status}
                     </span>
+                    {entry.status === STATUS.ENRICH_FAILED && (
+                      <button
+                        onClick={() => handleRetry(entry)}
+                        style={{
+                          fontSize: '11px',
+                          padding: '2px 8px',
+                          borderRadius: '10px',
+                          border: `1px solid ${NAVY}`,
+                          background: 'none',
+                          color: NAVY,
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          flexShrink: 0,
+                        }}
+                        data-testid="retry-btn"
+                      >
+                        Retry
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -468,7 +516,7 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
             flexShrink: 0,
           }}
         >
-          {allDone ? (
+          {hasSucceeded && allSettled ? (
             <button
               style={{
                 padding: '10px 20px',
@@ -501,7 +549,7 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }) {
               disabled={pendingCount === 0}
               data-testid="submit-btn"
             >
-              Upload {pendingCount} files
+              Upload {pendingCount} file{pendingCount !== 1 ? 's' : ''}
             </button>
           )}
         </div>

@@ -53,7 +53,23 @@ function fetchBuffer(url) {
 // Returns null if neither source is available.
 // ---------------------------------------------------------------------------
 async function getImageBase64(asset) {
-  // Try Scene7 CDN first
+  // Priority 1: full web rendition from local DATA_DIR (1280px, best quality)
+  if (asset.web_image_path) {
+    const absPath = path.resolve(DATA_DIR, asset.web_image_path);
+    if (fs.existsSync(absPath)) {
+      return fs.readFileSync(absPath).toString('base64');
+    }
+  }
+
+  // Priority 2: thumbnail rendition from local DATA_DIR
+  if (asset.thumbnail_path) {
+    const absPath = path.resolve(DATA_DIR, asset.thumbnail_path);
+    if (fs.existsSync(absPath)) {
+      return fs.readFileSync(absPath).toString('base64');
+    }
+  }
+
+  // Priority 3: Scene7 CDN fallback (for assets without local renditions)
   if (asset.scene7_file && asset.scene7_domain) {
     const cdnUrl =
       asset.scene7_domain.replace(/\/+$/, '') + '/is/image/' + asset.scene7_file;
@@ -61,15 +77,7 @@ async function getImageBase64(asset) {
       const buf = await fetchBuffer(cdnUrl);
       return buf.toString('base64');
     } catch (_) {
-      // fall through to thumbnail fallback
-    }
-  }
-
-  // Fallback: thumbnail file relative to DATA_DIR
-  if (asset.thumbnail_path) {
-    const absPath = path.resolve(DATA_DIR, asset.thumbnail_path);
-    if (fs.existsSync(absPath)) {
-      return fs.readFileSync(absPath).toString('base64');
+      // no source available
     }
   }
 

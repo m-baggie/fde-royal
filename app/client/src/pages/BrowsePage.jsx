@@ -295,7 +295,7 @@ export default function BrowsePage({ isUploadOpen = false, onUploadClick = () =>
 
       <UploadModal
         isOpen={isUploadOpen}
-        onClose={onUploadRequestClose}
+        onClose={() => { onUploadRequestClose(); setRefreshKey((k) => k + 1); }}
         onUploadComplete={handleUploadComplete}
       />
     </div>
