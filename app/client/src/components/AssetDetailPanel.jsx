@@ -26,7 +26,8 @@ export default function AssetDetailPanel({ selectedAssetId, onClose, adminMode =
   const [shareLabel, setShareLabel] = useState('↗ Share');
   const [toast, setToast] = useState(null);
   const [metaView, setMetaView] = useState('enriched');
-  const [metaOpen, setMetaOpen] = useState(false);
+  const [metaOpen, setMetaOpen] = useState(true);
+  const [tagsOpen, setTagsOpen] = useState(false);
   const [variants, setVariants] = useState([]);
   const [activeVariantId, setActiveVariantId] = useState(null);
   const copyTimeoutRef = useRef(null);
@@ -39,7 +40,8 @@ export default function AssetDetailPanel({ selectedAssetId, onClose, adminMode =
     setLoading(true);
     setAsset(null);
     setMetaView('enriched');
-    setMetaOpen(false);
+    setMetaOpen(true);
+    setTagsOpen(false);
     setVariants([]);
     setActiveVariantId(selectedAssetId);
     getAsset(selectedAssetId)
@@ -149,9 +151,11 @@ export default function AssetDetailPanel({ selectedAssetId, onClose, adminMode =
         height: '100%',
         borderLeft: '1px solid #E5E7EB',
         backgroundColor: '#FFFFFF',
-        overflowY: 'auto',
+        overflowY: 'hidden',
         flexShrink: 0,
         position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       {/* Close button */}
@@ -204,9 +208,7 @@ export default function AssetDetailPanel({ selectedAssetId, onClose, adminMode =
           <div
             style={{
               width: '100%',
-              aspectRatio: '16/9',
               backgroundColor: '#F3F4F6',
-              overflow: 'hidden',
             }}
             data-testid="panel-image-zone"
           >
@@ -214,7 +216,7 @@ export default function AssetDetailPanel({ selectedAssetId, onClose, adminMode =
               <img
                 src={`/api/assets/media/${asset.web_image_path || asset.thumbnail_path}`}
                 alt={asset.display_title || 'Asset'}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                style={{ width: '100%', height: 'auto', maxHeight: '320px', objectFit: 'contain', display: 'block' }}
               />
             ) : (
               <div
@@ -277,7 +279,8 @@ export default function AssetDetailPanel({ selectedAssetId, onClose, adminMode =
             </div>
           )}
 
-          {/* Content zone */}
+          {/* Scrollable content zone */}
+          <div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'none' }}>
           <div
             style={{
               padding: '20px',
@@ -287,156 +290,80 @@ export default function AssetDetailPanel({ selectedAssetId, onClose, adminMode =
             }}
           >
             {/* Title row */}
-            <div
+            <h2
+              data-testid="panel-display-title"
               style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '8px',
+                fontSize: '16px',
+                fontWeight: '700',
+                color: '#111827',
+                margin: 0,
+                wordBreak: 'break-word',
               }}
             >
-              <h2
-                data-testid="panel-display-title"
+              {asset.display_title || asset.filename}
+            </h2>
+
+            {/* Action buttons row */}
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              <a
+                href={getAssetDownloadUrl(asset.id)}
+                download
+                title="Download"
+                data-testid="panel-download-btn"
                 style={{
-                  fontSize: '16px',
-                  fontWeight: '700',
-                  color: '#111827',
-                  margin: 0,
-                  flex: 1,
-                  wordBreak: 'break-word',
+                  display: 'inline-flex', alignItems: 'center', gap: '4px',
+                  padding: '6px 12px', backgroundColor: NAVY, color: '#fff',
+                  borderRadius: '8px', fontSize: '13px', textDecoration: 'none', whiteSpace: 'nowrap',
                 }}
               >
-                {asset.display_title || asset.filename}
-              </h2>
-
-              <div style={{ display: 'flex', gap: '6px', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                {/* Download button — text + icon, navy */}
-                <a
-                  href={getAssetDownloadUrl(asset.id)}
-                  download
-                  title="Download"
-                  data-testid="panel-download-btn"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '6px 12px',
-                    backgroundColor: NAVY,
-                    color: '#fff',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    textDecoration: 'none',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  ↓ Download
-                </a>
-
-                {/* Share button — text label */}
+                ↓ Download
+              </a>
+              <button
+                onClick={handleShare}
+                title="Copy link to asset"
+                data-testid="panel-share-btn"
+                style={{
+                  background: 'transparent', border: `1.5px solid ${NAVY}`, color: NAVY,
+                  borderRadius: '8px', padding: '6px 12px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+              >
+                {shareLabel}
+              </button>
+              {onFavouriteToggle && (
                 <button
-                  onClick={handleShare}
-                  title="Copy link to asset"
-                  data-testid="panel-share-btn"
+                  onClick={() => onFavouriteToggle(asset.id, { display_title: asset.display_title, thumbnail_path: asset.thumbnail_path, cdn_url: asset.cdn_url })}
+                  title={isFavourited ? 'Remove from saved' : 'Save asset'}
+                  data-testid="panel-favourite-btn"
                   style={{
-                    background: 'transparent',
-                    border: `1.5px solid ${NAVY}`,
-                    color: NAVY,
-                    borderRadius: '8px',
-                    padding: '6px 12px',
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
+                    width: '32px', height: '32px', display: 'inline-flex', alignItems: 'center',
+                    justifyContent: 'center', border: 'none', borderRadius: '8px', cursor: 'pointer',
+                    backgroundColor: isFavourited ? 'rgba(200,168,75,0.15)' : '#F3F4F6',
+                    fontSize: '16px',
+                    filter: isFavourited ? 'drop-shadow(0 0 4px rgba(200,168,75,0.5))' : 'none',
                   }}
                 >
-                  {shareLabel}
+                  {isFavourited ? '★' : '☆'}
                 </button>
-
-                {/* Favourite button — icon only, 32×32, heart ♥/♡, red when active */}
-                {onFavouriteToggle && (
-                  <button
-                    onClick={() => onFavouriteToggle(asset.id, { display_title: asset.display_title, thumbnail_path: asset.thumbnail_path, cdn_url: asset.cdn_url })}
-                    title={isFavourited ? 'Remove from saved' : 'Save asset'}
-                    data-testid="panel-favourite-btn"
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      backgroundColor: isFavourited ? 'rgba(220,38,38,0.1)' : '#F3F4F6',
-                      fontSize: '16px',
-                      color: isFavourited ? '#DC2626' : '#9CA3AF',
-                    }}
-                  >
-                    {isFavourited ? '♥' : '♡'}
-                  </button>
-                )}
-
-                {/* Delete button — icon only, 32×32, admin only */}
-                {adminMode && (
-                  <button
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    title="Delete"
-                    data-testid="panel-delete-btn"
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#FEE2E2',
-                      color: deleting ? '#9ca3af' : '#DC2626',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '15px',
-                      cursor: deleting ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    🗑
-                  </button>
-                )}
-              </div>
+              )}
+              {adminMode && (
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  title="Delete"
+                  data-testid="panel-delete-btn"
+                  style={{
+                    width: '32px', height: '32px', display: 'inline-flex', alignItems: 'center',
+                    justifyContent: 'center', backgroundColor: '#FEE2E2',
+                    color: deleting ? '#9ca3af' : '#DC2626', border: 'none', borderRadius: '8px',
+                    fontSize: '15px', cursor: deleting ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  🗑
+                </button>
+              )}
             </div>
 
-            {/* Tags row — always visible when tags exist */}
-            {displayTags && (
-              <div data-testid="panel-tags-row">
-                <p
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    color: '#9CA3AF',
-                    margin: '0 0 6px 0',
-                  }}
-                >
-                  Tags
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                  {displayTags.map((tag) => (
-                    <span
-                      key={tag}
-                      style={{
-                        fontSize: '11px',
-                        fontWeight: '500',
-                        padding: '2px 8px',
-                        borderRadius: '100px',
-                        backgroundColor: 'rgba(0,32,91,0.07)',
-                        color: '#00205B',
-                      }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Details accordion — collapsed by default */}
+            {/* Details accordion */}
             <div data-testid="details-accordion">
               <button
                 data-testid="details-accordion-header"
@@ -552,6 +479,32 @@ export default function AssetDetailPanel({ selectedAssetId, onClose, adminMode =
               )}
             </div>
 
+            {/* Tags accordion */}
+            {displayTags && metaView === 'enriched' && (
+              <div>
+                <button
+                  onClick={() => setTagsOpen((o) => !o)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    width: '100%', background: 'none', border: 'none',
+                    borderTop: '1px solid #F3F4F6', padding: '8px 0', cursor: 'pointer',
+                  }}
+                >
+                  <span style={{ fontSize: '13px', fontWeight: '600', color: '#374151' }}>Tags</span>
+                  <span style={{ fontSize: '12px', color: '#9CA3AF' }}>{tagsOpen ? '▲' : '▼'}</span>
+                </button>
+                {tagsOpen && (
+                  <div className="accordion-body" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', paddingTop: '8px' }}>
+                    {displayTags.map((tag) => (
+                      <span key={tag} style={{ fontSize: '11px', fontWeight: '500', padding: '2px 8px', borderRadius: '100px', backgroundColor: 'rgba(0,32,91,0.07)', color: '#00205B' }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* CDN URL section */}
             {asset.cdn_url && (
               <div data-testid="panel-cdn-url">
@@ -644,6 +597,7 @@ export default function AssetDetailPanel({ selectedAssetId, onClose, adminMode =
                 {toast}
               </div>
             )}
+          </div>
           </div>
         </>
       )}
